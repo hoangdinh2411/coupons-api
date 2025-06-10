@@ -1,0 +1,8 @@
+{
+  "*.{js,jsx,ts,tsx}": [
+    "npm run lint --no-warn-ignored",
+    "npm run format",
+    "prettier --write"
+  ],
+  "*.{json,js,ts,jsx,tsx,html}": ["prettier --write --ignore-unknown"]
+}
