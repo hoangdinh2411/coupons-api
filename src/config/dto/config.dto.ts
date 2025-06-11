@@ -13,17 +13,16 @@ export class DatabaseConfig {
   JWT_SECRET?: string;
 
   @IsString()
-  POSTGRES_HOST: string;
-
-  @Matches(/^[0-9]+$/, { message: 'POSTGRES_PORT must be a number' })
-  POSTGRES_PORT: number;
+  POSTGRES_URL: string;
 
   @IsString()
-  POSTGRES_USERNAME: string;
-
+  CLOUDINARY_CLOUD_NAME: string;
   @IsString()
-  POSTGRES_PASSWORD: string;
-
+  CLOUDINARY_API_KEY: string;
   @IsString()
-  POSTGRES_DATABASE: string;
+  CLOUDINARY_API_SECRET: string;
+  @IsString()
+  EMAIL_ID: string;
+  @IsString()
+  EMAIL_PASS: string;
 }
