@@ -19,7 +19,7 @@ export class SwaggerApiDocService {
         .setDescription('API Documentation for the travel social media app')
         .setVersion('1.0')
         .addServer(
-          `http://localhost:${this.configService.get('API_PORT')}`,
+          this.configService.get('API_URL'),
           'Development server',
         )
         // .addServer(

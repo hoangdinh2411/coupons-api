@@ -34,10 +34,11 @@ export class UserService {
     }
   }
   async createNewUser(data: UserDto): Promise<UserEntity> {
-    const user = new UserEntity();
     const hashedPassword = await this.hashPassword(data.password);
-    user.email = data.email;
-    user.password = hashedPassword;
+    const user = this.userRepo.create({
+      email: data.email,
+      password: hashedPassword,
+    });
 
     // generate a random code with 6 number
     const verifying_code = Math.round(100000 + Math.random() * 900000);
@@ -58,14 +59,15 @@ export class UserService {
   }
   async createSuperAdmin(data: UserDto): Promise<UserEntity> {
     const hashedPassword = await this.hashPassword(data.password);
-    const user = {
+    const user = this.userRepo.create({
       email: data.email,
       password: hashedPassword,
       role: ROLES.ADMIN,
-      full_name: '',
+      first_name: '',
       last_name: '',
       email_verified: true,
-    };
+    });
+
     return await this.userRepo.save(user);
   }
 

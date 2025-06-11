@@ -16,10 +16,7 @@ export class CategoriesService {
   ) {}
   async create(createCategoryDto: CategoryDto) {
     try {
-      const data = {
-        name: createCategoryDto.name,
-        icon: createCategoryDto.icon_name,
-      };
+      const data = this.categoryRep.create(createCategoryDto);
       return await this.categoryRep.save(data);
     } catch (error) {
       if (error instanceof QueryFailedError) {
