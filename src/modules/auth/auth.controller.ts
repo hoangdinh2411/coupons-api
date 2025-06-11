@@ -65,13 +65,14 @@ export class AuthController {
     status: 200,
     description: 'User signed in successfully',
   })
-  @ApiBody({
-    type: UserDto,
-  })
   @Public()
   @UseGuards(LocalAuthGuard)
   @Post('sign-in')
   @HttpCode(200)
+  @ApiBody({
+    type:UserDto,
+
+  })
   async signIn(@Req() req, @Res({ passthrough: true }) res: Response) {
     const token = await this.authService.generateToken(req.user);
     // const configService = new ConfigService();

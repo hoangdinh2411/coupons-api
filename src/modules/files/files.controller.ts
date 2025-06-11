@@ -29,7 +29,7 @@ export class FilesController {
   ) {
     const saved_files = [];
     for (let index = 0; index < files.length; index++) {
-      const result = await this.fileService.upload(files[index], user.user_id);
+      const result = await this.fileService.upload(files[index], user.id);
       saved_files.push(result);
     }
     return await this.fileService.saveFile(saved_files);

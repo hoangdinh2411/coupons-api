@@ -7,7 +7,7 @@ import { UserService } from './users.service';
 @ApiTags('Users')
 @ApiResponse({ status: 401, description: 'Unauthorized' })
 @ApiResponse({ status: 400, description: 'Bad request' })
-@ApiResponse({ status: 200, description: 'Success', type: UserEntity })
+@ApiResponse({ status: 200, description: 'Success' })
 @Controller('users')
 export class UserController {
   constructor(private userService: UserService) {}
@@ -23,12 +23,12 @@ export class UserController {
   @Get('profile')
   @HttpCode(200)
   profile(@CurrentUser() user: UserEntity): Promise<UserEntity> {
-    return this.userService.getProfile(user.user_id);
+    return this.userService.getProfile(user.id);
   }
 
   @Delete()
   @HttpCode(200)
   async deleteAccount(@CurrentUser() user: UserEntity) {
-    await this.userService.delete(user.user_id);
+    await this.userService.delete(user.id);
   }
 }

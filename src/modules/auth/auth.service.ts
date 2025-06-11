@@ -12,7 +12,6 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
   async signUp(data: NewUserDto) {
-    await this.userService.isExisting(data.email);
     await this.userService.createNewUser(data);
     return;
   }
@@ -21,10 +20,11 @@ export class AuthService {
     await this.userService.hasSuperAdmin();
     await this.userService.createSuperAdmin(data);
   }
+  
   async generateToken(user: UserEntity) {
     const token = await this.jwtService.signAsync(
       {
-        id: user.user_id,
+        id: user.id,
         first_name: user.first_name,
         last_name: user.last_name,
       },

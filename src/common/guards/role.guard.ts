@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   CanActivate,
   ExecutionContext,
   Injectable,
@@ -19,26 +20,20 @@ export class RoleGuard implements CanActivate {
     if (isPublic) {
       return true;
     }
-    const requiredRoles = this.reflector.get<ROLES[]>(
-      ROLE_KEY,
-      context.getHandler(),
-    );
+    const requiredRoles =
+      this.reflector.get<ROLES[]>(ROLE_KEY, context.getHandler()) || [];
+    if (requiredRoles.length === 0) {
+      throw new BadRequestException(
+        'Set public for this api if not require role',
+      );
+    }
     const user = context.switchToHttp().getRequest().user;
-    if (!user.roles) {
+    if (!user.role) {
       throw new UnauthorizedException('This account missing role');
     }
-    if (!requiredRoles && user) {
-      return true;
-    }
-
-    this.matchRoles(requiredRoles, user.role);
-    return true;
-  }
-
-  matchRoles(requiredRoles: ROLES[], userRole: ROLES) {
-    const result = requiredRoles.includes(userRole);
-    if (!result) {
+    if (!requiredRoles.includes(user.role)) {
       throw new UnauthorizedException('Access denied');
     }
+    return true;
   }
 }

@@ -13,12 +13,11 @@ import {
 @Entity('user')
 export class UserEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
-  user_id: number;
+  id: number;
 
   @Column({
     type: 'varchar',
     length: 100,
-    nullable: false,
     unique: true,
   })
   email: string;
@@ -26,19 +25,20 @@ export class UserEntity extends BaseEntity {
   @Column({
     type: 'varchar',
     length: 255,
-    nullable: false,
   })
   password: string;
 
   @Column({
     type: 'varchar',
     length: 100,
+    nullable: true,
   })
   first_name: string;
 
   @Column({
     type: 'varchar',
     length: 100,
+    nullable: true,
   })
   last_name: string;
 
@@ -55,8 +55,8 @@ export class UserEntity extends BaseEntity {
   email_verified: boolean;
 
   @Column({
-    type: 'number',
-    length: 6,
+    type: 'int',
+    nullable: true,
   })
   verifying_code: number;
 

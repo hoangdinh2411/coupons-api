@@ -8,7 +8,7 @@ export class UserDto {
   @ApiProperty({
     type: () => 'string',
     default: 'email@gmail.com',
-    description: 'Email of the organization',
+    description: 'Email of user',
   })
   @Matches(/\S/, { message: 'Email cannot be empty or whitespace only' })
   email: string = '';
@@ -18,7 +18,7 @@ export class UserDto {
   @ApiProperty({
     type: () => 'string',
     default: 'password',
-    description: 'Password for the account of the organization',
+    description: 'Password for the account',
   })
   @Matches(/\S/, { message: 'Password cannot be empty or whitespace only' })
   password: string = '';
@@ -30,7 +30,7 @@ export class NewUserDto extends UserDto {
   @ApiProperty({
     type: () => 'string',
     default: 'display_name',
-    description: 'Confirm password  of the organization',
+    description: 'Confirm password ',
   })
   @Matches(/\S/, {
     message: 'Confirm password  cannot be empty or whitespace only',

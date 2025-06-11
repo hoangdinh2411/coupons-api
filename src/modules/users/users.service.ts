@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { UserEntity } from './entities/users.entity';
 import { UserDto } from 'modules/auth/dtos/auth.dto';
@@ -26,14 +26,11 @@ export class UserService {
     }
   }
   async hasSuperAdmin(): Promise<void> {
-    const user = await this.userRepo
-      .createQueryBuilder('user')
-      .where('users.role = :role', {
-        role: ROLES.ADMIN,
-      })
-      .getOne();
+    const user = await this.userRepo.findOne({
+      where: { role: ROLES.ADMIN },
+    });
     if (user) {
-      throw new ConflictException('Can only have one super admin');
+      throw new ConflictException('Cannot have more than 1 admin account');
     }
   }
   async createNewUser(data: UserDto): Promise<UserEntity> {
@@ -47,22 +44,35 @@ export class UserService {
 
     // send code to email
     user.verifying_code = verifying_code;
-    return await this.userRepo.save(user);
+    try {
+      return await this.userRepo.save(user);
+    } catch (error) {
+      if (error instanceof QueryFailedError) {
+        const err = error.driverError;
+        if (err.code === '23505') {
+          throw new ConflictException('Email already exist');
+        }
+      }
+      return error;
+    }
   }
   async createSuperAdmin(data: UserDto): Promise<UserEntity> {
     const hashedPassword = await this.hashPassword(data.password);
-    const user = this.userRepo.create({
+    const user = {
       email: data.email,
       password: hashedPassword,
       role: ROLES.ADMIN,
-    });
+      full_name: '',
+      last_name: '',
+      email_verified: true,
+    };
     return await this.userRepo.save(user);
   }
 
   async validateUser(email: string, password: string): Promise<UserEntity> {
     const user = await this.userRepo.findOne({
       where: { email, deleted_at: null },
-      select: ['user_id', 'email', 'password', 'role'],
+      select: ['id', 'email', 'password', 'role'],
     });
     if (!user) {
       throw new NotFoundException('User does not exist');
@@ -84,18 +94,16 @@ export class UserService {
 
   async verifyUser(user_id: number): Promise<UserEntity> {
     return this.userRepo
-      .createQueryBuilder('t')
-      .where('t.user_id = :user_id', { user_id })
-      .andWhere('t.deleted_at IS NULL')
-      .leftJoin('t.company', 'company', 'company.deleted_at IS NULL')
-      .addSelect(['company.company_id', 'company.name', 'company.slug'])
+      .createQueryBuilder('u')
+      .where('u.id = :user_id', { user_id })
+      .andWhere('u.deleted_at IS NULL')
       .getOne();
   }
 
   async getUser(user_id: number): Promise<UserEntity> {
     const user = await this.userRepo.findOne({
-      where: { user_id: user_id },
-      select: ['user_id', 'email', 'role'],
+      where: { id: user_id },
+      select: ['id', 'email', 'role'],
     });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -105,12 +113,10 @@ export class UserService {
 
   getProfile(user_id: number): Promise<UserEntity> {
     return this.userRepo
-      .createQueryBuilder('t')
-      .select(['t.user_id', 't.full_name', 't.last_name', 't.email', 't.roles'])
-      .leftJoin('t.company', 'company')
-      .addSelect(['company.company_id', 'company.name'])
-      .where('t.user_id = :user_id AND t.deleted_at IS NULL', {
-        user_id: user_id,
+      .createQueryBuilder('u')
+      .select(['u.user_id', 'u.full_name', 'u.last_name', 'u.email', 'u.role'])
+      .where('u.id = :user_id AND u.deleted_at IS NULL', {
+        user_id,
       })
       .getOne();
   }
@@ -122,7 +128,7 @@ export class UserService {
 
   async delete(user_id: number): Promise<void> {
     await this.userRepo.findOne({
-      where: { user_id },
+      where: { id: user_id },
       relations: ['company'],
     });
   }
