@@ -7,8 +7,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { UserEntity } from './entities/users.entity';
-import { UserDto } from 'modules/auth/dtos/auth.dto';
 import { ROLES } from 'common/constants/enum/roles.enum';
+import { UserDto } from './dto/user.dto';
+import { SignUpDto } from 'modules/auth/dtos/auth.dto';
 
 @Injectable()
 export class UserService {
@@ -17,6 +18,25 @@ export class UserService {
     private readonly userRepo: Repository<UserEntity>,
   ) {}
 
+  async verifyEmail(email: string, code: number) {
+    const data = await this.userRepo
+      .createQueryBuilder('user')
+      .where(
+        `user.email = :email AND user.code = :code AND email_verified = false`,
+        {
+          email,
+          code,
+        },
+      )
+      .update({
+        email_verified: true,
+      })
+      .execute();
+    if (data.affected === 0) {
+      throw new ConflictException('Email or code is invalid');
+    }
+    return true
+  }
   async isExisting(email: string): Promise<void> {
     const user = await this.userRepo.findOne({
       where: { email },
@@ -33,7 +53,7 @@ export class UserService {
       throw new ConflictException('Cannot have more than 1 admin account');
     }
   }
-  async createNewUser(data: UserDto): Promise<UserEntity> {
+  async createNewUser(data: SignUpDto): Promise<UserEntity> {
     const hashedPassword = await this.hashPassword(data.password);
     const user = this.userRepo.create({
       email: data.email,
@@ -54,10 +74,10 @@ export class UserService {
           throw new ConflictException('Email already exist');
         }
       }
-      return error;
+      throw error;
     }
   }
-  async createSuperAdmin(data: UserDto): Promise<UserEntity> {
+  async createSuperAdmin(data: SignUpDto): Promise<UserEntity> {
     const hashedPassword = await this.hashPassword(data.password);
     const user = this.userRepo.create({
       email: data.email,
@@ -102,6 +122,13 @@ export class UserService {
       .getOne();
   }
 
+  async updateAccount(user_id: number, data: UserDto) {
+    const result = await this.userRepo.update(user_id, data);
+    if (result.affected === 0) {
+      throw new NotFoundException('Account not found');
+    }
+    return true;
+  }
   async getUser(user_id: number): Promise<UserEntity> {
     const user = await this.userRepo.findOne({
       where: { id: user_id },
@@ -116,7 +143,7 @@ export class UserService {
   getProfile(user_id: number): Promise<UserEntity> {
     return this.userRepo
       .createQueryBuilder('u')
-      .select(['u.user_id', 'u.full_name', 'u.last_name', 'u.email', 'u.role'])
+      .select(['u.id', 'u.first_name', 'u.last_name', 'u.email', 'u.role'])
       .where('u.id = :user_id AND u.deleted_at IS NULL', {
         user_id,
       })

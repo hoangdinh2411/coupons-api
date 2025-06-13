@@ -1,26 +1,42 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { log } from 'console';
 import { UserEntity } from 'modules/users/entities/users.entity';
-import { NewUserDto } from './dtos/auth.dto';
+import { SignUpDto, VerifyEmailDto } from './dtos/auth.dto';
 import { UserService } from 'modules/users/users.service';
+import { MailerService } from '@nestjs-modules/mailer';
+import { QueryFailedError } from 'typeorm';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly userService: UserService,
     private jwtService: JwtService,
+    private readonly mailerService: MailerService,
   ) {}
-  async signUp(data: NewUserDto) {
-    await this.userService.createNewUser(data);
-    return;
+  async signUp(new_user: UserEntity) {
+    try {
+      await this.mailerService.sendMail({
+        to: new_user.email,
+        template: 'example',
+        subject: 'Verify email',
+        context: {
+          code: new_user.verifying_code,
+          username: new_user.email,
+        },
+      });
+      return {
+        id: new_user.id,
+        email: new_user.email,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
-  async signUpForSuperAdmin(data: NewUserDto) {
-    await this.userService.hasSuperAdmin();
-    await this.userService.createSuperAdmin(data);
-  }
-  
   async generateToken(user: UserEntity) {
     const token = await this.jwtService.signAsync(
       {

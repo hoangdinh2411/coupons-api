@@ -13,13 +13,17 @@ import { AuthService } from './auth.service';
 import { LocalAuthGuard } from 'common/guards/localAuth.guard';
 import { Public } from 'common/decorators/public.decorator';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { NewUserDto, UserDto } from './dtos/auth.dto';
+import { SignUpDto, AuthDto, VerifyEmailDto } from './dtos/auth.dto';
+import { UserService } from 'modules/users/users.service';
 // import { ConfigService } from '@nestjs/config';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+  ) {}
 
   @ApiOperation({
     summary: 'Sign up',
@@ -31,14 +35,16 @@ export class AuthController {
   })
   @Public()
   @Post('sign-up')
-  async signUp(@Body() body: NewUserDto) {
+  async signUp(@Body() body: SignUpDto) {
     this.authService.comparePasswordWithConfirmPassword(
       body.password,
       body.confirm_password,
     );
     this.authService.checkForbiddenWordsInEmail(body.email);
-    await this.authService.signUp(body);
+    const new_user = await this.userService.createNewUser(body);
+    await this.authService.signUp(new_user);
   }
+
   @ApiOperation({
     summary: 'Sign up account for super admin',
     description: 'Sign up account for super admin',
@@ -49,12 +55,14 @@ export class AuthController {
   })
   @Public()
   @Post('sign-up/super-admin')
-  async signUpForSuperAdmin(@Body() body: NewUserDto) {
+  async signUpForSuperAdmin(@Body() body: SignUpDto) {
     this.authService.comparePasswordWithConfirmPassword(
       body.password,
       body.confirm_password,
     );
-    await this.authService.signUpForSuperAdmin(body);
+    await this.userService.hasSuperAdmin();
+    await this.userService.createSuperAdmin(body);
+    return true;
   }
 
   @ApiOperation({
@@ -70,8 +78,7 @@ export class AuthController {
   @Post('sign-in')
   @HttpCode(200)
   @ApiBody({
-    type:UserDto,
-
+    type: AuthDto,
   })
   async signIn(@Req() req, @Res({ passthrough: true }) res: Response) {
     const token = await this.authService.generateToken(req.user);
@@ -92,7 +99,7 @@ export class AuthController {
   @Public()
   @Patch('verify-account')
   @HttpCode(200)
-  async verifyAccount(@Req() req, @Res({ passthrough: true }) res: Response) {
-
+  async verifyAccount(@Body() data: VerifyEmailDto) {
+    return this.userService.verifyEmail(data.email, data.code);
   }
 }

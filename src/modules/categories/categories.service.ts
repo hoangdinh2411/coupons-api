@@ -6,18 +6,20 @@ import {
 import { CategoryDto } from './dto/category.dto';
 import { CategoryEntity } from './entities/category.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { QueryFailedError, Repository } from 'typeorm';
+import { ILike, QueryFailedError, Repository } from 'typeorm';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class CategoriesService {
   constructor(
     @InjectRepository(CategoryEntity)
     private readonly categoryRep: Repository<CategoryEntity>,
+    // private readonly mailerService: MailerService,
   ) {}
   async create(createCategoryDto: CategoryDto) {
     try {
       const data = this.categoryRep.create(createCategoryDto);
-      return await this.categoryRep.save(data);
+      await this.categoryRep.save(data);
     } catch (error) {
       if (error instanceof QueryFailedError) {
         const err = error.driverError;
@@ -25,16 +27,38 @@ export class CategoriesService {
           throw new ConflictException('Category already exist');
         }
       } else {
-        return error;
+        throw error;
       }
     }
   }
 
-  findAll() {
-    return this.categoryRep.find();
+  async findAll(limit: number, page: number) {
+    const query = this.categoryRep.createQueryBuilder('category');
+    if (limit && page) {
+      query.skip((page - 1) * limit).take(limit);
+    }
+
+    const [results, total] = await query.getManyAndCount();
+    return {
+      total,
+      results,
+    };
+  }
+  async search(search_text: string) {
+    const [results, total] = await this.categoryRep
+      .createQueryBuilder('category')
+      .where({
+        name: ILike(`%${search_text}%`),
+      })
+      .getManyAndCount();
+
+    return {
+      total,
+      results,
+    };
   }
 
-  async findOne(id: number) {
+  async findOneById(id: number) {
     const data = await this.categoryRep.findOneBy({ id });
     if (!data) {
       throw new NotFoundException('Category not found');

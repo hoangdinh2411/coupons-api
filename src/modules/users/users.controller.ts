@@ -1,8 +1,11 @@
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Controller, Delete, Get, HttpCode } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Patch } from '@nestjs/common';
 import { UserEntity } from './entities/users.entity';
 import { CurrentUser } from 'common/decorators/currentUser.decorator';
 import { UserService } from './users.service';
+import { Roles } from 'common/decorators/roles.decorator';
+import { ROLES } from 'common/constants/enum/roles.enum';
+import { UserDto } from './dto/user.dto';
 
 @ApiTags('Users')
 @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -21,13 +24,21 @@ export class UserController {
     description: 'user profile retrieved successfully',
   })
   @Get('profile')
+  @Roles(ROLES.ADMIN, ROLES.PARTNER, ROLES.USER)
   @HttpCode(200)
   profile(@CurrentUser() user: UserEntity): Promise<UserEntity> {
     return this.userService.getProfile(user.id);
   }
 
+  @Patch('profile')
+  @HttpCode(200)
+  @Roles(ROLES.ADMIN, ROLES.PARTNER, ROLES.USER)
+  async update(@CurrentUser() user: UserEntity, @Body() data: UserDto) {
+    await this.userService.updateAccount(user.id, data);
+  }
   @Delete()
   @HttpCode(200)
+  @Roles(ROLES.ADMIN)
   async deleteAccount(@CurrentUser() user: UserEntity) {
     await this.userService.delete(user.id);
   }

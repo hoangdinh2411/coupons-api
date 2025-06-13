@@ -6,21 +6,26 @@ import {
 import { StoreDto } from './dto/store.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StoreEntity } from './entities/store.entity';
-import { QueryFailedError, Repository } from 'typeorm';
+import { ILike, QueryFailedError, Repository } from 'typeorm';
+import { CategoriesService } from 'modules/categories/categories.service';
+import { FilterStoreDto } from './dto/filter.dto';
 
 @Injectable()
 export class StoresService {
   constructor(
     @InjectRepository(StoreEntity)
     private readonly storeRep: Repository<StoreEntity>,
+    private readonly categoryService: CategoriesService,
   ) {}
   async create(createStoreDto: StoreDto) {
     try {
-      const data = this.storeRep.create({
-        ...createStoreDto,
-        slug: this.makeSlug(createStoreDto.name),
-      });
-      return await this.storeRep.save(data);
+      const category = await this.categoryService.findOneById(
+        createStoreDto.category,
+      );
+
+      const data = this.storeRep.create({ ...createStoreDto, category });
+      await this.storeRep.save(data);
+      return;
     } catch (error) {
       if (error instanceof QueryFailedError) {
         const err = error.driverError;
@@ -28,17 +33,67 @@ export class StoresService {
           throw new ConflictException('Store already exist');
         }
       } else {
-        return error;
+        throw error;
       }
     }
   }
-  async findAll() {
-    const data = await this.storeRep.find();
-    if (data) {
-      return data.map((store: StoreDto) => ({
-        ...store,
-        meta_data: this.makeMetaDataContent(store),
-      }));
+
+  async filter(filterData: FilterStoreDto) {
+    const {
+      categories = [],
+      tags = [],
+      max_discount_pct = 100,
+      name,
+    } = filterData;
+    const queryBuilder = this.storeRep
+      .createQueryBuilder('store')
+      .leftJoinAndSelect('store.category', 'category');
+    if (name) {
+      queryBuilder.andWhere({
+        name: ILike(`%${name}%`),
+      });
+    }
+
+    if (categories.length > 0) {
+      queryBuilder.andWhere('store.category IN (:...categories)', {
+        categories,
+      });
+    }
+    if (tags.length > 0) {
+      queryBuilder.andWhere(
+        'EXISTS (SELECT 1 FROM unnest(store.keywords) AS kw WHERE kw ILIKE ANY(:tags))',
+        {
+          tags,
+        },
+      );
+    }
+    if (max_discount_pct) {
+      queryBuilder.andWhere('store.max_discount_pct <= :max_discount_pct', {
+        max_discount_pct,
+      });
+    }
+
+    const [results, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      total,
+      results,
+    };
+  }
+  async findAll(limit: number, page: number) {
+    const [results, total] = await this.storeRep
+      .createQueryBuilder('store')
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+    if (total > 0) {
+      return {
+        total,
+        results: results.map((store: StoreEntity) => ({
+          ...store,
+          meta_data: this.makeMetaDataContent(store),
+        })),
+      };
     } else {
       return [];
     }
@@ -58,9 +113,12 @@ export class StoresService {
   }
 
   async update(id: number, updateStoreDto: StoreDto) {
+    const category = await this.categoryService.findOneById(
+      updateStoreDto.category,
+    );
     const result = await this.storeRep.update(id, {
       ...updateStoreDto,
-      slug: this.makeSlug(updateStoreDto.name),
+      category,
     });
     if (result.affected === 0) {
       throw new NotFoundException('Store not found');
@@ -76,13 +134,13 @@ export class StoresService {
     return true;
   }
 
-  makeMetaDataContent(data: StoreDto) {
+  makeMetaDataContent(data: StoreEntity) {
     return {
       title: data.name || '',
       description: data.description || ' ',
       keywords: data.keywords || [],
       url: data.url || '',
-      image: data.image_url || '',
+      image: data.image_bytes || '',
       slug: data.slug,
     };
   }

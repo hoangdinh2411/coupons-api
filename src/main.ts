@@ -5,8 +5,9 @@ import { SwaggerApiDocService } from 'config/apiDocs.config';
 import { CorsConfigService } from 'config/cors.config';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
 import { ResponseFormatInterceptor } from 'common/interceptors/responseFormat.interceptor';
+import { json, urlencoded } from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -23,6 +24,13 @@ async function bootstrap() {
   );
   const configServer = new ConfigService();
   const corsConfigService = app.get(CorsConfigService);
+  app.use(json({
+    limit:'50mb'
+  }))
+  app.use(urlencoded({
+    extended:true,
+    limit:'50mb'
+  }))
   app.enableCors(corsConfigService.getOptions(configServer));
   app.use(cookieParser());
   app.useGlobalFilters(new HttpExceptionFilter());

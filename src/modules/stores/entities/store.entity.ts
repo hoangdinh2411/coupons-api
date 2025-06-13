@@ -1,4 +1,18 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { generateSlug } from 'common/helpers/generateSlug';
+import { CategoryEntity } from 'modules/categories/entities/category.entity';
+import { CouponEntity } from 'modules/coupons/entities/coupon.entity';
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity('store')
 export class StoreEntity {
@@ -12,11 +26,8 @@ export class StoreEntity {
   })
   name: string;
 
-  @Column({
-    type: 'varchar',
-    length: 250,
-  })
-  image_url: string;
+  @Column({ type: 'text' })
+  image_bytes: string;
   @Column({
     type: 'varchar',
     length: 250,
@@ -56,4 +67,28 @@ export class StoreEntity {
     unique: true,
   })
   slug: string;
+  @BeforeInsert()
+  @BeforeUpdate()
+  generateSlugFromName() {
+    return (this.slug = generateSlug(this.name));
+  }
+  @ManyToOne(() => CategoryEntity, (category) => category.stores, {
+    onDelete: 'CASCADE',
+  })
+  category: CategoryEntity;
+
+  @OneToMany(() => CouponEntity, (coupon) => coupon.store, {
+    cascade: true, // optional: saves coupons when you save a store
+    eager: false, // keep false unless you always need them
+  })
+  coupons: CouponEntity[];
+
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  created_at: Date;
+
+  @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  updated_at: Date;
+
+  @DeleteDateColumn({ type: 'timestamp', nullable: true, name: 'deleted_at' })
+  deleted_at: Date;
 }

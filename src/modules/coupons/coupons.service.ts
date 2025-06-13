@@ -1,26 +1,120 @@
-import { Injectable } from '@nestjs/common';
-import { CreateCouponDto } from './dto/create-coupon.dto';
-import { UpdateCouponDto } from './dto/update-coupon.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { CouponDto } from './dto/coupon.dt';
+import { InjectRepository } from '@nestjs/typeorm';
+import { CouponEntity } from './entities/coupon.entity';
+import { Repository } from 'typeorm';
+import { StoresService } from 'modules/stores/stores.service';
+import dayjs from 'dayjs';
+import { FilterCouponDto } from './dto/filter.dto';
 
 @Injectable()
 export class CouponsService {
-  create(createCouponDto: CreateCouponDto) {
-    return 'This action adds a new coupon';
+  constructor(
+    @InjectRepository(CouponEntity)
+    private readonly couponRep: Repository<CouponEntity>,
+    private readonly storeService: StoresService,
+  ) {}
+  async create(createCouponDto: CouponDto) {
+    const store = await this.storeService.findOne(createCouponDto.store);
+    const new_coupon = this.couponRep.create({
+      ...createCouponDto,
+      store,
+    });
+    await this.couponRep.save(new_coupon);
+    return true;
   }
 
   findAll() {
-    return `This action returns all coupons`;
+    return this.couponRep
+      .createQueryBuilder('coupon')
+      .where('coupon.expire_date >= :today', {
+        today: dayjs().format('YYYY-MM-DD'),
+      });
+  }
+  async filter(data: FilterCouponDto) {
+    console.log('filter', data);
+    const {
+      categories = [],
+      expire_date,
+      store = '',
+      tags = [],
+      title = '',
+    } = data;
+    const query = this.couponRep.createQueryBuilder('cp');
+
+    if (title) {
+      query.andWhere(`cp.title ILIKE :kw OR cp.offer_detail ILIKE :kw`, {
+        kw: `%${title}%`,
+      });
+    }
+
+    if (expire_date) {
+      query.andWhere('cp.expire_date <= :expire_date', {
+        expire_date: dayjs(expire_date, 'YYYY-MM-DD'),
+      });
+    }
+
+    if (store) {
+      query
+        .leftJoin('cp.store', 's')
+        .andWhere('s.id = :store', {
+          store,
+        })
+        // .addSelect(['s.name']);
+
+      if (categories.length > 0) {
+        query
+          .leftJoin('s.category', 'c')
+          .andWhere('c.id  IN (:...categories)', {
+            categories,
+          })
+          // .addSelect(['c.name']);
+      }
+      if (tags) {
+        query.andWhere(
+          'EXISTS (SELECT 1 FROM unnest(s.keywords) AS kw WHERE kw ILIKE ANY(:tags))',
+          {
+            tags,
+          },
+        );
+      }
+    }
+
+    const [results, total] = await query.getManyAndCount();
+
+    return {
+      results,
+      total,
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} coupon`;
+  async findOne(id: number) {
+    const data = await this.couponRep.findOneBy({
+      id,
+    });
+    if (!data) {
+      throw new NotFoundException('Coupon not found');
+    }
+    return data;
   }
 
-  update(id: number, updateCouponDto: UpdateCouponDto) {
-    return `This action updates a #${id} coupon`;
+  async update(id: number, updateCouponDto: CouponDto) {
+    const store = await this.storeService.findOne(updateCouponDto.store);
+    const result = await this.couponRep.update(id, {
+      ...updateCouponDto,
+      store,
+    });
+    if (result.affected === 0) {
+      throw new NotFoundException('Coupon not found');
+    }
+    return true;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} coupon`;
+  async remove(id: number) {
+    const result = await this.couponRep.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException('Coupon not found');
+    }
+    return true;
   }
 }

@@ -1,7 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString, Matches } from 'class-validator';
+import { ApiProperty, PickType } from '@nestjs/swagger';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  Matches,
+} from 'class-validator';
 
-export class UserDto {
+export class AuthDto {
   @IsEmail()
   @IsNotEmpty()
   @IsString()
@@ -24,7 +30,7 @@ export class UserDto {
   password: string = '';
 }
 
-export class NewUserDto extends UserDto {
+export class SignUpDto extends AuthDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
@@ -36,6 +42,32 @@ export class NewUserDto extends UserDto {
     message: 'Confirm password  cannot be empty or whitespace only',
   })
   confirm_password: string = '';
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    type: () => 'string',
+    default: 'first name',
+    description: 'First name',
+  })
+  first_name: string = '';
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    type: () => 'string',
+    default: 'last name',
+    description: 'Last Name',
+  })
+  last_name: string = '';
 }
 
-export class UpdateUserDto extends UserDto {}
+export class VerifyEmailDto extends PickType(AuthDto, ['email'] as const) {
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty({
+    type: () => 'number',
+    default: 123456,
+    description: 'Code to verify email ',
+  })
+  code: number;
+}

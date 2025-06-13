@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   HttpCode,
+  Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { ApiTags } from '@nestjs/swagger';
@@ -21,30 +23,40 @@ export class CategoriesController {
 
   @Post()
   @HttpCode(201)
-  @Roles(ROLES.ADMIN, ROLES.PARTNER)
+  @Roles(ROLES.ADMIN)
   create(@Body() createCategoryDto: CategoryDto) {
     return this.categoriesService.create(createCategoryDto);
   }
   @Get()
   @Public()
-  findAll() {
-    return this.categoriesService.findAll();
+  findAll(@Query('limit') limit: number = 20, @Query('page') page: number = 1) {
+    if (limit < 1 || page < 1) {
+      throw new BadRequestException('Limit and page must be positive numbers');
+    }
+    
+    return this.categoriesService.findAll(+limit, +page);
+  }
+  @Get('search')
+  @Public()
+  @Roles(ROLES.ADMIN, ROLES.PARTNER)
+  searchByName(@Query('name') name?: string) {
+    return this.categoriesService.search(name);
   }
 
   @Get(':id')
   @Roles(ROLES.ADMIN, ROLES.PARTNER)
   findOne(@Param('id') id: string) {
-    return this.categoriesService.findOne(+id);
+    return this.categoriesService.findOneById(+id);
   }
 
   @Patch(':id')
-  @Roles(ROLES.ADMIN, ROLES.PARTNER)
+  @Roles(ROLES.ADMIN)
   update(@Param('id') id: string, @Body() updateCategoryDto: CategoryDto) {
     return this.categoriesService.update(+id, updateCategoryDto);
   }
 
   @Delete(':id')
-  @Roles(ROLES.ADMIN, ROLES.PARTNER)
+  @Roles(ROLES.ADMIN)
   remove(@Param('id') id: string) {
     return this.categoriesService.remove(+id);
   }

@@ -16,12 +16,6 @@ export class DatabaseConfig {
   POSTGRES_URL: string;
 
   @IsString()
-  CLOUDINARY_CLOUD_NAME: string;
-  @IsString()
-  CLOUDINARY_API_KEY: string;
-  @IsString()
-  CLOUDINARY_API_SECRET: string;
-  @IsString()
   EMAIL_ID: string;
   @IsString()
   EMAIL_PASS: string;
