@@ -10,6 +10,10 @@ import { JWTAuthStrategy } from './strategy/jwt.strategy';
 import { UserService } from 'modules/users/users.service';
 import { UserEntity } from 'modules/users/entities/users.entity';
 import { UserModule } from 'modules/users/users.module';
+import { EmailModule } from 'modules/emailer/emailer.module';
+import { RegularUserStrategy } from './strategy/regular-user.strategy';
+import { SuperAdminStrategy } from './strategy/super-admin.strategy';
+import { SignUpStrategyFactory } from './factory/signup-strategy.factory';
 
 @Module({
   imports: [
@@ -22,7 +26,8 @@ import { UserModule } from 'modules/users/users.module';
       }),
       inject: [ConfigService],
     }),
-    UserModule
+    UserModule,
+    EmailModule,
   ],
   controllers: [AuthController],
   providers: [
@@ -30,6 +35,9 @@ import { UserModule } from 'modules/users/users.module';
     UserService,
     LocalStrategy,
     JWTAuthStrategy,
+    RegularUserStrategy,
+    SuperAdminStrategy,
+    SignUpStrategyFactory,
   ],
 })
 export class AuthModule {}

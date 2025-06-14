@@ -18,24 +18,25 @@ export class UserService {
     private readonly userRepo: Repository<UserEntity>,
   ) {}
 
-  async verifyEmail(email: string, code: number) {
+  async verifyEmail(email: string, verify_code: number) {
     const data = await this.userRepo
       .createQueryBuilder('user')
       .where(
-        `user.email = :email AND user.code = :code AND email_verified = false`,
+        `user.email = :email AND user.verify_code = :verify_code AND email_verified = false`,
         {
           email,
-          code,
+          verify_code,
         },
       )
       .update({
         email_verified: true,
+        verify_code: null,
       })
       .execute();
     if (data.affected === 0) {
       throw new ConflictException('Email or code is invalid');
     }
-    return true
+    return true;
   }
   async isExisting(email: string): Promise<void> {
     const user = await this.userRepo.findOne({
@@ -53,19 +54,20 @@ export class UserService {
       throw new ConflictException('Cannot have more than 1 admin account');
     }
   }
-  async createNewUser(data: SignUpDto): Promise<UserEntity> {
-    const hashedPassword = await this.hashPassword(data.password);
-    const user = this.userRepo.create({
-      email: data.email,
-      password: hashedPassword,
-    });
-
-    // generate a random code with 6 number
-    const verifying_code = Math.round(100000 + Math.random() * 900000);
-
-    // send code to email
-    user.verifying_code = verifying_code;
+  async createRegularUser(data: SignUpDto): Promise<UserEntity> {
     try {
+      const hashedPassword = await this.hashPassword(data.password);
+      const user = this.userRepo.create({
+        ...data,
+        role: ROLES.USER,
+        password: hashedPassword,
+      });
+
+      // generate a random code with 6 number
+      const verify_code = Math.round(100000 + Math.random() * 900000);
+
+      // send code to email
+      user.verify_code = verify_code;
       return await this.userRepo.save(user);
     } catch (error) {
       if (error instanceof QueryFailedError) {
@@ -94,12 +96,13 @@ export class UserService {
   async validateUser(email: string, password: string): Promise<UserEntity> {
     const user = await this.userRepo.findOne({
       where: { email, deleted_at: null },
-      select: ['id', 'email', 'password', 'role'],
+      select: ['id', 'email', 'password', 'role', 'email_verified'],
     });
     if (!user) {
       throw new NotFoundException('User does not exist');
     }
     await this.validatePassword(password, user.password);
+    delete user.password;
     return user;
   }
 

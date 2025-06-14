@@ -58,7 +58,7 @@ export class UserEntity extends BaseEntity {
     type: 'int',
     nullable: true,
   })
-  verifying_code: number;
+  verify_code: number;
 
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;

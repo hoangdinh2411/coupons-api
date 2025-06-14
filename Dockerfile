@@ -1,3 +1,4 @@
+# Stage 1: Build
 FROM node:22-alpine  AS builder
 
 WORKDIR /app
@@ -10,7 +11,9 @@ COPY . .
 
 RUN npm run build 
 
-
+# Copy templates or other static files after build
+RUN cp -r src/templates dist/src/templates
+# Stage 2: Runtime
 FROM node:22-alpine as RUNNER
 
 WORKDIR /app

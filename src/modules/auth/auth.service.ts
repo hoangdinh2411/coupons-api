@@ -10,32 +10,11 @@ import { SignUpDto, VerifyEmailDto } from './dtos/auth.dto';
 import { UserService } from 'modules/users/users.service';
 import { MailerService } from '@nestjs-modules/mailer';
 import { QueryFailedError } from 'typeorm';
+import { EmailerService } from 'modules/emailer/emailer.service';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private jwtService: JwtService,
-    private readonly mailerService: MailerService,
-  ) {}
-  async signUp(new_user: UserEntity) {
-    try {
-      await this.mailerService.sendMail({
-        to: new_user.email,
-        template: 'example',
-        subject: 'Verify email',
-        context: {
-          code: new_user.verifying_code,
-          username: new_user.email,
-        },
-      });
-      return {
-        id: new_user.id,
-        email: new_user.email,
-      };
-    } catch (error) {
-      throw error;
-    }
-  }
+  constructor(private jwtService: JwtService) {}
 
   async generateToken(user: UserEntity) {
     const token = await this.jwtService.signAsync(
@@ -47,13 +26,6 @@ export class AuthService {
       { expiresIn: '1h' },
     );
     return token;
-  }
-
-  checkForbiddenWordsInEmail(email: string) {
-    const regex = /(admin|super-admin)/i;
-    if (regex.test(email)) {
-      throw new BadRequestException('Invalid email');
-    }
   }
 
   async verifyToken(token: string) {

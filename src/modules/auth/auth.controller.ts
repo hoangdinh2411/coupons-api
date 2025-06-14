@@ -7,6 +7,8 @@ import {
   Req,
   HttpCode,
   Patch,
+  InternalServerErrorException,
+  Param,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
@@ -15,6 +17,8 @@ import { Public } from 'common/decorators/public.decorator';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SignUpDto, AuthDto, VerifyEmailDto } from './dtos/auth.dto';
 import { UserService } from 'modules/users/users.service';
+import { ROLES } from 'common/constants/enum/roles.enum';
+import { SignUpStrategyFactory } from './factory/signup-strategy.factory';
 // import { ConfigService } from '@nestjs/config';
 
 @ApiTags('Auth')
@@ -23,6 +27,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
+    private readonly signUpStrategyFactory: SignUpStrategyFactory,
   ) {}
 
   @ApiOperation({
@@ -31,39 +36,19 @@ export class AuthController {
   })
   @ApiResponse({
     status: 201,
-    description: 'User signed up successfully',
+    description: ' signed up successfully',
   })
   @Public()
-  @Post('sign-up')
-  async signUp(@Body() body: SignUpDto) {
+  @Post('sign-up/:type')
+  async signUp(@Param('type') type: ROLES, @Body() body: SignUpDto) {
     this.authService.comparePasswordWithConfirmPassword(
       body.password,
       body.confirm_password,
     );
-    this.authService.checkForbiddenWordsInEmail(body.email);
-    const new_user = await this.userService.createNewUser(body);
-    await this.authService.signUp(new_user);
+    const strategy = this.signUpStrategyFactory.getStrategy(type);
+    return await strategy.execute(body);
   }
 
-  @ApiOperation({
-    summary: 'Sign up account for super admin',
-    description: 'Sign up account for super admin',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Admin signed up successfully',
-  })
-  @Public()
-  @Post('sign-up/super-admin')
-  async signUpForSuperAdmin(@Body() body: SignUpDto) {
-    this.authService.comparePasswordWithConfirmPassword(
-      body.password,
-      body.confirm_password,
-    );
-    await this.userService.hasSuperAdmin();
-    await this.userService.createSuperAdmin(body);
-    return true;
-  }
 
   @ApiOperation({
     summary: 'Sign in',
@@ -72,6 +57,15 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'User signed in successfully',
+    example: {
+      success: true,
+      data: {
+        id: 3,
+        email: 'example@gmail.com',
+        role: 'role',
+        email_verified: true,
+      },
+    },
   })
   @Public()
   @UseGuards(LocalAuthGuard)
@@ -93,6 +87,9 @@ export class AuthController {
         maxAge: 1000 * 60 * 60 * 24,
         expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
       });
+      return req.user;
+    } else {
+      throw new InternalServerErrorException('Cannot generate token');
     }
   }
 
