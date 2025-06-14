@@ -7,7 +7,7 @@ export class CorsConfigService {
   constructor() {}
   getOptions(configServer: ConfigService): CorsOptions {
     const CORS_OPTIONS: CorsOptions = {
-      origin: [configServer.get<string>('CLIENT_DOMAIN')],
+      origin: '*',
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: [
