@@ -16,7 +16,7 @@ import { CouponsModule } from './coupons/coupons.module';
     CategoriesModule,
     StoresModule,
     EmailModule,
-    CouponsModule
+    CouponsModule,
   ],
   providers: [JWTAuthStrategy],
 })

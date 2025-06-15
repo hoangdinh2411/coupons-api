@@ -9,6 +9,6 @@ import { StoresModule } from 'modules/stores/stores.module';
   imports: [TypeOrmModule.forFeature([CouponEntity]), StoresModule],
   controllers: [CouponsController],
   providers: [CouponsService],
-  exports:[CouponsService]
+  exports: [CouponsService],
 })
 export class CouponsModule {}

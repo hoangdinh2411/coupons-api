@@ -24,13 +24,17 @@ async function bootstrap() {
   );
   const configServer = new ConfigService();
   const corsConfigService = app.get(CorsConfigService);
-  app.use(json({
-    limit:'50mb'
-  }))
-  app.use(urlencoded({
-    extended:true,
-    limit:'50mb'
-  }))
+  app.use(
+    json({
+      limit: '50mb',
+    }),
+  );
+  app.use(
+    urlencoded({
+      extended: true,
+      limit: '50mb',
+    }),
+  );
   app.enableCors(corsConfigService.getOptions(configServer));
   app.use(cookieParser());
   app.useGlobalFilters(new HttpExceptionFilter());

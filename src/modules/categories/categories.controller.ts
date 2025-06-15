@@ -33,7 +33,7 @@ export class CategoriesController {
     if (limit < 1 || page < 1) {
       throw new BadRequestException('Limit and page must be positive numbers');
     }
-    
+
     return this.categoriesService.findAll(+limit, +page);
   }
   @Get('search')

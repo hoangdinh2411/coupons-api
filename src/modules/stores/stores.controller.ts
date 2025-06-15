@@ -36,7 +36,7 @@ export class StoresController {
     }
     return this.storesService.findAll(+limit, +page);
   }
-  
+
   @Post('filter')
   @Public()
   filterStore(@Body() filterData: FilterStoreDto) {

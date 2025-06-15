@@ -15,7 +15,7 @@ export function getDbConfig(
     synchronize: !isProduction,
   };
 
-  let environmentOptions: Partial<TypeOrmModuleOptions> = {
+  const environmentOptions: Partial<TypeOrmModuleOptions> = {
     url: configService.get<string>('POSTGRES_URL'),
   };
   // // connect database local

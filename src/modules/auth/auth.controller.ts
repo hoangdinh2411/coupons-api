@@ -45,11 +45,10 @@ export class AuthController {
       body.password,
       body.confirm_password,
     );
-    
+
     const strategy = this.signUpStrategyFactory.getStrategy(type);
     return await strategy.execute(body);
   }
-
 
   @ApiOperation({
     summary: 'Sign in',

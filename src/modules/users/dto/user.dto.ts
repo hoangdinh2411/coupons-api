@@ -1,5 +1,5 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsNotEmpty, IsString, Matches } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsNotEmpty, IsString, Matches } from 'class-validator';
 
 export class UserDto {
   @IsEmail()
@@ -20,7 +20,6 @@ export class UserDto {
     default: 'first namename',
     description: 'First name of user',
   })
-
   first_name: string = '';
   @IsEmail()
   @IsString()
@@ -30,6 +29,4 @@ export class UserDto {
     description: 'Last name of user',
   })
   last_name: string = '';
-
- 
 }

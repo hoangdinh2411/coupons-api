@@ -1,5 +1,5 @@
-import { SignUpDto } from "../dtos/auth.dto";
+import { SignUpDto } from '../dtos/auth.dto';
 
-export interface SignUpStrategy{
-    execute(data: SignUpDto):Promise<any>
+export interface SignUpStrategy {
+  execute(data: SignUpDto): Promise<any>;
 }

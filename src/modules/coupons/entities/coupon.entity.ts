@@ -69,7 +69,6 @@ export class CouponEntity {
   })
   store: StoreEntity;
 
-  
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 
