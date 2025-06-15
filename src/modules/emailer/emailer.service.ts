@@ -18,6 +18,7 @@ export class EmailerService {
         },
       });
     } catch (error) {
+      console.log(error, 'sendVerifyCode');
       throw error;
     }
   }

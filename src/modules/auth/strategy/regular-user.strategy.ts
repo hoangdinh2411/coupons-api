@@ -18,19 +18,20 @@ export class RegularUserStrategy implements SignUpStrategy {
     if (regex.test(data.email)) {
       throw new BadRequestException('Invalid email');
     }
-    const queryBuilder = this.dataSource.createQueryRunner();
-    await queryBuilder.connect();
-    await queryBuilder.startTransaction();
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
-      const new_user = await this.userService.createRegularUser(data);
+      const new_user = await this.userService.createRegularUser(data, queryRunner.manager);
       await this.emailerService.sendVerifyCode(new_user);
-      queryBuilder.commitTransaction();
+      await queryRunner.commitTransaction();
       return true;
     } catch (error) {
-      await queryBuilder.rollbackTransaction();
+      console.log('RegularUserStrategy', error);
+      await queryRunner.rollbackTransaction();
       throw error;
     } finally {
-      await queryBuilder.release();
+      await queryRunner.release();
     }
   }
 }

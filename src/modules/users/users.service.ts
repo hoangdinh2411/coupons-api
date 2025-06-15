@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { QueryFailedError, Repository } from 'typeorm';
+import { EntityManager, QueryFailedError, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { UserEntity } from './entities/users.entity';
 import { ROLES } from 'common/constants/enum/roles.enum';
@@ -54,7 +54,10 @@ export class UserService {
       throw new ConflictException('Cannot have more than 1 admin account');
     }
   }
-  async createRegularUser(data: SignUpDto): Promise<UserEntity> {
+  async createRegularUser(
+    data: SignUpDto,
+    manager: EntityManager,
+  ): Promise<UserEntity> {
     try {
       const hashedPassword = await this.hashPassword(data.password);
       const user = this.userRepo.create({
@@ -68,7 +71,7 @@ export class UserService {
 
       // send code to email
       user.verify_code = verify_code;
-      return await this.userRepo.save(user);
+      return await manager.save(user);
     } catch (error) {
       if (error instanceof QueryFailedError) {
         const err = error.driverError;
@@ -79,14 +82,19 @@ export class UserService {
       throw error;
     }
   }
-  async createSuperAdmin(data: SignUpDto): Promise<UserEntity> {
-    const hashedPassword = await this.hashPassword(data.password);
+  async createSuperAdmin({
+    email,
+    first_name,
+    last_name,
+    password,
+  }: SignUpDto): Promise<UserEntity> {
+    const hashedPassword = await this.hashPassword(password);
     const user = this.userRepo.create({
-      email: data.email,
+      email,
       password: hashedPassword,
       role: ROLES.ADMIN,
-      first_name: '',
-      last_name: '',
+      first_name,
+      last_name,
       email_verified: true,
     });
 

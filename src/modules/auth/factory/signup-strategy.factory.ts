@@ -11,6 +11,9 @@ export class SignUpStrategyFactory {
   ) {}
 
   getStrategy(type: ROLES) {
+    if (!type) {
+      type = ROLES.USER;
+    }
     switch (type.toUpperCase()) {
       // case ROLES.PARTNER:
       case ROLES.ADMIN:
