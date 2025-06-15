@@ -7,7 +7,6 @@ import { CategoryDto } from './dto/category.dto';
 import { CategoryEntity } from './entities/category.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, QueryFailedError, Repository } from 'typeorm';
-import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class CategoriesService {

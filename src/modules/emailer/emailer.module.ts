@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { join } from 'path';
-import { cwd } from 'process';
 import { ConfigService } from '@nestjs/config';
 import { EmailerService } from './emailer.service';
 @Module({
@@ -10,7 +9,6 @@ import { EmailerService } from './emailer.service';
     MailerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        const isProd = configService.get<string>('NODE_ENV') === 'production';
         return {
           transport: {
             host: 'smtp.gmail.com',
@@ -26,9 +24,7 @@ import { EmailerService } from './emailer.service';
             from: configService.get<string>('EMAIL_FROM'),
           },
           template: {
-            dir: isProd
-              ? join(__dirname, '..', '..', 'templates')
-              : join(process.cwd(), 'src','templates'),
+            dir: join(__dirname, '..', '..', 'templates'),
             adapter: new HandlebarsAdapter(),
             options: {
               strict: true,

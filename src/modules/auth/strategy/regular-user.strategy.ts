@@ -22,12 +22,14 @@ export class RegularUserStrategy implements SignUpStrategy {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const new_user = await this.userService.createRegularUser(data, queryRunner.manager);
+      const new_user = await this.userService.createRegularUser(
+        data,
+        queryRunner.manager,
+      );
       await this.emailerService.sendVerifyCode(new_user);
       await queryRunner.commitTransaction();
       return true;
     } catch (error) {
-      console.log('RegularUserStrategy', error);
       await queryRunner.rollbackTransaction();
       throw error;
     } finally {

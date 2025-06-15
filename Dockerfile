@@ -12,7 +12,7 @@ COPY . .
 RUN npm run build 
 
 # Stage 2: Runtime
-FROM node:22-alpine as RUNNER
+FROM node:22-alpine AS runner
 
 WORKDIR /app
 

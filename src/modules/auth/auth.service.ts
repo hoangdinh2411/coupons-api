@@ -1,16 +1,7 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { log } from 'console';
 import { UserEntity } from 'modules/users/entities/users.entity';
-import { SignUpDto, VerifyEmailDto } from './dtos/auth.dto';
-import { UserService } from 'modules/users/users.service';
-import { MailerService } from '@nestjs-modules/mailer';
-import { QueryFailedError } from 'typeorm';
-import { EmailerService } from 'modules/emailer/emailer.service';
 
 @Injectable()
 export class AuthService {

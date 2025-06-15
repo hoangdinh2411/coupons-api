@@ -17,8 +17,6 @@ export class IsEndAfterStart implements ValidatorConstraintInterface {
   validate(_value: any, validationArguments?: ValidationArguments) {
     const { expire_date } = validationArguments.object as CouponDto;
     if (!expire_date) return true;
-    const current_date = dayjs().format('YYYY-MM-DD');
-    console.log('IsEndAfterStart', expire_date);
     return dayjs(expire_date).isAfter(dayjs(), 'day');
   }
 

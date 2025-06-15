@@ -14,11 +14,11 @@ export class EmailerService {
         subject: 'Verify email',
         context: {
           code: new_user.verify_code,
-          username: new_user.email,
+          name:
+            new_user.first_name + ' ' + new_user.last_name || new_user.email,
         },
       });
     } catch (error) {
-      console.log(error, 'sendVerifyCode');
       throw error;
     }
   }

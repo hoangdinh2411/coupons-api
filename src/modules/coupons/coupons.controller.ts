@@ -39,7 +39,6 @@ export class CouponsController {
   @Post('filter')
   @Public()
   filterCoupon(@Body() filterData: FilterCouponDto) {
-    console.log("filterCoupon")
     return this.couponsService.filter(filterData);
   }
 

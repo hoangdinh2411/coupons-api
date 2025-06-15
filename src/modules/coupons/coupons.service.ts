@@ -32,7 +32,6 @@ export class CouponsService {
       });
   }
   async filter(data: FilterCouponDto) {
-    console.log('filter', data);
     const {
       categories = [],
       expire_date,
@@ -55,20 +54,18 @@ export class CouponsService {
     }
 
     if (store) {
-      query
-        .leftJoin('cp.store', 's')
-        .andWhere('s.id = :store', {
-          store,
-        })
-        // .addSelect(['s.name']);
+      query.leftJoin('cp.store', 's').andWhere('s.id = :store', {
+        store,
+      });
+      // .addSelect(['s.name']);
 
       if (categories.length > 0) {
         query
           .leftJoin('s.category', 'c')
           .andWhere('c.id  IN (:...categories)', {
             categories,
-          })
-          // .addSelect(['c.name']);
+          });
+        // .addSelect(['c.name']);
       }
       if (tags) {
         query.andWhere(

@@ -1,7 +1,6 @@
 import { ROLES } from 'common/constants/enum/roles.enum';
 import {
   BaseEntity,
-  BeforeInsert,
   Column,
   CreateDateColumn,
   DeleteDateColumn,

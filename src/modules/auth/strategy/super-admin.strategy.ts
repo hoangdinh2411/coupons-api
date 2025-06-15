@@ -1,4 +1,3 @@
-import { AuthService } from '../auth.service';
 import { SignUpStrategy } from '../interface/signup-strategy.interface';
 import { SignUpDto } from '../dtos/auth.dto';
 import { Injectable } from '@nestjs/common';
