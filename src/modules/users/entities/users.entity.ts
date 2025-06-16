@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { ROLES } from 'common/constants/enum/roles.enum';
 import {
   BaseEntity,
@@ -57,6 +58,7 @@ export class UserEntity extends BaseEntity {
     type: 'int',
     nullable: true,
   })
+  @Exclude()
   verify_code: number;
 
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

@@ -8,7 +8,7 @@ import {
   HttpCode,
   Patch,
   InternalServerErrorException,
-  Param,
+  Query,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
@@ -19,6 +19,8 @@ import { SignUpDto, AuthDto, VerifyEmailDto } from './dtos/auth.dto';
 import { UserService } from 'modules/users/users.service';
 import { ROLES } from 'common/constants/enum/roles.enum';
 import { SignUpStrategyFactory } from './factory/signup-strategy.factory';
+import { ConfigService } from '@nestjs/config';
+import { Roles } from 'common/decorators/roles.decorator';
 // import { ConfigService } from '@nestjs/config';
 
 @ApiTags('Auth')
@@ -28,6 +30,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly userService: UserService,
     private readonly signUpStrategyFactory: SignUpStrategyFactory,
+    private configService: ConfigService,
   ) {}
 
   @ApiOperation({
@@ -38,16 +41,36 @@ export class AuthController {
     status: 201,
     description: ' signed up successfully',
   })
+  @Post('sign-up')
   @Public()
-  @Post('sign-up/:type')
-  async signUp(@Param('type') type: ROLES, @Body() body: SignUpDto) {
+  async signUp(@Query('type') type: ROLES, @Body() body: SignUpDto) {
     this.authService.comparePasswordWithConfirmPassword(
       body.password,
       body.confirm_password,
     );
-
     const strategy = this.signUpStrategyFactory.getStrategy(type);
     return await strategy.execute(body);
+  }
+
+  @ApiOperation({
+    summary: 'sign out',
+    description: 'sign out',
+  })
+  @ApiResponse({
+    status: 201,
+    description: ' sign out successfully',
+  })
+  @Post('sign-out')
+  @Roles(ROLES.ADMIN, ROLES.PARTNER, ROLES.USER)
+  async signOut(@Res({ passthrough: true }) res: Response) {
+    const env = this.configService.get<string>('NODE_ENV') || '';
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: env === 'production', // enable when client is served over https
+      sameSite: 'lax', // enable when client is served over https
+      path: '/',
+    });
+    return true;
   }
 
   @ApiOperation({
@@ -79,10 +102,11 @@ export class AuthController {
     // const configService = new ConfigService();
     // const NODE_ENV = configService.get('NODE_ENV');
     if (token) {
+      const env = this.configService.get<string>('NODE_ENV') || '';
       res.cookie('token', token, {
         httpOnly: true,
-        secure: true, // enable when client is served over https
-        sameSite: 'none', // enable when client is served over https
+        secure: env === 'production', // enable when client is served over https
+        sameSite: 'lax', // enable when client is served over https
         path: '/',
         maxAge: 1000 * 60 * 60 * 24,
         expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
