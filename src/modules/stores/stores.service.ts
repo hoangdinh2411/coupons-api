@@ -77,7 +77,10 @@ export class StoresService {
 
     return {
       total,
-      results,
+      results: results.map((store: StoreEntity) => ({
+        ...store,
+        meta_data: this.makeMetaDataContent(store),
+      })),
     };
   }
   async findAll(limit: number, page: number) {
@@ -85,6 +88,7 @@ export class StoresService {
       .createQueryBuilder('store')
       .skip((page - 1) * limit)
       .take(limit)
+      .leftJoinAndSelect('store.coupons', 'coupons')
       .getManyAndCount();
     if (total > 0) {
       return {
@@ -100,9 +104,13 @@ export class StoresService {
   }
 
   async findOne(id: number) {
-    const data = await this.storeRep.findOneBy({
-      id,
-    });
+    const data = await this.storeRep
+      .createQueryBuilder('store')
+      .where('store.id=:id', {
+        id,
+      })
+      .leftJoinAndSelect('store.coupons', 'coupons')
+      .getOne();
     if (!data) {
       throw new NotFoundException('Store not found');
     }
@@ -139,13 +147,8 @@ export class StoresService {
       title: data.name || '',
       description: data.description || ' ',
       keywords: data.keywords || [],
-      url: data.url || '',
       image: data.image_bytes || '',
       slug: data.slug,
     };
-  }
-
-  makeSlug(name: string) {
-    return name.toLowerCase().split('').join('-');
   }
 }

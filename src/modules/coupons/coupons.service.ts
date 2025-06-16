@@ -24,12 +24,19 @@ export class CouponsService {
     return true;
   }
 
-  findAll() {
-    return this.couponRep
+  async findAll() {
+    const [results, total] = await this.couponRep
       .createQueryBuilder('coupon')
-      .where('coupon.expire_date >= :today', {
-        today: dayjs().format('YYYY-MM-DD'),
-      });
+      .leftJoinAndSelect('coupon.store', 'store')
+      .orderBy('coupon.expire_date', 'DESC')
+      .getManyAndCount();
+    return {
+      results: results.map((c) => ({
+        ...c,
+        meta_data: this.makeMetaDataContent(c),
+      })),
+      total,
+    };
   }
   async filter(data: FilterCouponDto) {
     const {
@@ -80,19 +87,26 @@ export class CouponsService {
     const [results, total] = await query.getManyAndCount();
 
     return {
-      results,
+      results: results.map((c) => ({
+        ...c,
+        meta_data: this.makeMetaDataContent(c),
+      })),
       total,
     };
   }
 
   async findOne(id: number) {
-    const data = await this.couponRep.findOneBy({
-      id,
-    });
+    const data = await this.couponRep
+      .createQueryBuilder('coupon')
+      .where('coupon.id=:id', {
+        id,
+      })
+      .leftJoinAndSelect('coupon.store', 'store')
+      .getOne();
     if (!data) {
       throw new NotFoundException('Coupon not found');
     }
-    return data;
+    return { ...data, meta_data: this.makeMetaDataContent(data) };
   }
 
   async update(id: number, updateCouponDto: CouponDto) {
@@ -113,5 +127,14 @@ export class CouponsService {
       throw new NotFoundException('Coupon not found');
     }
     return true;
+  }
+  makeMetaDataContent(data: CouponEntity) {
+    return {
+      title: data.title || '',
+      description: data.offer_detail || ' ',
+      keywords: data.store.keywords || [],
+      image: data.store.image_bytes || '',
+      slug: `${data.store.slug}/${data.id}`,
+    };
   }
 }
