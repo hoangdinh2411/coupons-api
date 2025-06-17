@@ -62,7 +62,16 @@ export class SignUpDto extends AuthDto {
 }
 
 export class VerifyEmailDto extends PickType(AuthDto, ['email'] as const) {
-  @IsNumber()
+  @IsNumber(
+    {
+      allowInfinity: false,
+      allowNaN: false,
+      maxDecimalPlaces: 0,
+    },
+    {
+      message: 'Code must be a positive number',
+    },
+  )
   @IsNotEmpty()
   @ApiProperty({
     type: () => 'number',

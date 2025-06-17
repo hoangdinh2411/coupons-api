@@ -19,20 +19,17 @@ export class UserService {
   ) {}
 
   async verifyEmail(email: string, verify_code: number) {
-    const data = await this.userRepo
-      .createQueryBuilder('user')
-      .where(
-        `user.email = :email AND user.verify_code = :verify_code AND email_verified = false`,
-        {
-          email,
-          verify_code,
-        },
-      )
-      .update({
+    const data = await this.userRepo.update(
+      {
+        email,
+        verify_code,
+        email_verified: false,
+      },
+      {
         email_verified: true,
         verify_code: null,
-      })
-      .execute();
+      },
+    );
     if (data.affected === 0) {
       throw new ConflictException('Email or code is invalid');
     }
@@ -127,9 +124,9 @@ export class UserService {
 
   async verifyUser(user_id: number): Promise<UserEntity> {
     return this.userRepo
-      .createQueryBuilder('u')
-      .where('u.id = :user_id', { user_id })
-      .andWhere('u.deleted_at IS NULL')
+      .createQueryBuilder('user')
+      .where('user.id = :user_id', { user_id })
+      .andWhere('user.deleted_at IS NULL')
       .getOne();
   }
 
