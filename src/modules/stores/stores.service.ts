@@ -103,7 +103,23 @@ export class StoresService {
     }
   }
 
-  async findOne(id: number) {
+  async findOneBySlug(slug: string) {
+    const data = await this.storeRep
+      .createQueryBuilder('store')
+      .where('store.slug=:slug', {
+        slug,
+      })
+      .leftJoinAndSelect('store.coupons', 'coupons')
+      .getOne();
+    if (!data) {
+      throw new NotFoundException('Store not found');
+    }
+    return {
+      ...data,
+      meta_data: this.makeMetaDataContent(data),
+    };
+  }
+  async findOneById(id: number) {
     const data = await this.storeRep
       .createQueryBuilder('store')
       .where('store.id=:id', {

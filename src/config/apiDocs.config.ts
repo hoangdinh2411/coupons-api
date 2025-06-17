@@ -6,7 +6,7 @@ import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 export class SwaggerApiDocService {
   constructor(private configService: ConfigService) {}
 
-  getOptions(): Omit<OpenAPIObject, 'paths'> {
+  getSwaggerConfig(): Omit<OpenAPIObject, 'paths'> {
     return (
       new DocumentBuilder()
         .addCookieAuth('token', {
@@ -18,6 +18,11 @@ export class SwaggerApiDocService {
         .setTitle('Localite guide app API')
         .setDescription('API Documentation for the travel social media app')
         .setVersion('1.0')
+        .addCookieAuth('token', {
+          in: 'cookie',
+          type: 'apiKey',
+          name: 'token',
+        })
         .addServer(this.configService.get('API_URL'), 'Development server')
         // .addServer(
         //   this.configService.get<string>('STAGING_DOMAIN'),
@@ -32,8 +37,8 @@ export class SwaggerApiDocService {
   }
 
   setUp(app: INestApplication) {
-    const options = this.getOptions();
-    const document = SwaggerModule.createDocument(app, options);
+    const swaggerConfig = this.getSwaggerConfig();
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
     SwaggerModule.setup('/api/v1/docs', app, document, {
       swaggerOptions: {
         withCredentials: true,

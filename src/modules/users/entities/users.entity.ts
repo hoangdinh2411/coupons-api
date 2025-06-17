@@ -1,11 +1,14 @@
 import { Exclude } from 'class-transformer';
 import { ROLES } from 'common/constants/enum/roles.enum';
+import { CouponEntity } from 'modules/coupons/entities/coupon.entity';
+import { PostEntity } from 'modules/posts/entities/post.entity';
 import {
   BaseEntity,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -60,6 +63,12 @@ export class UserEntity extends BaseEntity {
   })
   @Exclude()
   verify_code: number;
+
+  @OneToMany(() => CouponEntity, (coupons) => coupons.added_by)
+  coupons: CouponEntity[];
+
+  @OneToMany(() => PostEntity, (posts) => posts.created_by)
+  posts: PostEntity[];
 
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;

@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
   IsDateString,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsString,
@@ -10,6 +11,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
+import { CouponType } from 'common/constants/enum/coupon.enum';
 import dayjs from 'dayjs';
 
 @ValidatorConstraint({ async: false })
@@ -62,6 +64,15 @@ export class CouponDto {
   })
   store: number;
 
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty({
+    type: () => 'number',
+    default: 1,
+    description: 'Category id',
+  })
+  category: number;
+
   @IsBoolean()
   @IsNotEmpty()
   @ApiProperty({
@@ -78,6 +89,11 @@ export class CouponDto {
     description: 'When does coupon end?',
   })
   expire_date: string;
-
   @Validate(IsEndAfterStart) private readonly _range!: never;
+
+  @IsEnum(CouponType, {
+    message: 'Not support this type',
+  })
+  @IsNotEmpty()
+  type: CouponType;
 }

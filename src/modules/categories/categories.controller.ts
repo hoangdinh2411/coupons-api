@@ -38,13 +38,13 @@ export class CategoriesController {
   }
   @Get('search')
   @Public()
-  @Roles(ROLES.ADMIN, ROLES.PARTNER)
+  @Roles(ROLES.ADMIN)
   searchByName(@Query('name') name?: string) {
     return this.categoriesService.search(name);
   }
 
   @Get(':id')
-  @Roles(ROLES.ADMIN, ROLES.PARTNER)
+  @Roles(ROLES.ADMIN)
   findOne(@Param('id') id: string) {
     return this.categoriesService.findOneById(+id);
   }

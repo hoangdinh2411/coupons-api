@@ -63,10 +63,10 @@ export class AuthController {
   @Post('sign-out')
   @Roles(ROLES.ADMIN, ROLES.PARTNER, ROLES.USER)
   async signOut(@Res({ passthrough: true }) res: Response) {
-    const env = this.configService.get<string>('NODE_ENV') || '';
+    const NODE_ENV = this.configService.get<string>('NODE_ENV') || '';
     res.clearCookie('token', {
       httpOnly: true,
-      secure: env === 'production', // enable when client is served over https
+      secure: NODE_ENV === 'production', // enable when client is served over https
       sameSite: 'lax', // enable when client is served over https
       path: '/',
     });
@@ -102,16 +102,19 @@ export class AuthController {
     // const configService = new ConfigService();
     // const NODE_ENV = configService.get('NODE_ENV');
     if (token) {
-      const env = this.configService.get<string>('NODE_ENV') || '';
+      const NODE_ENV = this.configService.get<string>('NODE_ENV') || '';
       res.cookie('token', token, {
         httpOnly: true,
-        secure: env === 'production', // enable when client is served over https
+        secure: NODE_ENV === 'production', // enable when client is served over https
         sameSite: 'lax', // enable when client is served over https
         path: '/',
         maxAge: 1000 * 60 * 60 * 24,
         expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
       });
-      return req.user;
+      res.status(200).send({
+        success: true,
+        data: req.user,
+      });
     } else {
       throw new InternalServerErrorException('Cannot generate token');
     }

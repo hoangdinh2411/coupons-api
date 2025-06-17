@@ -1,5 +1,8 @@
+import { CouponType } from 'common/constants/enum/coupon.enum';
 import dayjs from 'dayjs';
+import { CategoryEntity } from 'modules/categories/entities/category.entity';
 import { StoreEntity } from 'modules/stores/entities/store.entity';
+import { UserEntity } from 'modules/users/entities/users.entity';
 import {
   BeforeInsert,
   BeforeUpdate,
@@ -7,6 +10,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -46,6 +50,27 @@ export class CouponEntity {
   })
   did_not_work: number;
 
+  @ManyToOne(() => UserEntity, (user) => user.coupons, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({
+    name: 'added_by',
+  })
+  user: UserEntity;
+
+  @Column({
+    type: 'int',
+    nullable: true,
+  })
+  added_by: number;
+
+  @Column({
+    type: 'enum',
+    enum: CouponType,
+    default: CouponType.CODE,
+  })
+  type: CouponType;
+
   @Column({
     type: 'boolean',
     default: false,
@@ -67,7 +92,36 @@ export class CouponEntity {
   @ManyToOne(() => StoreEntity, (store) => store.coupons, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({
+    name: 'store_id',
+  })
   store: StoreEntity;
+
+  @Column({
+    type: 'int',
+    nullable: true,
+  })
+  store_id: number;
+
+  @ManyToOne(() => CategoryEntity, (store) => store.coupons, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({
+    name: 'category_id',
+  })
+  category: CategoryEntity;
+
+  @Column({
+    type: 'int',
+    nullable: true,
+  })
+  category_id: number;
+
+  @Column({
+    type: 'boolean',
+    default: false,
+  })
+  is_verified: boolean;
 
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;

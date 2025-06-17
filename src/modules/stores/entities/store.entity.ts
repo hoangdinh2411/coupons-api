@@ -8,6 +8,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -75,7 +76,16 @@ export class StoreEntity {
   @ManyToOne(() => CategoryEntity, (category) => category.stores, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({
+    name: 'category_id',
+  })
   category: CategoryEntity;
+
+  @Column({
+    type: 'int',
+    nullable: true,
+  })
+  category_id: number;
 
   @OneToMany(() => CouponEntity, (coupon) => coupon.store, {
     cascade: true, // optional: saves coupons when you save a store

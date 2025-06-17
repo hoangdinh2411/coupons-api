@@ -43,14 +43,14 @@ export class StoresController {
     return this.storesService.filter(filterData);
   }
 
-  @Get(':id')
+  @Get(':slug')
   @Public()
-  findOne(@Param('id') id: string) {
-    return this.storesService.findOne(+id);
+  findOne(@Param('slug') slug: string) {
+    return this.storesService.findOneBySlug(slug);
   }
 
   @Patch(':id')
-  @Roles(ROLES.ADMIN, ROLES.PARTNER)
+  @Roles(ROLES.ADMIN)
   update(@Param('id') id: string, @Body() updateStoreDto: StoreDto) {
     return this.storesService.update(+id, updateStoreDto);
   }

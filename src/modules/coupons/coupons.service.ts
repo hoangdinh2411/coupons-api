@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CouponDto } from './dto/coupon.dt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CouponEntity } from './entities/coupon.entity';
@@ -6,6 +10,9 @@ import { Repository } from 'typeorm';
 import { StoresService } from 'modules/stores/stores.service';
 import dayjs from 'dayjs';
 import { FilterCouponDto } from './dto/filter.dto';
+import { UserEntity } from 'modules/users/entities/users.entity';
+import { ROLES } from 'common/constants/enum/roles.enum';
+import { CategoriesService } from 'modules/categories/categories.service';
 
 @Injectable()
 export class CouponsService {
@@ -13,14 +20,35 @@ export class CouponsService {
     @InjectRepository(CouponEntity)
     private readonly couponRep: Repository<CouponEntity>,
     private readonly storeService: StoresService,
+    private readonly categoryService: CategoriesService,
   ) {}
-  async create(createCouponDto: CouponDto) {
-    const store = await this.storeService.findOne(createCouponDto.store);
+  async create(createCouponDto: CouponDto, added_by: UserEntity) {
+    const store = await this.storeService.findOneById(createCouponDto.store);
+    const category = await this.categoryService.findOneById(
+      createCouponDto.category,
+    );
     const new_coupon = this.couponRep.create({
       ...createCouponDto,
       store,
+      category,
+      added_by: added_by.id,
     });
     await this.couponRep.save(new_coupon);
+    return true;
+  }
+  async submitCoupon(id: number) {
+    const data = await this.couponRep.update(
+      {
+        id,
+        is_verified: false,
+      },
+      {
+        is_verified: true,
+      },
+    );
+    if (!data) {
+      throw new NotFoundException('Coupon not found');
+    }
     return true;
   }
 
@@ -55,9 +83,13 @@ export class CouponsService {
     }
 
     if (expire_date) {
-      query.andWhere('cp.expire_date <= :expire_date', {
-        expire_date: dayjs(expire_date, 'YYYY-MM-DD'),
-      });
+      query.andWhere(
+        'cp.expire_date <= :expire_date && cp.expire_date > :today',
+        {
+          expire_date: dayjs(expire_date, 'YYYY-MM-DD'),
+          today: dayjs().format('YYYY-MM-DD'),
+        },
+      );
     }
 
     if (store) {
@@ -109,23 +141,45 @@ export class CouponsService {
     return { ...data, meta_data: this.makeMetaDataContent(data) };
   }
 
-  async update(id: number, updateCouponDto: CouponDto) {
-    const store = await this.storeService.findOne(updateCouponDto.store);
-    const result = await this.couponRep.update(id, {
-      ...updateCouponDto,
-      store,
+  async update(id: number, updateCouponDto: CouponDto, user: UserEntity) {
+    const store = await this.storeService.findOneById(updateCouponDto.store);
+    const category = await this.categoryService.findOneById(
+      updateCouponDto.category,
+    );
+    const coupon = await this.couponRep.findOneBy({
+      id,
     });
-    if (result.affected === 0) {
+    if (!coupon) {
       throw new NotFoundException('Coupon not found');
     }
+    if (user.role !== ROLES.ADMIN && coupon.added_by !== user.id) {
+      throw new ForbiddenException(
+        'You are not authorized to update this coupon',
+      );
+    }
+
+    await this.couponRep.save({
+      ...updateCouponDto,
+      store,
+      category,
+    });
+
     return true;
   }
 
-  async remove(id: number) {
-    const result = await this.couponRep.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException('Coupon not found');
+  async remove(id: number, user: UserEntity) {
+    const coupon = await this.couponRep.findOneBy({
+      id,
+    });
+    if (!coupon) {
+      throw new NotFoundException('Coupon not found or you are not ');
     }
+    if (user.role !== ROLES.ADMIN && coupon.added_by !== user.id) {
+      throw new ForbiddenException(
+        'You are not authorized to delete this coupon',
+      );
+    }
+    await this.couponRep.delete(id);
     return true;
   }
   makeMetaDataContent(data: CouponEntity) {

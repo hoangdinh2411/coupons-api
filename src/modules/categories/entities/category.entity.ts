@@ -1,4 +1,6 @@
 import { generateSlug } from 'common/helpers/generateSlug';
+import { CouponEntity } from 'modules/coupons/entities/coupon.entity';
+import { PostEntity } from 'modules/posts/entities/post.entity';
 import { StoreEntity } from 'modules/stores/entities/store.entity';
 import {
   BeforeInsert,
@@ -29,9 +31,12 @@ export class CategoryEntity {
   @Column({ type: 'text' })
   image_bytes: string;
 
-  @OneToMany(() => StoreEntity, (store) => store.category, {
-    cascade: true, // optional: saves coupons when you save a store
-    eager: false, // keep false unless you always need them
-  })
+  @OneToMany(() => StoreEntity, (store) => store.category)
   stores: StoreEntity[];
+
+  @OneToMany(() => PostEntity, (posts) => posts.category)
+  posts: PostEntity[];
+
+  @OneToMany(() => CouponEntity, (store) => store.category)
+  coupons: CouponEntity[];
 }
