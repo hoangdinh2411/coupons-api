@@ -60,7 +60,6 @@ export class AuthController {
     status: 201,
     description: ' sign out successfully',
   })
-  @Post('sign-out')
   @Roles(ROLES.ADMIN, ROLES.PARTNER, ROLES.USER)
   async signOut(@Res({ passthrough: true }) res: Response) {
     const NODE_ENV = this.configService.get<string>('NODE_ENV') || '';
@@ -111,10 +110,7 @@ export class AuthController {
         maxAge: 1000 * 60 * 60 * 24,
         expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
       });
-      res.status(200).send({
-        success: true,
-        data: req.user,
-      });
+      return req.user;
     } else {
       throw new InternalServerErrorException('Cannot generate token');
     }

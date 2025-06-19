@@ -147,7 +147,10 @@ export class StoresService {
     if (result.affected === 0) {
       throw new NotFoundException('Store not found');
     }
-    return true;
+    return {
+      id,
+      ...updateStoreDto,
+    };
   }
 
   async remove(id: number) {

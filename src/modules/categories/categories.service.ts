@@ -31,10 +31,16 @@ export class CategoriesService {
     }
   }
 
-  async findAll(limit: number, page: number) {
+  async findAll(limit: number, page: number, search_text: string = '') {
     const query = this.categoryRep.createQueryBuilder('category');
     if (limit && page) {
       query.skip((page - 1) * limit).take(limit);
+    }
+
+    if (search_text !== '') {
+      query.andWhere({
+        name: ILike(`%${search_text}%`),
+      });
     }
 
     const [results, total] = await query.getManyAndCount();
@@ -70,7 +76,10 @@ export class CategoriesService {
     if (result.affected === 0) {
       throw new NotFoundException('Category not found');
     }
-    return true;
+    return {
+      id,
+      ...updateCategoryDto,
+    };
   }
 
   async remove(id: number) {
