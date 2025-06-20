@@ -46,7 +46,7 @@ export class CategoriesService {
     const [results, total] = await query.getManyAndCount();
     return {
       total,
-      results,
+      results: results || [],
     };
   }
   async search(search_text: string) {

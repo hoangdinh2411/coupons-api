@@ -30,8 +30,8 @@ export class CategoriesController {
   @Get()
   @Public()
   findAll(
-    @Query('limit') limit: number = 20,
-    @Query('page') page: number = 1,
+    @Query('limit') limit: number,
+    @Query('page') page: number,
     @Query('search_text') search_text: string = '',
   ) {
     if (limit < 1 || page < 1) {

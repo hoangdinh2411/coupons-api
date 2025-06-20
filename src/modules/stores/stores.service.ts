@@ -24,8 +24,7 @@ export class StoresService {
       );
 
       const data = this.storeRep.create({ ...createStoreDto, category });
-      await this.storeRep.save(data);
-      return;
+      return await this.storeRep.save(data);
     } catch (error) {
       if (error instanceof QueryFailedError) {
         const err = error.driverError;
@@ -83,24 +82,30 @@ export class StoresService {
       })),
     };
   }
-  async findAll(limit: number, page: number) {
-    const [results, total] = await this.storeRep
-      .createQueryBuilder('store')
-      .skip((page - 1) * limit)
-      .take(limit)
+  async findAll(limit: number, page: number, search_text: string) {
+    const query = this.storeRep.createQueryBuilder('store');
+
+    if (limit && page) {
+      query.skip((page - 1) * limit).take(limit);
+    }
+    if (search_text !== '') {
+      query.andWhere({
+        name: ILike(`%${search_text}%`),
+      });
+    }
+
+    const [results, total] = await query
       .leftJoinAndSelect('store.coupons', 'coupons')
       .getManyAndCount();
-    if (total > 0) {
-      return {
-        total,
-        results: results.map((store: StoreEntity) => ({
-          ...store,
-          meta_data: this.makeMetaDataContent(store),
-        })),
-      };
-    } else {
-      return [];
-    }
+    return {
+      total,
+      results: results
+        ? results.map((store: StoreEntity) => ({
+            ...store,
+            meta_data: this.makeMetaDataContent(store),
+          }))
+        : [],
+    };
   }
 
   async findOneBySlug(slug: string) {

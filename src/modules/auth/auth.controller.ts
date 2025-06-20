@@ -9,6 +9,7 @@ import {
   Patch,
   InternalServerErrorException,
   Query,
+  Delete,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
@@ -20,7 +21,6 @@ import { UserService } from 'modules/users/users.service';
 import { ROLES } from 'common/constants/enum/roles.enum';
 import { SignUpStrategyFactory } from './factory/signup-strategy.factory';
 import { ConfigService } from '@nestjs/config';
-import { Roles } from 'common/decorators/roles.decorator';
 // import { ConfigService } from '@nestjs/config';
 
 @ApiTags('Auth')
@@ -60,7 +60,8 @@ export class AuthController {
     status: 201,
     description: ' sign out successfully',
   })
-  @Roles(ROLES.ADMIN, ROLES.PARTNER, ROLES.USER)
+  @Public()
+  @Delete('sign-out')
   async signOut(@Res({ passthrough: true }) res: Response) {
     const NODE_ENV = this.configService.get<string>('NODE_ENV') || '';
     res.clearCookie('token', {
@@ -108,7 +109,6 @@ export class AuthController {
         sameSite: 'lax', // enable when client is served over https
         path: '/',
         maxAge: 1000 * 60 * 60 * 24,
-        expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
       });
       return req.user;
     } else {

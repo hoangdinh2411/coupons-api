@@ -30,11 +30,15 @@ export class StoresController {
 
   @Get()
   @Public()
-  findAll(@Query('limit') limit: number = 20, @Query('page') page: number = 1) {
+  findAll(
+    @Query('limit') limit: number = 20,
+    @Query('page') page: number = 1,
+    @Query('search_text') search_text: string = '',
+  ) {
     if (limit < 1 || page < 1) {
       throw new BadRequestException('Limit and page must be positive numbers');
     }
-    return this.storesService.findAll(+limit, +page);
+    return this.storesService.findAll(+limit, +page, search_text);
   }
 
   @Post('filter')

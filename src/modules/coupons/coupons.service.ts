@@ -33,8 +33,7 @@ export class CouponsService {
       category,
       added_by: added_by.id,
     });
-    await this.couponRep.save(new_coupon);
-    return true;
+    return await this.couponRep.save(new_coupon);
   }
   async submitCoupon(id: number) {
     const data = await this.couponRep.update(
