@@ -37,12 +37,7 @@ async function bootstrap() {
     }),
   );
 
-  for (const key of Object.keys(process.env)) {
-    const value = configServer.get(key);
-    if (!key.toLowerCase().includes('secret')) {
-      logger.log(`${key}=${value}`);
-    }
-  }
+  logger.log(configServer.get(<string>'NODE_ENV'));
   app.enableCors(corsConfigService.getOptions(configServer));
   app.use(cookieParser());
   app.useGlobalFilters(new HttpExceptionFilter());
