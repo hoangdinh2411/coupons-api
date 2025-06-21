@@ -18,7 +18,7 @@ export class CategoriesService {
   async create(createCategoryDto: CategoryDto) {
     try {
       const data = this.categoryRep.create(createCategoryDto);
-      await this.categoryRep.save(data);
+      return await this.categoryRep.save(data);
     } catch (error) {
       if (error instanceof QueryFailedError) {
         const err = error.driverError;
