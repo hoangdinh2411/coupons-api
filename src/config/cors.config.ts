@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { ConfigService } from '@nestjs/config';
 
-const allowOrigins = ['http://localhost:3000'];
+const allowOrigins = ['http://localhost:3000', 'http://localhost:3001'];
 @Injectable()
 export class CorsConfigService {
   constructor() {}
@@ -24,7 +24,7 @@ export class CorsConfigService {
         }
       },
       credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS '],
       allowedHeaders: [
         'Origin',
         'Content-Type',
