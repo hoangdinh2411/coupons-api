@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/exceptions/httpException.filter';
 import { SwaggerApiDocService } from 'config/apiDocs.config';
 import { CorsConfigService } from 'config/cors.config';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
 import { ResponseFormatInterceptor } from 'common/interceptors/responseFormat.interceptor';
@@ -12,6 +12,7 @@ import { json, urlencoded } from 'express';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('/api/v1');
+  const logger = new Logger('EnvLogger');
   const swaggerApiDoc = app.get(SwaggerApiDocService);
   swaggerApiDoc.setUp(app);
   app.useGlobalPipes(
@@ -35,6 +36,13 @@ async function bootstrap() {
       limit: '50mb',
     }),
   );
+
+  for (const key of Object.keys(process.env)) {
+    const value = configServer.get(key);
+    if (!key.toLowerCase().includes('secret')) {
+      logger.log(`${key}=${value}`);
+    }
+  }
   app.enableCors(corsConfigService.getOptions(configServer));
   app.use(cookieParser());
   app.useGlobalFilters(new HttpExceptionFilter());

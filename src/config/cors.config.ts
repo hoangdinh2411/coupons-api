@@ -24,13 +24,14 @@ export class CorsConfigService {
         }
       },
       credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS '],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: [
         'Origin',
         'Content-Type',
         'Accept',
         'Set-Cookie',
         'Cookie',
+        'Authorization',
       ],
     };
     return CORS_OPTIONS;

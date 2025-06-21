@@ -103,6 +103,7 @@ export class AuthController {
     // const NODE_ENV = configService.get('NODE_ENV');
     if (token) {
       const NODE_ENV = this.configService.get<string>('NODE_ENV') || '';
+      //io
       res.cookie('token', token, {
         httpOnly: true,
         secure: NODE_ENV === 'production', // enable when client is served over https
