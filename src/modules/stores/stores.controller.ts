@@ -8,7 +8,6 @@ import {
   Delete,
   HttpCode,
   Query,
-  BadRequestException,
 } from '@nestjs/common';
 import { StoresService } from './stores.service';
 import { Roles } from 'common/decorators/roles.decorator';
@@ -31,13 +30,10 @@ export class StoresController {
   @Get()
   @Public()
   findAll(
-    @Query('limit') limit: number = 20,
-    @Query('page') page: number = 1,
-    @Query('search_text') search_text: string = '',
+    @Query('limit') limit: number,
+    @Query('page') page: number,
+    @Query('search_text') search_text: string,
   ) {
-    if (limit < 1 || page < 1) {
-      throw new BadRequestException('Limit and page must be positive numbers');
-    }
     return this.storesService.findAll(+limit, +page, search_text);
   }
 
@@ -47,10 +43,10 @@ export class StoresController {
     return this.storesService.filter(filterData);
   }
 
-  @Get(':slug')
+  @Get(':identifier')
   @Public()
-  findOne(@Param('slug') slug: string) {
-    return this.storesService.findOneBySlug(slug);
+  findOne(@Param('identifier') identifier: string) {
+    return this.storesService.findOneBySlug(identifier);
   }
 
   @Patch(':id')

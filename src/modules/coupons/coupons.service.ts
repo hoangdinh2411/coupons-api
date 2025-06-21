@@ -6,7 +6,7 @@ import {
 import { CouponDto } from './dto/coupon.dt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CouponEntity } from './entities/coupon.entity';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { StoresService } from 'modules/stores/stores.service';
 import dayjs from 'dayjs';
 import { FilterCouponDto } from './dto/filter.dto';
@@ -23,9 +23,9 @@ export class CouponsService {
     private readonly categoryService: CategoriesService,
   ) {}
   async create(createCouponDto: CouponDto, added_by: UserEntity) {
-    const store = await this.storeService.findOneById(createCouponDto.store);
+    const store = await this.storeService.findOneById(createCouponDto.store_id);
     const category = await this.categoryService.findOneById(
-      createCouponDto.category,
+      createCouponDto.category_id,
     );
     const new_coupon = this.couponRep.create({
       ...createCouponDto,
@@ -33,7 +33,17 @@ export class CouponsService {
       category,
       added_by: added_by.id,
     });
-    return await this.couponRep.save(new_coupon);
+    return await this.couponRep.save({
+      ...new_coupon,
+      store: {
+        id: store.id,
+        name: store.name,
+      },
+      category: {
+        id: category.id,
+        name: category.name,
+      },
+    });
   }
   async submitCoupon(id: number) {
     const data = await this.couponRep.update(
@@ -51,12 +61,33 @@ export class CouponsService {
     return true;
   }
 
-  async findAll() {
-    const [results, total] = await this.couponRep
+  async findAll(
+    limit: number,
+    page: number,
+    search_text: string,
+    is_verified: boolean = true,
+  ) {
+    const query = this.couponRep
       .createQueryBuilder('coupon')
+      .where('coupon.is_verified = :is_verified', {
+        is_verified,
+      });
+
+    if (limit && page) {
+      query.skip((page - 1) * limit).take(limit);
+    }
+    if (search_text) {
+      query.andWhere({
+        code: ILike(`%${search_text}%`),
+      });
+    }
+
+    const [results, total] = await query
       .leftJoinAndSelect('coupon.store', 'store')
+      .leftJoinAndSelect('coupon.category', 'category')
       .orderBy('coupon.expire_date', 'DESC')
       .getManyAndCount();
+
     return {
       results: results.map((c) => ({
         ...c,
@@ -65,6 +96,7 @@ export class CouponsService {
       total,
     };
   }
+
   async filter(data: FilterCouponDto) {
     const {
       categories = [],
@@ -92,18 +124,21 @@ export class CouponsService {
     }
 
     if (store) {
-      query.leftJoin('cp.store', 's').andWhere('s.id = :store', {
-        store,
-      });
+      query
+        .leftJoin('cp.store', 's')
+        .addSelect(['s.name', 's.id', 's.keywords'])
+        .andWhere('s.id = :store', {
+          store,
+        });
       // .addSelect(['s.name']);
 
       if (categories.length > 0) {
         query
           .leftJoin('s.category', 'c')
+          .addSelect(['c.name', 'c.id'])
           .andWhere('c.id  IN (:...categories)', {
             categories,
           });
-        // .addSelect(['c.name']);
       }
       if (tags) {
         query.andWhere(
@@ -141,9 +176,9 @@ export class CouponsService {
   }
 
   async update(id: number, updateCouponDto: CouponDto, user: UserEntity) {
-    const store = await this.storeService.findOneById(updateCouponDto.store);
+    const store = await this.storeService.findOneById(updateCouponDto.store_id);
     const category = await this.categoryService.findOneById(
-      updateCouponDto.category,
+      updateCouponDto.category_id,
     );
     const coupon = await this.couponRep.findOneBy({
       id,
@@ -156,14 +191,14 @@ export class CouponsService {
         'You are not authorized to update this coupon',
       );
     }
-
-    await this.couponRep.save({
+    const data = {
       ...updateCouponDto,
       store,
       category,
-    });
+    };
+    await this.couponRep.update(id, data);
 
-    return true;
+    return data;
   }
 
   async remove(id: number, user: UserEntity) {
@@ -185,9 +220,9 @@ export class CouponsService {
     return {
       title: data.title || '',
       description: data.offer_detail || ' ',
-      keywords: data.store.keywords || [],
-      image: data.store.image_bytes || '',
-      slug: `${data.store.slug}/${data.id}`,
+      keywords: data.store?.keywords || [],
+      image: '',
+      slug: `coupons/${data.id}`,
     };
   }
 }

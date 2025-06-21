@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { CouponsService } from './coupons.service';
 import { CouponDto } from './dto/coupon.dt';
@@ -21,17 +22,30 @@ export class CouponsController {
   constructor(private readonly couponsService: CouponsService) {}
 
   @Post()
-  @Roles(ROLES.ADMIN, ROLES.USER)
+  @Roles(ROLES.ADMIN, ROLES.USER, ROLES.PARTNER)
   create(@CurrentUser() user: UserEntity, @Body() createCouponDto: CouponDto) {
     return this.couponsService.create(createCouponDto, user);
   }
 
   @Get()
   @Public()
-  findAll() {
-    return this.couponsService.findAll();
+  findAll(
+    @Query('limit') limit: number,
+    @Query('page') page: number,
+    @Query('search_text') search_text: string,
+  ) {
+    return this.couponsService.findAll(+limit, +page, search_text);
   }
 
+  @Get('/submit')
+  @Roles(ROLES.ADMIN)
+  getAllInactiveCoupons(
+    @Query('limit') limit: number,
+    @Query('page') page: number,
+    @Query('search_text') search_text: string,
+  ) {
+    return this.couponsService.findAll(+limit, +page, search_text, false);
+  }
   @Get(':id')
   @Public()
   findOne(@Param('id') id: string) {

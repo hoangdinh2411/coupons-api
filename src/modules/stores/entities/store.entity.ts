@@ -29,6 +29,7 @@ export class StoreEntity {
 
   @Column({ type: 'text' })
   image_bytes: string;
+
   @Column({
     type: 'varchar',
     length: 250,
@@ -46,6 +47,10 @@ export class StoreEntity {
     default: 0,
     precision: 5,
     scale: 2,
+    transformer: {
+      to: (value: number) => value, // No transformation needed when saving
+      from: (value: string) => parseFloat(value), // Convert from string to number when reading
+    },
   })
   max_discount_pct: number;
 

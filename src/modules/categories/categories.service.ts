@@ -31,13 +31,13 @@ export class CategoriesService {
     }
   }
 
-  async findAll(limit: number, page: number, search_text: string = '') {
+  async findAll(limit: number, page: number, search_text: string) {
     const query = this.categoryRep.createQueryBuilder('category');
     if (limit && page) {
       query.skip((page - 1) * limit).take(limit);
     }
 
-    if (search_text !== '') {
+    if (search_text) {
       query.andWhere({
         name: ILike(`%${search_text}%`),
       });
@@ -56,7 +56,6 @@ export class CategoriesService {
         name: ILike(`%${search_text}%`),
       })
       .getManyAndCount();
-
     return {
       total,
       results,

@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,
-  IsDateString,
   IsNumber,
   IsOptional,
   IsString,
+  Matches,
   Validate,
 } from 'class-validator';
 import { IsEndAfterStart } from './coupon.dt';
@@ -37,7 +37,21 @@ export class FilterCouponDto {
   })
   categories: number[];
 
-  @IsDateString()
+  @IsString()
+  @Matches(/^\d{4}\/\d{2}\/\d{2}$/, {
+    message: 'start date must be in the format YYYY/MM/DD',
+  })
+  @IsOptional()
+  @ApiProperty({
+    default: '2025-12-05',
+    description: 'When does coupon end?',
+  })
+  start_date: string;
+
+  @IsString()
+  @Matches(/^\d{4}\/\d{2}\/\d{2}$/, {
+    message: 'start date must be in the format YYYY/MM/DD',
+  })
   @IsOptional()
   @ApiProperty({
     default: '2025-12-05',

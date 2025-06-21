@@ -20,7 +20,7 @@ export class StoresService {
   async create(createStoreDto: StoreDto) {
     try {
       const category = await this.categoryService.findOneById(
-        createStoreDto.category,
+        createStoreDto.category_id,
       );
 
       const data = this.storeRep.create({ ...createStoreDto, category });
@@ -88,7 +88,7 @@ export class StoresService {
     if (limit && page) {
       query.skip((page - 1) * limit).take(limit);
     }
-    if (search_text !== '') {
+    if (search_text) {
       query.andWhere({
         name: ILike(`%${search_text}%`),
       });
@@ -96,6 +96,7 @@ export class StoresService {
 
     const [results, total] = await query
       .leftJoinAndSelect('store.coupons', 'coupons')
+      .leftJoinAndSelect('store.category', 'category')
       .getManyAndCount();
     return {
       total,
@@ -108,13 +109,17 @@ export class StoresService {
     };
   }
 
-  async findOneBySlug(slug: string) {
-    const data = await this.storeRep
-      .createQueryBuilder('store')
-      .where('store.slug=:slug', {
-        slug,
-      })
+  async findOneBySlug(identifier: string) {
+    const query = this.storeRep.createQueryBuilder('store');
+    if (this.isNumeric(identifier)) {
+      query.where('store.id =:id', { id: +identifier });
+    } else {
+      query.where('store.slug =:slug', { slug: +identifier });
+    }
+
+    const data = await query
       .leftJoinAndSelect('store.coupons', 'coupons')
+      .leftJoinAndSelect('store.category', 'category')
       .getOne();
     if (!data) {
       throw new NotFoundException('Store not found');
@@ -123,6 +128,10 @@ export class StoresService {
       ...data,
       meta_data: this.makeMetaDataContent(data),
     };
+  }
+
+  isNumeric(value: string): boolean {
+    return /^\d+$/.test(value);
   }
   async findOneById(id: number) {
     const data = await this.storeRep
@@ -135,6 +144,7 @@ export class StoresService {
     if (!data) {
       throw new NotFoundException('Store not found');
     }
+
     return {
       ...data,
       meta_data: this.makeMetaDataContent(data),
@@ -143,7 +153,7 @@ export class StoresService {
 
   async update(id: number, updateStoreDto: StoreDto) {
     const category = await this.categoryService.findOneById(
-      updateStoreDto.category,
+      updateStoreDto.category_id,
     );
     const result = await this.storeRep.update(id, {
       ...updateStoreDto,

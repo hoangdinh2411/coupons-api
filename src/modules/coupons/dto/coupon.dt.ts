@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
-  IsDateString,
   IsEnum,
   IsNotEmpty,
   IsNumber,
   IsString,
+  Matches,
   Validate,
   ValidationArguments,
   ValidatorConstraint,
@@ -24,6 +24,17 @@ export class IsEndAfterStart implements ValidatorConstraintInterface {
 
   defaultMessage(): string {
     return 'End date must be after today';
+  }
+}
+export class IsEfterStartDate implements ValidatorConstraintInterface {
+  validate(_value: any, validationArguments?: ValidationArguments) {
+    const { expire_date, start_date } = validationArguments.object as CouponDto;
+    if (!expire_date || !start_date) return true;
+    return dayjs(expire_date).isAfter(start_date, 'day');
+  }
+
+  defaultMessage(): string {
+    return 'End date must be after start date';
   }
 }
 
@@ -62,7 +73,7 @@ export class CouponDto {
     default: 1,
     description: 'Store id',
   })
-  store: number;
+  store_id: number;
 
   @IsNumber()
   @IsNotEmpty()
@@ -71,7 +82,7 @@ export class CouponDto {
     default: 1,
     description: 'Category id',
   })
-  category: number;
+  category_id: number;
 
   @IsBoolean()
   @IsNotEmpty()
@@ -82,7 +93,21 @@ export class CouponDto {
   })
   is_exclusive: boolean;
 
-  @IsDateString()
+  @IsString()
+  @Matches(/^\d{4}\/\d{2}\/\d{2}$/, {
+    message: 'start date must be in the format YYYY/MM/DD',
+  })
+  @IsNotEmpty()
+  @ApiProperty({
+    default: '2025-12-05',
+    description: 'When does coupon end?',
+  })
+  start_date: string;
+
+  @IsString()
+  @Matches(/^\d{4}\/\d{2}\/\d{2}$/, {
+    message: 'expired date must be in the format YYYY/MM/DD',
+  })
   @IsNotEmpty()
   @ApiProperty({
     default: '2025-12-05',

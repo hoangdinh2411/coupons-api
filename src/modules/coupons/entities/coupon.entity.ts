@@ -79,6 +79,12 @@ export class CouponEntity {
 
   @Column({
     type: 'date',
+    nullable: true,
+  })
+  start_date: string;
+  @Column({
+    type: 'date',
+    nullable: true,
   })
   expire_date: string;
 
@@ -103,7 +109,7 @@ export class CouponEntity {
   })
   store_id: number;
 
-  @ManyToOne(() => CategoryEntity, (store) => store.coupons, {
+  @ManyToOne(() => CategoryEntity, (category) => category.coupons, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({

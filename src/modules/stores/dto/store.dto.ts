@@ -73,7 +73,7 @@ export class StoreDto {
     default: 1,
     description: 'Category id',
   })
-  category: number;
+  category_id: number;
 
   slug: string;
 }
