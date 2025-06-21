@@ -67,7 +67,9 @@ export class AuthController {
     res.clearCookie('token', {
       httpOnly: true,
       secure: NODE_ENV === 'production', // enable when client is served over https
-      sameSite: 'none', // enable when client is served over https
+      sameSite: 'none',
+      domain: '.vercel.app',
+      // enable when client is served over https
       path: '/',
     });
     return true;
@@ -109,6 +111,7 @@ export class AuthController {
         secure: NODE_ENV === 'production', // enable when client is served over https
         sameSite: 'none', // enable when client is served over https
         path: '/',
+        domain: '.vercel.app',
         maxAge: 1000 * 60 * 60 * 24,
       });
       return req.user;
