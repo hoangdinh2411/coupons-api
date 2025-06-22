@@ -111,10 +111,12 @@ export class AuthController {
         secure: NODE_ENV === 'production', // enable when client is served over https
         sameSite: 'none', // enable when client is served over https
         path: '/',
-        domain: '.vercel.app',
         maxAge: 1000 * 60 * 60 * 24,
       });
-      return req.user;
+      return {
+        ...req.user,
+        token,
+      };
     } else {
       throw new InternalServerErrorException('Cannot generate token');
     }
