@@ -9,7 +9,7 @@ import {
   Patch,
   InternalServerErrorException,
   Query,
-  Delete,
+  // Delete,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
@@ -52,28 +52,27 @@ export class AuthController {
     return await strategy.execute(body);
   }
 
-  @ApiOperation({
-    summary: 'sign out',
-    description: 'sign out',
-  })
-  @ApiResponse({
-    status: 201,
-    description: ' sign out successfully',
-  })
-  @Public()
-  @Delete('sign-out')
-  async signOut(@Res({ passthrough: true }) res: Response) {
-    const NODE_ENV = this.configService.get<string>('NODE_ENV') || '';
-    res.clearCookie('token', {
-      httpOnly: true,
-      secure: NODE_ENV === 'production', // enable when client is served over https
-      sameSite: 'none',
-      domain: '.vercel.app',
-      // enable when client is served over https
-      path: '/',
-    });
-    return true;
-  }
+  // @ApiOperation({
+  //   summary: 'sign out',
+  //   description: 'sign out',
+  // })
+  // @ApiResponse({
+  //   status: 201,
+  //   description: ' sign out successfully',
+  // })
+  // @Delete('sign-out')
+  // async signOut(@Res({ passthrough: true }) res: Response) {
+  //   const NODE_ENV = this.configService.get<string>('NODE_ENV') || '';
+  //   res.clearCookie('token', {
+  //     httpOnly: true,
+  //     secure: NODE_ENV === 'production', // enable when client is served over https
+  //     sameSite: 'none',
+  //     domain: '.vercel.app',
+  //     // enable when client is served over https
+  //     path: '/',
+  //   });
+  //   return true;
+  // }
 
   @ApiOperation({
     summary: 'Sign in',

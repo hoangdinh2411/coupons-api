@@ -18,9 +18,8 @@ export class LoggerMiddleware implements NestMiddleware {
     res.on('finish', () => {
       const { statusCode } = res;
       const processingTime = Date.now() - startTime;
-      const origin = req.headers.origin || req.headers.referer || 'unknown';
       this.logger.log(
-        `${method} ${origin + originalUrl} ${statusCode} - ${processingTime}ms`,
+        `${method} ${originalUrl} ${statusCode} - ${processingTime}ms`,
       );
     });
 

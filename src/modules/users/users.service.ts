@@ -131,11 +131,23 @@ export class UserService {
   }
 
   async updateAccount(user_id: number, data: UserDto) {
-    const result = await this.userRepo.update(user_id, data);
+    const result = await this.userRepo
+      .createQueryBuilder('user')
+      .update(UserEntity)
+      .set(data)
+      .where('id = :user_id', { user_id })
+      .andWhere('email_verified = :email_verified', {
+        email_verified: true,
+      })
+      .andWhere('deleted_at IS NULL')
+      .execute();
     if (result.affected === 0) {
       throw new NotFoundException('Account not found');
     }
-    return true;
+    return {
+      id: user_id,
+      ...data,
+    };
   }
   async getUser(user_id: number): Promise<UserEntity> {
     const user = await this.userRepo.findOne({

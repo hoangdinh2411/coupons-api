@@ -34,7 +34,7 @@ export class UserController {
   @HttpCode(200)
   @Roles(ROLES.ADMIN, ROLES.PARTNER, ROLES.USER)
   async update(@CurrentUser() user: UserEntity, @Body() data: UserDto) {
-    await this.userService.updateAccount(user.id, data);
+    return await this.userService.updateAccount(user.id, data);
   }
   @Delete()
   @HttpCode(200)

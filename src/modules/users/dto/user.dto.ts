@@ -13,15 +13,14 @@ export class UserDto {
   @Matches(/\S/, { message: 'Email cannot be empty or whitespace only' })
   email: string = '';
 
-  @IsEmail()
   @IsString()
   @ApiProperty({
     type: () => 'string',
-    default: 'first namename',
+    default: 'first name',
     description: 'First name of user',
   })
   first_name: string = '';
-  @IsEmail()
+
   @IsString()
   @ApiProperty({
     type: () => 'string',
