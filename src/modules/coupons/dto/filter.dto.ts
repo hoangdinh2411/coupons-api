@@ -5,6 +5,8 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Max,
+  Min,
 } from 'class-validator';
 
 export class FilterCouponDto {
@@ -50,6 +52,16 @@ export class FilterCouponDto {
     description: 'Number',
   })
   page: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(5)
+  @ApiProperty({
+    default: 1,
+    description: 'Number',
+  })
+  rating: number;
 
   @IsBoolean()
   @IsOptional()

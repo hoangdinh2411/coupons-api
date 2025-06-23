@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,
-  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
@@ -9,9 +8,9 @@ import {
   Min,
 } from 'class-validator';
 
-export class StoreDto {
+export class UpdateStoreDto {
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty({
     type: () => 'string',
     default: 'Store abc',
@@ -20,7 +19,7 @@ export class StoreDto {
   name: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty({
     type: () => 'string',
     default: 'Store do something',
@@ -29,18 +28,19 @@ export class StoreDto {
   description: string;
 
   @IsString()
+  @IsOptional()
   @ApiProperty({
     type: () => 'string',
     default: 'icon-1',
     description: 'Image with format Base64',
   })
-  // @IsNotEmpty()
+  // @IsOptional()
   image_bytes: string;
 
   @IsNumber()
   @Min(0)
   @Max(100)
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty({
     type: () => 'number',
     default: 25,
@@ -51,6 +51,7 @@ export class StoreDto {
 
   @IsArray()
   @IsString({ each: true })
+  @IsOptional()
   @ApiProperty({
     type: () => 'array',
     default: ['AI', 'programming'],
@@ -59,7 +60,7 @@ export class StoreDto {
   keywords: string[];
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty({
     type: () => 'string',
     default: 'https://www.example.com',
@@ -68,7 +69,7 @@ export class StoreDto {
   url: string;
 
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty({
     type: () => 'number',
     default: 1,
@@ -79,5 +80,6 @@ export class StoreDto {
   @IsNumber()
   @IsOptional()
   rating: number;
+
   slug: string;
 }

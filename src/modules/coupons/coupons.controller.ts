@@ -16,6 +16,7 @@ import { Public } from 'common/decorators/public.decorator';
 import { FilterCouponDto } from './dto/filter.dto';
 import { UserEntity } from 'modules/users/entities/users.entity';
 import { CurrentUser } from 'common/decorators/currentUser.decorator';
+import { UpdateCouponDto } from './dto/update-coupon.dto';
 
 @Controller('coupons')
 export class CouponsController {
@@ -57,7 +58,7 @@ export class CouponsController {
   update(
     @CurrentUser() user: UserEntity,
     @Param('id') id: string,
-    @Body() updateCouponDto: CouponDto,
+    @Body() updateCouponDto: UpdateCouponDto,
   ) {
     return this.couponsService.update(+id, updateCouponDto, user);
   }

@@ -40,15 +40,9 @@ export class CouponEntity {
 
   @Column({
     type: 'int',
-    default: 0,
+    default: 1,
   })
-  did_work: number;
-
-  @Column({
-    type: 'int',
-    default: 0,
-  })
-  did_not_work: number;
+  rating: number;
 
   @ManyToOne(() => UserEntity, (user) => user.coupons, {
     onDelete: 'CASCADE',

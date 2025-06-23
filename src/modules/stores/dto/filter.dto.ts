@@ -14,9 +14,9 @@ export class FilterStoreDto {
   @ApiProperty({
     type: () => 'string',
     default: 'Store abc',
-    description: 'Store name',
+    description: 'Search text',
   })
-  name: string;
+  search_text: string;
 
   @IsNumber()
   @IsOptional()
@@ -30,15 +30,25 @@ export class FilterStoreDto {
   })
   max_discount_pct: number;
 
-  @IsArray()
+  @IsNumber()
   @IsOptional()
-  @IsString({ each: true })
+  @Min(0)
+  @Max(5)
   @ApiProperty({
-    type: () => 'array',
-    default: ['AI', 'programming'],
-    description: 'tags  to filter store',
+    type: () => 'number',
+    default: 1,
+    description: 'Rating',
   })
-  tags: string[];
+  rating: number;
+
+  @IsNumber()
+  @IsOptional()
+  @ApiProperty({
+    type: () => 'number',
+    default: 1,
+    description: 'page',
+  })
+  page: number;
 
   @IsArray()
   @IsOptional()

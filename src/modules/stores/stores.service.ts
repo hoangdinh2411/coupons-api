@@ -9,6 +9,8 @@ import { StoreEntity } from './entities/store.entity';
 import { ILike, QueryFailedError, Repository } from 'typeorm';
 import { CategoriesService } from 'modules/categories/categories.service';
 import { FilterStoreDto } from './dto/filter.dto';
+import { UpdateStoreDto } from './dto/update-store.dto';
+import { LIMIT_DEFAULT } from 'common/constants/variables';
 
 @Injectable()
 export class StoresService {
@@ -40,39 +42,40 @@ export class StoresService {
   async filter(filterData: FilterStoreDto) {
     const {
       categories = [],
-      tags = [],
       max_discount_pct = 100,
-      name,
+      search_text,
+      page,
+      rating,
     } = filterData;
-    const queryBuilder = this.storeRep
+    const query = this.storeRep
       .createQueryBuilder('store')
       .leftJoinAndSelect('store.category', 'category');
-    if (name) {
-      queryBuilder.andWhere({
-        name: ILike(`%${name}%`),
+    if (search_text) {
+      query.andWhere(`store.name ILIKE :search_text`, {
+        search_text: `%${search_text}%`,
       });
     }
-
+    if (rating !== undefined) {
+      query.andWhere('store.rating <= :rating', {
+        rating: Number(rating),
+      });
+    }
     if (categories.length > 0) {
-      queryBuilder.andWhere('store.category IN (:...categories)', {
+      query.andWhere('store.category IN (:...categories)', {
         categories,
       });
     }
-    if (tags.length > 0) {
-      queryBuilder.andWhere(
-        'EXISTS (SELECT 1 FROM unnest(store.keywords) AS kw WHERE kw ILIKE ANY(:tags))',
-        {
-          tags,
-        },
-      );
-    }
+
     if (max_discount_pct) {
-      queryBuilder.andWhere('store.max_discount_pct <= :max_discount_pct', {
+      query.andWhere('store.max_discount_pct <= :max_discount_pct', {
         max_discount_pct,
       });
     }
 
-    const [results, total] = await queryBuilder.getManyAndCount();
+    const [results, total] = await query
+      .skip((page - 1) * LIMIT_DEFAULT)
+      .take(LIMIT_DEFAULT)
+      .getManyAndCount();
 
     return {
       total,
@@ -151,20 +154,24 @@ export class StoresService {
     };
   }
 
-  async update(id: number, updateStoreDto: StoreDto) {
-    const category = await this.categoryService.findOneById(
-      updateStoreDto.category_id,
-    );
-    const result = await this.storeRep.update(id, {
+  async update(id: number, updateStoreDto: UpdateStoreDto) {
+    let category = null;
+    if (updateStoreDto.category_id) {
+      category = await this.categoryService.findOneById(
+        updateStoreDto.category_id,
+      );
+    }
+    const data = {
       ...updateStoreDto,
-      category,
-    });
+      ...(category && { category }),
+    };
+    const result = await this.storeRep.update(id, data);
     if (result.affected === 0) {
       throw new NotFoundException('Store not found');
     }
     return {
       id,
-      ...updateStoreDto,
+      ...data,
     };
   }
 

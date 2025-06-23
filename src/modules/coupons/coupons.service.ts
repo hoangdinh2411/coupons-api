@@ -15,6 +15,7 @@ import { ROLES } from 'common/constants/enum/roles.enum';
 import { CategoriesService } from 'modules/categories/categories.service';
 import { LIMIT_DEFAULT } from 'common/constants/variables';
 import { CouponStatus } from 'common/constants/enum/status.enum';
+import { UpdateCouponDto } from './dto/update-coupon.dto';
 
 @Injectable()
 export class CouponsService {
@@ -104,6 +105,7 @@ export class CouponsService {
       stores = [],
       search_text = '',
       page = 1,
+      rating,
       is_verified,
     } = data;
     const query = this.couponRep.createQueryBuilder('cp');
@@ -119,6 +121,11 @@ export class CouponsService {
     if (is_verified !== undefined) {
       query.andWhere('cp.is_verified = :is_verified', {
         is_verified,
+      });
+    }
+    if (rating !== undefined) {
+      query.andWhere('cp.rating <= :rating', {
+        rating: Number(rating),
       });
     }
     if (status.length) {
@@ -182,11 +189,17 @@ export class CouponsService {
     return { ...data, meta_data: this.makeMetaDataContent(data) };
   }
 
-  async update(id: number, updateCouponDto: CouponDto, user: UserEntity) {
-    const store = await this.storeService.findOneById(updateCouponDto.store_id);
-    const category = await this.categoryService.findOneById(
-      updateCouponDto.category_id,
-    );
+  async update(id: number, updateCouponDto: UpdateCouponDto, user: UserEntity) {
+    let store = null;
+    let category = null;
+    if (updateCouponDto.store_id) {
+      store = await this.storeService.findOneById(updateCouponDto.store_id);
+    }
+    if (updateCouponDto.category_id) {
+      category = await this.categoryService.findOneById(
+        updateCouponDto.category_id,
+      );
+    }
     const coupon = await this.couponRep.findOneBy({
       id,
     });
@@ -200,12 +213,16 @@ export class CouponsService {
     }
     const data = {
       ...updateCouponDto,
-      store,
-      category,
+      ...(store && { store }),
+      ...(category && { category }),
     };
+
     await this.couponRep.update(id, data);
 
-    return data;
+    return {
+      id: coupon.id,
+      ...data,
+    };
   }
 
   async remove(id: number, user: UserEntity) {

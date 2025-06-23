@@ -38,7 +38,7 @@ export class StoreEntity {
 
   @Column({
     type: 'int',
-    default: 0,
+    default: 1,
   })
   rating: number;
 
@@ -55,9 +55,9 @@ export class StoreEntity {
   max_discount_pct: number;
 
   @Column({
-    type: 'varchar',
+    type: 'text',
     array: true,
-    length: 100,
+    nullable: true,
   })
   keywords: string[];
 
