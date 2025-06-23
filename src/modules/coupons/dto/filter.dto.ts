@@ -1,13 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,
+  IsBoolean,
   IsNumber,
   IsOptional,
   IsString,
-  Matches,
-  Validate,
 } from 'class-validator';
-import { IsAfterStartDate } from './coupon.dt';
 
 export class FilterCouponDto {
   @IsString()
@@ -17,16 +15,16 @@ export class FilterCouponDto {
     default: 'Coupon title',
     description: 'Coupon title',
   })
-  title: string;
+  search_text: string;
 
-  @IsNumber()
+  @IsArray()
   @IsOptional()
   @ApiProperty({
     type: [Number],
     default: 1,
-    description: 'Store id',
+    description: 'Store ids',
   })
-  store: number;
+  stores: number[];
 
   @IsArray()
   @IsOptional()
@@ -37,36 +35,27 @@ export class FilterCouponDto {
   })
   categories: number[];
 
-  @IsString()
-  @Matches(/^\d{4}\/\d{2}\/\d{2}$/, {
-    message: 'start date must be in the format YYYY/MM/DD',
-  })
-  @IsOptional()
-  @ApiProperty({
-    default: '2025-12-05',
-    description: 'When does coupon end?',
-  })
-  start_date: string;
-
-  @IsString()
-  @Matches(/^\d{4}\/\d{2}\/\d{2}$/, {
-    message: 'start date must be in the format YYYY/MM/DD',
-  })
-  @IsOptional()
-  @ApiProperty({
-    default: '2025-12-05',
-    description: 'When does coupon end?',
-  })
-  expire_date: string;
-  @Validate(IsAfterStartDate) private readonly _range!: never;
-
   @IsArray()
   @IsOptional()
-  @IsString({ each: true })
   @ApiProperty({
-    type: [String],
-    default: ['AI', 'programming'],
-    description: 'tags  to filter coupon (from store)',
+    default: [0, 1, 2],
+    description: 'Status',
   })
-  tags: string[];
+  status: number[];
+
+  @IsNumber()
+  @IsOptional()
+  @ApiProperty({
+    default: 1,
+    description: 'Number',
+  })
+  page: number;
+
+  @IsBoolean()
+  @IsOptional()
+  @ApiProperty({
+    default: false,
+    description: 'is_verified',
+  })
+  is_verified: boolean;
 }

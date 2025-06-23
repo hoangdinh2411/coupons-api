@@ -6,13 +6,15 @@ import {
 import { CouponDto } from './dto/coupon.dt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CouponEntity } from './entities/coupon.entity';
-import { ILike, Repository } from 'typeorm';
+import { Brackets, ILike, Repository } from 'typeorm';
 import { StoresService } from 'modules/stores/stores.service';
 import dayjs from 'dayjs';
 import { FilterCouponDto } from './dto/filter.dto';
 import { UserEntity } from 'modules/users/entities/users.entity';
 import { ROLES } from 'common/constants/enum/roles.enum';
 import { CategoriesService } from 'modules/categories/categories.service';
+import { LIMIT_DEFAULT } from 'common/constants/variables';
+import { CouponStatus } from 'common/constants/enum/status.enum';
 
 @Injectable()
 export class CouponsService {
@@ -73,9 +75,7 @@ export class CouponsService {
         is_verified,
       });
 
-    if (limit && page) {
-      query.skip((page - 1) * limit).take(limit);
-    }
+    query.skip((page - 1) * LIMIT_DEFAULT).take(LIMIT_DEFAULT);
     if (search_text) {
       query.andWhere({
         code: ILike(`%${search_text}%`),
@@ -100,57 +100,64 @@ export class CouponsService {
   async filter(data: FilterCouponDto) {
     const {
       categories = [],
-      expire_date,
-      store = '',
-      tags = [],
-      title = '',
+      status = [],
+      stores = [],
+      search_text = '',
+      page = 1,
+      is_verified,
     } = data;
     const query = this.couponRep.createQueryBuilder('cp');
 
-    if (title) {
-      query.andWhere(`cp.title ILIKE :kw OR cp.offer_detail ILIKE :kw`, {
-        kw: `%${title}%`,
-      });
-    }
-
-    if (expire_date) {
+    if (search_text) {
       query.andWhere(
-        'cp.expire_date <= :expire_date && cp.expire_date > :today',
+        `cp.title ILIKE :search_text OR cp.code ILIKE :search_text`,
         {
-          expire_date: dayjs(expire_date, 'YYYY-MM-DD'),
-          today: dayjs().format('YYYY-MM-DD'),
+          search_text: `%${search_text}%`,
         },
       );
     }
-
-    if (store) {
-      query
-        .leftJoin('cp.store', 's')
-        .addSelect(['s.name', 's.id', 's.keywords'])
-        .andWhere('s.id = :store', {
-          store,
-        });
-      // .addSelect(['s.name']);
-
-      if (categories.length > 0) {
-        query
-          .leftJoin('s.category', 'c')
-          .addSelect(['c.name', 'c.id'])
-          .andWhere('c.id  IN (:...categories)', {
-            categories,
-          });
-      }
-      if (tags) {
-        query.andWhere(
-          'EXISTS (SELECT 1 FROM unnest(s.keywords) AS kw WHERE kw ILIKE ANY(:tags))',
-          {
-            tags,
-          },
-        );
-      }
+    if (is_verified !== undefined) {
+      query.andWhere('cp.is_verified = :is_verified', {
+        is_verified,
+      });
+    }
+    if (status.length) {
+      const now = dayjs().format('YYYY/MM/DD');
+      query.andWhere(
+        new Brackets((qb1) => {
+          if (status.includes(CouponStatus.INACTIVE)) {
+            qb1.orWhere('cp.start_date > :now', { now });
+          }
+          if (status.includes(1)) {
+            qb1.orWhere('cp.start_date <= :now AND cp.expire_date >= :now', {
+              now,
+            });
+          }
+          if (status.includes(2)) {
+            qb1.orWhere('cp.expire_date < :now', { now });
+          }
+        }),
+      );
     }
 
-    const [results, total] = await query.getManyAndCount();
+    if (stores.length > 0) {
+      query.andWhere('cp.store_id IN (:...stores)', {
+        stores,
+      });
+      // .addSelect(['s.name']);
+    }
+    if (categories.length > 0) {
+      query.andWhere('cp.category_id  IN (:...categories)', {
+        categories,
+      });
+    }
+
+    const [results, total] = await query
+      .skip((page - 1) * LIMIT_DEFAULT)
+      .take(LIMIT_DEFAULT)
+      .leftJoinAndSelect('cp.store', 'store')
+      .leftJoinAndSelect('cp.category', 'category')
+      .getManyAndCount();
 
     return {
       results: results.map((c) => ({

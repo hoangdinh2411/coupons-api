@@ -3,3 +3,9 @@ export enum STATUS {
   INACTIVE = 'inactive',
   DELETED = 'deleted',
 }
+
+export enum CouponStatus {
+  INACTIVE,
+  ONGOING,
+  EXPIRED,
+}
