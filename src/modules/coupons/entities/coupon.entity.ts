@@ -91,8 +91,8 @@ export class CouponEntity {
   @BeforeInsert()
   @BeforeUpdate()
   validateDate() {
-    if (!dayjs(this.expire_date).isAfter(dayjs(), 'day')) {
-      throw new Error('End date must be after today');
+    if (!dayjs(this.expire_date).isAfter(this.start_date, 'day')) {
+      throw new Error('End date must be after start date');
     }
   }
   @ManyToOne(() => StoreEntity, (store) => store.coupons, {

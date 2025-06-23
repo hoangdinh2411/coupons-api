@@ -1,5 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString, Matches } from 'class-validator';
+import { ApiProperty, PickType } from '@nestjs/swagger';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  Matches,
+} from 'class-validator';
 
 export class UserDto {
   @IsEmail()
@@ -28,4 +34,24 @@ export class UserDto {
     description: 'Last name of user',
   })
   last_name: string = '';
+}
+
+export class VerifyEmailDto extends PickType(UserDto, ['email'] as const) {
+  @IsNumber(
+    {
+      allowInfinity: false,
+      allowNaN: false,
+      maxDecimalPlaces: 0,
+    },
+    {
+      message: 'Code must be a positive number',
+    },
+  )
+  @IsNotEmpty()
+  @ApiProperty({
+    type: () => 'number',
+    default: 123456,
+    description: 'Code to verify email ',
+  })
+  code: number;
 }

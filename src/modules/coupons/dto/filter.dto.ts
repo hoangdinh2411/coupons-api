@@ -7,7 +7,7 @@ import {
   Matches,
   Validate,
 } from 'class-validator';
-import { IsEndAfterStart } from './coupon.dt';
+import { IsAfterStartDate } from './coupon.dt';
 
 export class FilterCouponDto {
   @IsString()
@@ -58,7 +58,7 @@ export class FilterCouponDto {
     description: 'When does coupon end?',
   })
   expire_date: string;
-  @Validate(IsEndAfterStart) private readonly _range!: never;
+  @Validate(IsAfterStartDate) private readonly _range!: never;
 
   @IsArray()
   @IsOptional()

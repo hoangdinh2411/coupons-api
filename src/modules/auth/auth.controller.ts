@@ -6,7 +6,6 @@ import {
   Res,
   Req,
   HttpCode,
-  Patch,
   InternalServerErrorException,
   Query,
   // Delete,
@@ -16,7 +15,7 @@ import { AuthService } from './auth.service';
 import { LocalAuthGuard } from 'common/guards/localAuth.guard';
 import { Public } from 'common/decorators/public.decorator';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { SignUpDto, AuthDto, VerifyEmailDto } from './dtos/auth.dto';
+import { SignUpDto, AuthDto } from './dtos/auth.dto';
 import { UserService } from 'modules/users/users.service';
 import { ROLES } from 'common/constants/enum/roles.enum';
 import { SignUpStrategyFactory } from './factory/signup-strategy.factory';
@@ -119,12 +118,5 @@ export class AuthController {
     } else {
       throw new InternalServerErrorException('Cannot generate token');
     }
-  }
-
-  @Public()
-  @Patch('verify-account')
-  @HttpCode(200)
-  async verifyAccount(@Body() data: VerifyEmailDto) {
-    return this.userService.verifyEmail(data.email, data.code);
   }
 }

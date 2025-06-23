@@ -15,18 +15,7 @@ import { CouponType } from 'common/constants/enum/coupon.enum';
 import dayjs from 'dayjs';
 
 @ValidatorConstraint({ async: false })
-export class IsEndAfterStart implements ValidatorConstraintInterface {
-  validate(_value: any, validationArguments?: ValidationArguments) {
-    const { expire_date } = validationArguments.object as CouponDto;
-    if (!expire_date) return true;
-    return dayjs(expire_date).isAfter(dayjs(), 'day');
-  }
-
-  defaultMessage(): string {
-    return 'End date must be after today';
-  }
-}
-export class IsEfterStartDate implements ValidatorConstraintInterface {
+export class IsAfterStartDate implements ValidatorConstraintInterface {
   validate(_value: any, validationArguments?: ValidationArguments) {
     const { expire_date, start_date } = validationArguments.object as CouponDto;
     if (!expire_date || !start_date) return true;
@@ -114,7 +103,7 @@ export class CouponDto {
     description: 'When does coupon end?',
   })
   expire_date: string;
-  @Validate(IsEndAfterStart) private readonly _range!: never;
+  @Validate(IsAfterStartDate) private readonly _range!: never;
 
   @IsEnum(CouponType, {
     message: 'Not support this type',
