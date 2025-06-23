@@ -5,7 +5,8 @@ import { CurrentUser } from 'common/decorators/currentUser.decorator';
 import { UserService } from './users.service';
 import { Roles } from 'common/decorators/roles.decorator';
 import { ROLES } from 'common/constants/enum/roles.enum';
-import { UserDto, VerifyEmailDto } from './dto/user.dto';
+import { VerifyEmailDto } from './dto/user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @ApiTags('Users')
 @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -33,7 +34,7 @@ export class UserController {
   @Patch('profile')
   @HttpCode(200)
   @Roles(ROLES.ADMIN, ROLES.PARTNER, ROLES.USER)
-  async update(@CurrentUser() user: UserEntity, @Body() data: UserDto) {
+  async update(@CurrentUser() user: UserEntity, @Body() data: UpdateUserDto) {
     return await this.userService.updateAccount(user.id, data);
   }
   @Delete()

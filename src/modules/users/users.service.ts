@@ -8,8 +8,8 @@ import { EntityManager, QueryFailedError, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { UserEntity } from './entities/users.entity';
 import { ROLES } from 'common/constants/enum/roles.enum';
-import { UserDto } from './dto/user.dto';
 import { SignUpDto } from 'modules/auth/dtos/auth.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -130,7 +130,7 @@ export class UserService {
       .getOne();
   }
 
-  async updateAccount(user_id: number, data: UserDto) {
+  async updateAccount(user_id: number, data: UpdateUserDto) {
     const result = await this.userRepo
       .createQueryBuilder('user')
       .update(UserEntity)
