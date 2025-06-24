@@ -1,3 +1,4 @@
+import { BaseEntity } from 'common/constants/base.entity';
 import { generateSlug } from 'common/helpers/generateSlug';
 import { CategoryEntity } from 'modules/categories/entities/category.entity';
 import { CouponEntity } from 'modules/coupons/entities/coupon.entity';
@@ -5,18 +6,15 @@ import {
   BeforeInsert,
   BeforeUpdate,
   Column,
-  CreateDateColumn,
-  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('store')
-export class StoreEntity {
+export class StoreEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -97,13 +95,4 @@ export class StoreEntity {
     eager: false, // keep false unless you always need them
   })
   coupons: CouponEntity[];
-
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  created_at: Date;
-
-  @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  updated_at: Date;
-
-  @DeleteDateColumn({ type: 'timestamp', nullable: true, name: 'deleted_at' })
-  deleted_at: Date;
 }

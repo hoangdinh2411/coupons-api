@@ -1,7 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { SeoDto } from 'common/constants/common.dto';
+import {
+  IsNotEmptyDraftContent,
+  RawDraftContentState,
+} from 'common/helpers/IsNotEmptyDraftContent';
 
-export class PostDto {
+export class BlogDto extends SeoDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
@@ -11,21 +16,29 @@ export class PostDto {
   })
   title: string;
 
-  @IsString()
-  @IsNotEmpty()
+  @IsNotEmptyDraftContent()
   @ApiProperty({
     type: () => 'string',
     default: 'content content content',
     description: 'Post content',
   })
-  content: string;
+  content: RawDraftContentState;
+
+  @IsArray()
+  @IsString({ each: true })
+  @ApiProperty({
+    type: () => 'array',
+    default: ['AI', 'programming'],
+    description: 'keywords that using for SEO',
+  })
+  keywords: string[];
 
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
     type: () => 'string',
     default: 'base 64 url',
-    description: 'Code of coupon',
+    description: 'images',
   })
   image_bytes: string;
 

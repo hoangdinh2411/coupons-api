@@ -25,6 +25,15 @@ export class UpdateCouponDto {
   @IsOptional()
   @ApiProperty({
     type: () => 'string',
+    default: 'offer_link',
+    description: 'offer_link',
+  })
+  offer_link: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    type: () => 'string',
     default: 'ABC123',
     description: 'Code of coupon',
   })

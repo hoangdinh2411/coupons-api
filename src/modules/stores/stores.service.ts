@@ -11,6 +11,8 @@ import { CategoriesService } from 'modules/categories/categories.service';
 import { FilterStoreDto } from './dto/filter.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { LIMIT_DEFAULT } from 'common/constants/variables';
+import { isNumeric } from 'common/helpers/number';
+import { makeMetaDataContent } from 'common/helpers/metadata';
 
 @Injectable()
 export class StoresService {
@@ -81,7 +83,11 @@ export class StoresService {
       total,
       results: results.map((store: StoreEntity) => ({
         ...store,
-        meta_data: this.makeMetaDataContent(store),
+        meta_data: makeMetaDataContent(
+          store,
+          store.image_bytes,
+          `/stores/${store.slug}`,
+        ),
       })),
     };
   }
@@ -106,15 +112,19 @@ export class StoresService {
       results: results
         ? results.map((store: StoreEntity) => ({
             ...store,
-            meta_data: this.makeMetaDataContent(store),
+            meta_data: makeMetaDataContent(
+              store,
+              store.image_bytes,
+              `/stores/${store.slug}`,
+            ),
           }))
         : [],
     };
   }
 
-  async findOneBySlug(identifier: string) {
+  async findOne(identifier: string) {
     const query = this.storeRep.createQueryBuilder('store');
-    if (this.isNumeric(identifier)) {
+    if (isNumeric(identifier)) {
       query.where('store.id =:id', { id: +identifier });
     } else {
       query.where('store.slug =:slug', { slug: +identifier });
@@ -129,13 +139,14 @@ export class StoresService {
     }
     return {
       ...data,
-      meta_data: this.makeMetaDataContent(data),
+      meta_data: makeMetaDataContent(
+        data,
+        data.image_bytes,
+        `/stores/${data.slug}`,
+      ),
     };
   }
 
-  isNumeric(value: string): boolean {
-    return /^\d+$/.test(value);
-  }
   async findOneById(id: number) {
     const data = await this.storeRep
       .createQueryBuilder('store')
@@ -150,7 +161,11 @@ export class StoresService {
 
     return {
       ...data,
-      meta_data: this.makeMetaDataContent(data),
+      meta_data: makeMetaDataContent(
+        data,
+        data.image_bytes,
+        `/stores/${data.slug}`,
+      ),
     };
   }
 
@@ -181,15 +196,5 @@ export class StoresService {
       throw new NotFoundException('Store not found');
     }
     return true;
-  }
-
-  makeMetaDataContent(data: StoreEntity) {
-    return {
-      title: data.name || '',
-      description: data.description || ' ',
-      keywords: data.keywords || [],
-      image: data.image_bytes || '',
-      slug: data.slug,
-    };
   }
 }

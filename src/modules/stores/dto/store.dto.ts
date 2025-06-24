@@ -8,8 +8,9 @@ import {
   Max,
   Min,
 } from 'class-validator';
+import { SeoDto } from 'common/constants/common.dto';
 
-export class StoreDto {
+export class StoreDto extends SeoDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({

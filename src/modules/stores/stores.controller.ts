@@ -47,7 +47,7 @@ export class StoresController {
   @Get(':identifier')
   @Public()
   findOne(@Param('identifier') identifier: string) {
-    return this.storesService.findOneBySlug(identifier);
+    return this.storesService.findOne(identifier);
   }
 
   @Patch(':id')

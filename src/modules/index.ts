@@ -7,7 +7,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { StoresModule } from './stores/stores.module';
 import { EmailModule } from './emailer/emailer.module';
 import { CouponsModule } from './coupons/coupons.module';
-import { PostsModule } from './posts/posts.module';
+import { BlogsModule } from './blogs/blogs.module';
 
 @Module({
   imports: [
@@ -18,7 +18,7 @@ import { PostsModule } from './posts/posts.module';
     StoresModule,
     EmailModule,
     CouponsModule,
-    PostsModule,
+    BlogsModule,
   ],
   providers: [JWTAuthStrategy],
 })

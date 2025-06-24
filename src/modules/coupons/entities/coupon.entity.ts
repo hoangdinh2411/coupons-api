@@ -39,6 +39,12 @@ export class CouponEntity {
   offer_detail: string;
 
   @Column({
+    type: 'text',
+    nullable: true,
+  })
+  offer_link: string;
+
+  @Column({
     type: 'int',
     default: 1,
   })

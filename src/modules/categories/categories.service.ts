@@ -7,6 +7,7 @@ import { CategoryDto } from './dto/category.dto';
 import { CategoryEntity } from './entities/category.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ILike, QueryFailedError, Repository } from 'typeorm';
+import { makeMetaDataContent } from 'common/helpers/metadata';
 
 @Injectable()
 export class CategoriesService {
@@ -46,7 +47,15 @@ export class CategoriesService {
     const [results, total] = await query.getManyAndCount();
     return {
       total,
-      results: results || [],
+      results:
+        results.map((cat) => ({
+          ...cat,
+          meta_data: makeMetaDataContent(
+            cat,
+            cat.image_bytes,
+            '/categories/' + cat.slug,
+          ),
+        })) || [],
     };
   }
   async search(search_text: string) {

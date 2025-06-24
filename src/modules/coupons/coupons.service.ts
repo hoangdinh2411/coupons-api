@@ -16,6 +16,7 @@ import { CategoriesService } from 'modules/categories/categories.service';
 import { LIMIT_DEFAULT } from 'common/constants/variables';
 import { CouponStatus } from 'common/constants/enum/status.enum';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
+// import { makeMetaDataContent } from 'common/helpers/metadata';
 
 @Injectable()
 export class CouponsService {
@@ -35,6 +36,7 @@ export class CouponsService {
       store,
       category,
       added_by: added_by.id,
+      is_verified: added_by.role === ROLES.ADMIN,
     });
     return await this.couponRep.save({
       ...new_coupon,
@@ -92,7 +94,7 @@ export class CouponsService {
     return {
       results: results.map((c) => ({
         ...c,
-        meta_data: this.makeMetaDataContent(c),
+        // meta_data: makeMetaDataContent(c, '', '/coupons/' + c.id),
       })),
       total,
     };
@@ -169,7 +171,7 @@ export class CouponsService {
     return {
       results: results.map((c) => ({
         ...c,
-        meta_data: this.makeMetaDataContent(c),
+        // meta_data: makeMetaDataContent(c),
       })),
       total,
     };
@@ -186,7 +188,10 @@ export class CouponsService {
     if (!data) {
       throw new NotFoundException('Coupon not found');
     }
-    return { ...data, meta_data: this.makeMetaDataContent(data) };
+    return {
+      ...data,
+      //  meta_data: makeMetaDataContent(data)
+    };
   }
 
   async update(id: number, updateCouponDto: UpdateCouponDto, user: UserEntity) {
@@ -212,12 +217,13 @@ export class CouponsService {
       );
     }
     const data = {
+      ...coupon,
       ...updateCouponDto,
       ...(store && { store }),
       ...(category && { category }),
     };
 
-    await this.couponRep.update(id, data);
+    await this.couponRep.save(data);
 
     return {
       id: coupon.id,
@@ -230,7 +236,7 @@ export class CouponsService {
       id,
     });
     if (!coupon) {
-      throw new NotFoundException('Coupon not found or you are not ');
+      throw new NotFoundException('Coupon not found');
     }
     if (user.role !== ROLES.ADMIN && coupon.added_by !== user.id) {
       throw new ForbiddenException(
@@ -239,14 +245,5 @@ export class CouponsService {
     }
     await this.couponRep.delete(id);
     return true;
-  }
-  makeMetaDataContent(data: CouponEntity) {
-    return {
-      title: data.title || '',
-      description: data.offer_detail || ' ',
-      keywords: data.store?.keywords || [],
-      image: '',
-      slug: `coupons/${data.id}`,
-    };
   }
 }

@@ -1,21 +1,20 @@
+import { BaseEntity } from 'common/constants/base.entity';
 import { generateSlug } from 'common/helpers/generateSlug';
+import { RawDraftContentState } from 'common/helpers/IsNotEmptyDraftContent';
 import { CategoryEntity } from 'modules/categories/entities/category.entity';
 import { UserEntity } from 'modules/users/entities/users.entity';
 import {
   BeforeInsert,
   BeforeUpdate,
   Column,
-  CreateDateColumn,
-  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 
-@Entity('post')
-export class PostEntity {
+@Entity('blog')
+export class BlogsEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -25,9 +24,9 @@ export class PostEntity {
   title: string;
 
   @Column({
-    type: 'text',
+    type: 'json',
   })
-  content: string;
+  content: RawDraftContentState;
 
   @Column({ type: 'text' })
   slug: string;
@@ -41,14 +40,25 @@ export class PostEntity {
   @Column({ type: 'text' })
   image_bytes: string;
 
-  @ManyToOne(() => UserEntity, (user) => user.posts, {
+  @Column({
+    type: 'text',
+    array: true,
+    nullable: true,
+  })
+  tags: string[];
+
+  @ManyToOne(() => UserEntity, (user) => user.blogs, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({
     name: 'created_by',
   })
   user: UserEntity;
-
+  @Column({
+    type: 'int',
+    default: 1,
+  })
+  rating: number;
   @Column({
     type: 'int',
     nullable: true,
@@ -68,13 +78,4 @@ export class PostEntity {
     nullable: true,
   })
   category_id: number;
-
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  created_at: Date;
-
-  @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  updated_at: Date;
-
-  @DeleteDateColumn({ type: 'timestamp', nullable: true, name: 'deleted_at' })
-  deleted_at: Date;
 }

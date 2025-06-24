@@ -41,6 +41,15 @@ export class CouponDto {
   @IsNotEmpty()
   @ApiProperty({
     type: () => 'string',
+    default: 'offer_link',
+    description: 'offer link',
+  })
+  offer_link: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    type: () => 'string',
     default: 'ABC123',
     description: 'Code of coupon',
   })

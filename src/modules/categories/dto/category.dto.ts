@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
+import { SeoDto } from 'common/constants/common.dto';
 
-export class CategoryDto {
+export class CategoryDto extends SeoDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({

@@ -1,7 +1,7 @@
 import { Exclude } from 'class-transformer';
 import { ROLES } from 'common/constants/enum/roles.enum';
+import { BlogsEntity } from 'modules/blogs/entities/blogs.entity';
 import { CouponEntity } from 'modules/coupons/entities/coupon.entity';
-import { PostEntity } from 'modules/posts/entities/post.entity';
 import {
   BaseEntity,
   Column,
@@ -67,8 +67,8 @@ export class UserEntity extends BaseEntity {
   @OneToMany(() => CouponEntity, (coupons) => coupons.added_by)
   coupons: CouponEntity[];
 
-  @OneToMany(() => PostEntity, (posts) => posts.created_by)
-  posts: PostEntity[];
+  @OneToMany(() => BlogsEntity, (posts) => posts.created_by)
+  blogs: BlogsEntity[];
 
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;

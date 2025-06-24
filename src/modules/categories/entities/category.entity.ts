@@ -1,6 +1,7 @@
+import { BaseEntity } from 'common/constants/base.entity';
 import { generateSlug } from 'common/helpers/generateSlug';
+import { BlogsEntity } from 'modules/blogs/entities/blogs.entity';
 import { CouponEntity } from 'modules/coupons/entities/coupon.entity';
-import { PostEntity } from 'modules/posts/entities/post.entity';
 import { StoreEntity } from 'modules/stores/entities/store.entity';
 import {
   BeforeInsert,
@@ -12,7 +13,7 @@ import {
 } from 'typeorm';
 
 @Entity('category')
-export class CategoryEntity {
+export class CategoryEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -34,8 +35,8 @@ export class CategoryEntity {
   @OneToMany(() => StoreEntity, (store) => store.category)
   stores: StoreEntity[];
 
-  @OneToMany(() => PostEntity, (posts) => posts.category)
-  posts: PostEntity[];
+  @OneToMany(() => BlogsEntity, (posts) => posts.category)
+  posts: BlogsEntity[];
 
   @OneToMany(() => CouponEntity, (store) => store.category)
   coupons: CouponEntity[];
