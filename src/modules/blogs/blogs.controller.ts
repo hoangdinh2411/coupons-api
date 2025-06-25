@@ -13,7 +13,7 @@ import { UpdateBlogDto } from './dto/update-blog.dto';
 import { BlogService } from './blogs.service';
 import { BlogDto } from './dto/blog.dto';
 import { UserEntity } from 'modules/users/entities/users.entity';
-import { FilterStoreDto } from 'modules/stores/dto/filter.dto';
+import { FilterDto } from 'common/constants/filter.dto';
 import { Roles } from 'common/decorators/roles.decorator';
 import { ROLES } from 'common/constants/enum/roles.enum';
 
@@ -34,7 +34,7 @@ export class BlogsController {
   }
   @Post('filter')
   @Public()
-  filterStore(@Body() filterData: FilterStoreDto) {
+  filterStore(@Body() filterData: FilterDto) {
     return this.blogsService.filter(filterData);
   }
   @Get(':identifier')

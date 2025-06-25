@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { StoreEntity } from './entities/store.entity';
 import { ILike, QueryFailedError, Repository } from 'typeorm';
 import { CategoriesService } from 'modules/categories/categories.service';
-import { FilterStoreDto } from './dto/filter.dto';
+import { FilterDto } from '../../common/constants/filter.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { LIMIT_DEFAULT } from 'common/constants/variables';
 import { isNumeric } from 'common/helpers/number';
@@ -41,7 +41,7 @@ export class StoresService {
     }
   }
 
-  async filter(filterData: FilterStoreDto) {
+  async filter(filterData: FilterDto) {
     const {
       categories = [],
       max_discount_pct = 100,

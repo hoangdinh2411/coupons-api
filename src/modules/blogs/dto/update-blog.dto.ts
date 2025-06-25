@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsNumber, IsString, IsArray } from 'class-validator';
+import {
+  IsOptional,
+  IsNumber,
+  IsString,
+  IsArray,
+  IsBoolean,
+} from 'class-validator';
 import { SeoDto } from 'common/constants/common.dto';
 import {
   IsNotEmptyDraftContent,
@@ -60,4 +66,22 @@ export class UpdateBlogDto extends SeoDto {
     description: 'rating',
   })
   rating: number;
+
+  @IsBoolean()
+  @IsOptional()
+  @ApiProperty({
+    type: () => 'boolean',
+    default: 1,
+    description: 'is_published',
+  })
+  is_published: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  @ApiProperty({
+    type: () => 'boolean',
+    default: 1,
+    description: 'is_indexed',
+  })
+  is_indexed: boolean;
 }

@@ -13,7 +13,8 @@ import { BlogsEntity } from './entities/blogs.entity';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 import { BlogDto } from './dto/blog.dto';
 import { LIMIT_DEFAULT } from 'common/constants/variables';
-import { FilterStoreDto } from 'modules/stores/dto/filter.dto';
+import { FilterDto } from 'common/constants/filter.dto';
+import { makeMetaDataContent } from 'common/helpers/metadata';
 
 @Injectable()
 export class BlogService {
@@ -34,13 +35,13 @@ export class BlogService {
     });
     return await this.blogRepo.save(new_blog);
   }
-  async filter(filterData: FilterStoreDto) {
+  async filter(filterData: FilterDto) {
     const { categories = [], search_text, page, rating } = filterData;
     const query = this.blogRepo
       .createQueryBuilder('blog')
       .leftJoinAndSelect('blog.category', 'category');
     if (search_text) {
-      query.andWhere(`blog.name ILIKE :search_text`, {
+      query.andWhere(`blog.title ILIKE :search_text`, {
         search_text: `%${search_text}%`,
       });
     }
@@ -64,7 +65,7 @@ export class BlogService {
       total,
       results: results.map((blog: BlogsEntity) => ({
         ...blog,
-        meta_data: this.makeMetaDataContent(blog),
+        meta_data: makeMetaDataContent(blog, blog.image_bytes, blog.slug),
       })),
     };
   }
@@ -84,16 +85,16 @@ export class BlogService {
       query.where('blog.slug =:slug', { slug: +identifier });
     }
 
-    const data = await query
+    const blog = await query
       .leftJoinAndSelect('blog.user', 'created_by')
       .leftJoinAndSelect('blog.category', 'category')
       .getOne();
-    if (!data) {
+    if (!blog) {
       throw new NotFoundException('blog not found');
     }
     return {
-      ...data,
-      meta_data: this.makeMetaDataContent(data),
+      ...blog,
+      meta_data: makeMetaDataContent(blog, blog.image_bytes, blog.slug),
     };
   }
   async findOneById(id: number) {
@@ -153,15 +154,5 @@ export class BlogService {
     }
     await this.blogRepo.delete(id);
     return true;
-  }
-
-  makeMetaDataContent(data: BlogsEntity) {
-    return {
-      title: data.seo_title || '',
-      description: data.seo_description || ' ',
-      keywords: data.seo_keywords || [],
-      image: data.image_bytes || '',
-      slug: data.slug,
-    };
   }
 }

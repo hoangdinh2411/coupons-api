@@ -78,4 +78,16 @@ export class BlogsEntity extends BaseEntity {
     nullable: true,
   })
   category_id: number;
+
+  @Column({
+    type: 'boolean',
+    default: false,
+  })
+  is_published: boolean;
+
+  @Column({
+    type: 'boolean',
+    default: false,
+  })
+  is_indexed: boolean;
 }

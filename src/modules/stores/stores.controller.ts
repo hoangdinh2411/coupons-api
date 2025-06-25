@@ -14,7 +14,7 @@ import { Roles } from 'common/decorators/roles.decorator';
 import { ROLES } from 'common/constants/enum/roles.enum';
 import { Public } from 'common/decorators/public.decorator';
 import { StoreDto } from './dto/store.dto';
-import { FilterStoreDto } from './dto/filter.dto';
+import { FilterDto } from '../../common/constants/filter.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 
 @Controller('stores')
@@ -40,7 +40,7 @@ export class StoresController {
 
   @Post('filter')
   @Public()
-  filterStore(@Body() filterData: FilterStoreDto) {
+  filterStore(@Body() filterData: FilterDto) {
     return this.storesService.filter(filterData);
   }
 
