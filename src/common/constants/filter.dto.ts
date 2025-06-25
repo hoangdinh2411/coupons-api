@@ -63,6 +63,15 @@ export class FilterDto {
   @IsArray()
   @IsOptional()
   @ApiProperty({
+    type: () => 'array',
+    default: [1, 2, 3],
+    description: 'an array of topic ids',
+  })
+  topics: number[];
+
+  @IsArray()
+  @IsOptional()
+  @ApiProperty({
     type: [Number],
     default: 1,
     description: 'Store ids',

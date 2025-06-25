@@ -55,9 +55,9 @@ export class UpdateBlogDto extends SeoDto {
   @ApiProperty({
     type: () => 'number',
     default: 1,
-    description: 'Category id',
+    description: 'topic  id',
   })
-  category_id: number;
+  topic_id: number;
   @IsNumber()
   @IsOptional()
   @ApiProperty({

@@ -8,7 +8,6 @@ import {
   Delete,
   HttpCode,
   Query,
-  BadRequestException,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { ApiTags } from '@nestjs/swagger';
@@ -34,10 +33,6 @@ export class CategoriesController {
     @Query('page') page: number,
     @Query('search_text') search_text: string,
   ) {
-    if (limit < 1 || page < 1) {
-      throw new BadRequestException('Limit and page must be positive numbers');
-    }
-
     return this.categoriesService.findAll(+limit, +page, search_text);
   }
   @Get('search')

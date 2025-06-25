@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CategoriesService } from 'modules/categories/categories.service';
 import { UserEntity } from 'modules/users/entities/users.entity';
 import { isNumeric } from 'common/helpers/number';
 import { ROLES } from 'common/constants/enum/roles.enum';
@@ -15,31 +14,30 @@ import { BlogDto } from './dto/blog.dto';
 import { LIMIT_DEFAULT } from 'common/constants/variables';
 import { FilterDto } from 'common/constants/filter.dto';
 import { makeMetaDataContent } from 'common/helpers/metadata';
+import { TopicService } from 'modules/topic/topic.service';
 
 @Injectable()
 export class BlogService {
   constructor(
     @InjectRepository(BlogsEntity)
     private readonly blogRepo: Repository<BlogsEntity>,
-    private readonly categoriesService: CategoriesService,
+    private readonly topicService: TopicService,
   ) {}
   async create(user: UserEntity, createBlogDto: BlogDto) {
-    const category = await this.categoriesService.findOneById(
-      createBlogDto.category_id,
-    );
+    const topic = await this.topicService.findOneById(createBlogDto.topic_id);
     const new_blog = this.blogRepo.create({
       ...createBlogDto,
       user,
       created_by: user.id,
-      category,
+      topic,
     });
     return await this.blogRepo.save(new_blog);
   }
   async filter(filterData: FilterDto) {
-    const { categories = [], search_text, page, rating } = filterData;
+    const { topics = [], search_text, page, rating } = filterData;
     const query = this.blogRepo
       .createQueryBuilder('blog')
-      .leftJoinAndSelect('blog.category', 'category');
+      .leftJoinAndSelect('blog.topic', 'topic');
     if (search_text) {
       query.andWhere(`blog.title ILIKE :search_text`, {
         search_text: `%${search_text}%`,
@@ -50,9 +48,9 @@ export class BlogService {
         rating: Number(rating),
       });
     }
-    if (categories.length > 0) {
-      query.andWhere('blog.category IN (:...categories)', {
-        categories,
+    if (topics.length > 0) {
+      query.andWhere('blog.topic_id IN (:...topics)', {
+        topics,
       });
     }
 
@@ -87,10 +85,10 @@ export class BlogService {
 
     const blog = await query
       .leftJoinAndSelect('blog.user', 'created_by')
-      .leftJoinAndSelect('blog.category', 'category')
+      .leftJoinAndSelect('blog.topic', 'topic')
       .getOne();
     if (!blog) {
-      throw new NotFoundException('blog not found');
+      throw new NotFoundException('Blog not found');
     }
     return {
       ...blog,
@@ -102,18 +100,16 @@ export class BlogService {
       id,
     });
     if (!data) {
-      throw new NotFoundException('blog not found');
+      throw new NotFoundException('Blog not found');
     }
 
     return data;
   }
 
   async update(user: UserEntity, id: number, updateBlogDto: UpdateBlogDto) {
-    let category = null;
-    if (updateBlogDto.category_id) {
-      category = await this.categoriesService.findOneById(
-        updateBlogDto.category_id,
-      );
+    let topic = null;
+    if (updateBlogDto.topic_id) {
+      topic = await this.topicService.findOneById(updateBlogDto.topic_id);
     }
     const blog = await this.blogRepo.findOne({
       where: {
@@ -134,7 +130,7 @@ export class BlogService {
     const data = {
       ...blog,
       ...updateBlogDto,
-      ...(category && { category }),
+      ...(topic && { topic }),
     };
 
     return await this.blogRepo.save(data);

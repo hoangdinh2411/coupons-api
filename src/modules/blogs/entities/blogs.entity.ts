@@ -1,7 +1,7 @@
 import { BaseEntity } from 'common/constants/base.entity';
 import { generateSlug } from 'common/helpers/generateSlug';
 import { RawDraftContentState } from 'common/helpers/IsNotEmptyDraftContent';
-import { CategoryEntity } from 'modules/categories/entities/category.entity';
+import { TopicEntity } from 'modules/topic/entities/topic.entity';
 import { UserEntity } from 'modules/users/entities/users.entity';
 import {
   BeforeInsert,
@@ -45,7 +45,7 @@ export class BlogsEntity extends BaseEntity {
     array: true,
     nullable: true,
   })
-  tags: string[];
+  keywords: string[];
 
   @ManyToOne(() => UserEntity, (user) => user.blogs, {
     onDelete: 'CASCADE',
@@ -65,19 +65,19 @@ export class BlogsEntity extends BaseEntity {
   })
   created_by: number;
 
-  @ManyToOne(() => CategoryEntity, (category) => category.posts, {
+  @ManyToOne(() => TopicEntity, (topic) => topic.blogs, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({
-    name: 'category_id',
+    name: 'topic_id',
   })
-  category: CategoryEntity;
+  topic: TopicEntity;
 
   @Column({
     type: 'int',
     nullable: true,
   })
-  category_id: number;
+  topic_id: number;
 
   @Column({
     type: 'boolean',

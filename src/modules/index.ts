@@ -8,6 +8,7 @@ import { StoresModule } from './stores/stores.module';
 import { EmailModule } from './emailer/emailer.module';
 import { CouponsModule } from './coupons/coupons.module';
 import { BlogsModule } from './blogs/blogs.module';
+import { TopicModule } from './topic/topic.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { BlogsModule } from './blogs/blogs.module';
     EmailModule,
     CouponsModule,
     BlogsModule,
+    TopicModule,
   ],
   providers: [JWTAuthStrategy],
 })
