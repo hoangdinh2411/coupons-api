@@ -7,13 +7,17 @@ import {
   Matches,
   Validate,
   IsOptional,
+  IsArray,
+  IsInt,
+  ArrayNotEmpty,
 } from 'class-validator';
 import { CouponType } from 'common/constants/enum/coupon.enum';
 import { IsAfterStartDate } from './coupon.dt';
+import { Type } from 'class-transformer';
 
 export class UpdateCouponDto {
-  @IsString()
   @IsOptional()
+  @IsString()
   @ApiProperty({
     type: () => 'string',
     default: 'Coupon title',
@@ -21,8 +25,8 @@ export class UpdateCouponDto {
   })
   title: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   @ApiProperty({
     type: () => 'string',
     default: 'offer_link',
@@ -30,8 +34,8 @@ export class UpdateCouponDto {
   })
   offer_link: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   @ApiProperty({
     type: () => 'string',
     default: 'ABC123',
@@ -48,8 +52,8 @@ export class UpdateCouponDto {
   })
   offer_detail: string;
 
-  @IsNumber()
   @IsOptional()
+  @IsNumber()
   @ApiProperty({
     type: () => 'number',
     default: 1,
@@ -57,17 +61,20 @@ export class UpdateCouponDto {
   })
   store_id: number;
 
-  @IsNumber()
   @IsOptional()
+  @IsArray()
+  @ArrayNotEmpty({ message: 'At least one category ID is required' })
+  @IsInt({ each: true, message: 'Each category must be an integer' })
+  @Type(() => Number)
   @ApiProperty({
     type: () => 'number',
     default: 1,
     description: 'Category id',
   })
-  category_id: number;
+  categories: number[];
 
-  @IsNumber()
   @IsOptional()
+  @IsNumber()
   @ApiProperty({
     type: () => 'number',
     default: 0,

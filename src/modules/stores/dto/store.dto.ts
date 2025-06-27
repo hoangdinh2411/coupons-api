@@ -1,6 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
+  ArrayNotEmpty,
   IsArray,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -59,14 +62,16 @@ export class StoreDto extends BaseDto {
   })
   url: string;
 
-  @IsNumber()
-  @IsNotEmpty()
+  @IsArray()
+  @ArrayNotEmpty({ message: 'At least one category ID is required' })
+  @IsInt({ each: true, message: 'Each category must be an integer' })
+  @Type(() => Number)
   @ApiProperty({
     type: () => 'number',
     default: 1,
     description: 'Category id',
   })
-  category_id: number;
+  categories: number[];
 
   @IsNumber()
   @IsOptional()

@@ -1,7 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
+  ArrayNotEmpty,
+  IsArray,
   IsBoolean,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsString,
@@ -73,14 +77,16 @@ export class CouponDto {
   })
   store_id: number;
 
-  @IsNumber()
-  @IsNotEmpty()
+  @IsArray()
+  @ArrayNotEmpty({ message: 'At least one category ID is required' })
+  @IsInt({ each: true, message: 'Each category must be an integer' })
+  @Type(() => Number)
   @ApiProperty({
     type: () => 'number',
     default: 1,
     description: 'Category id',
   })
-  category_id: number;
+  categories: number[];
 
   @IsBoolean()
   @IsNotEmpty()

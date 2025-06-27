@@ -29,17 +29,17 @@ export class StoresService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const category = await this.categoryService.findOneById(
-        createStoreDto.category_id,
+      const categories = await this.categoryService.findAllById(
+        createStoreDto.categories,
       );
 
-      const data = this.storeRep.create({ ...createStoreDto, category });
-      const result = await this.storeRep.save(data);
-      if (result.image !== null) {
-        await this.fileService.markImageAsUsed([result.image.public_id]);
+      const data = this.storeRep.create({ ...createStoreDto, categories });
+      await this.storeRep.save(data);
+      if (data) {
+        await this.fileService.markImageAsUsed([data.image.public_id]);
       }
       await queryRunner.commitTransaction();
-      return result;
+      return data;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       if (error instanceof QueryFailedError) {
@@ -63,9 +63,7 @@ export class StoresService {
       page,
       rating,
     } = filterData;
-    const query = this.storeRep
-      .createQueryBuilder('store')
-      .leftJoinAndSelect('store.category', 'category');
+    const query = this.storeRep.createQueryBuilder('store');
     if (search_text) {
       query.andWhere(`store.name ILIKE :search_text`, {
         search_text: `%${search_text}%`,
@@ -77,9 +75,11 @@ export class StoresService {
       });
     }
     if (categories.length > 0) {
-      query.andWhere('store.category IN (:...categories)', {
-        categories,
-      });
+      query
+        .leftJoin('store.categories', 'category')
+        .andWhere('category.id IN (:...categories)', {
+          categories,
+        });
     }
 
     if (max_discount_pct) {
@@ -91,6 +91,7 @@ export class StoresService {
     const [results, total] = await query
       .skip((page - 1) * LIMIT_DEFAULT)
       .take(LIMIT_DEFAULT)
+      .leftJoinAndSelect('store.categories', 'categories')
       .getManyAndCount();
 
     return {
@@ -119,7 +120,7 @@ export class StoresService {
 
     const [results, total] = await query
       .leftJoinAndSelect('store.coupons', 'coupons')
-      .leftJoinAndSelect('store.category', 'category')
+      .leftJoinAndSelect('store.categories', 'categories')
       .getManyAndCount();
     return {
       total,
@@ -146,7 +147,7 @@ export class StoresService {
 
     const store = await query
       .leftJoinAndSelect('store.coupons', 'coupons')
-      .leftJoinAndSelect('store.category', 'category')
+      .leftJoinAndSelect('store.categories', 'categories')
       .getOne();
     if (!store) {
       throw new NotFoundException('Store not found');
@@ -194,16 +195,16 @@ export class StoresService {
       if (!store) {
         throw new NotFoundException('Store not found');
       }
-      let category = null;
-      if (updateStoreDto.category_id) {
-        category = await this.categoryService.findOneById(
-          updateStoreDto.category_id,
+      let categories = [];
+      if (updateStoreDto.categories) {
+        categories = await this.categoryService.findAllById(
+          updateStoreDto.categories,
         );
       }
       const data = {
         ...store,
         ...updateStoreDto,
-        ...(category && { category }),
+        ...(categories && { categories }),
       };
       const result = await this.storeRep.save(data);
       const has_new_image =

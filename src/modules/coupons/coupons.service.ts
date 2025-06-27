@@ -28,13 +28,13 @@ export class CouponsService {
   ) {}
   async create(createCouponDto: CouponDto, added_by: UserEntity) {
     const store = await this.storeService.findOneById(createCouponDto.store_id);
-    const category = await this.categoryService.findOneById(
-      createCouponDto.category_id,
+    const categories = await this.categoryService.findAllById(
+      createCouponDto.categories,
     );
     const new_coupon = this.couponRep.create({
       ...createCouponDto,
       store,
-      category,
+      categories,
       added_by: added_by.id,
       is_verified: added_by.role === ROLES.ADMIN,
     });
@@ -43,10 +43,6 @@ export class CouponsService {
       store: {
         id: store.id,
         name: store.name,
-      },
-      category: {
-        id: category.id,
-        name: category.name,
       },
     });
   }
@@ -87,7 +83,7 @@ export class CouponsService {
 
     const [results, total] = await query
       .leftJoinAndSelect('coupon.store', 'store')
-      .leftJoinAndSelect('coupon.category', 'category')
+      .leftJoinAndSelect('coupon.categories', 'categories')
       .orderBy('coupon.expire_date', 'DESC')
       .getManyAndCount();
 
@@ -156,16 +152,18 @@ export class CouponsService {
       // .addSelect(['s.name']);
     }
     if (categories.length > 0) {
-      query.andWhere('cp.category_id  IN (:...categories)', {
-        categories,
-      });
+      query
+        .leftJoin('cp.categories', 'category')
+        .andWhere('category.id  IN (:...categories)', {
+          categories,
+        });
     }
 
     const [results, total] = await query
       .skip((page - 1) * LIMIT_DEFAULT)
       .take(LIMIT_DEFAULT)
       .leftJoinAndSelect('cp.store', 'store')
-      .leftJoinAndSelect('cp.category', 'category')
+      .leftJoinAndSelect('cp.categories', 'categories')
       .getManyAndCount();
 
     return {
@@ -184,6 +182,7 @@ export class CouponsService {
         id,
       })
       .leftJoinAndSelect('coupon.store', 'store')
+      .leftJoinAndSelect('coupon.categories', 'categories')
       .getOne();
     if (!data) {
       throw new NotFoundException('Coupon not found');
@@ -196,13 +195,14 @@ export class CouponsService {
 
   async update(id: number, updateCouponDto: UpdateCouponDto, user: UserEntity) {
     let store = null;
-    let category = null;
     if (updateCouponDto.store_id) {
       store = await this.storeService.findOneById(updateCouponDto.store_id);
     }
-    if (updateCouponDto.category_id) {
-      category = await this.categoryService.findOneById(
-        updateCouponDto.category_id,
+    let categories = [];
+
+    if (updateCouponDto.categories) {
+      categories = await this.categoryService.findAllById(
+        updateCouponDto.categories,
       );
     }
     const coupon = await this.couponRep.findOneBy({
@@ -220,7 +220,7 @@ export class CouponsService {
       ...coupon,
       ...updateCouponDto,
       ...(store && { store }),
-      ...(category && { category }),
+      ...(categories && { categories }),
     };
 
     await this.couponRep.save(data);

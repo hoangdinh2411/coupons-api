@@ -7,8 +7,8 @@ import {
   BeforeUpdate,
   Column,
   Entity,
-  JoinColumn,
-  ManyToOne,
+  JoinTable,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -80,19 +80,21 @@ export class StoreEntity extends BaseEntity {
   generateSlugFromName() {
     return (this.slug = generateSlug(this.name));
   }
-  @ManyToOne(() => CategoryEntity, (category) => category.stores, {
-    onDelete: 'CASCADE',
+  @ManyToMany(() => CategoryEntity, (category) => category.stores, {
+    cascade: true,
   })
-  @JoinColumn({
-    name: 'category_id',
+  @JoinTable({
+    name: 'stores-categories',
+    joinColumn: {
+      name: 'store_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'category_id',
+      referencedColumnName: 'id',
+    },
   })
-  category: CategoryEntity;
-
-  @Column({
-    type: 'int',
-    nullable: true,
-  })
-  category_id: number;
+  categories: CategoryEntity[];
 
   @OneToMany(() => CouponEntity, (coupon) => coupon.store, {
     cascade: true, // optional: saves coupons when you save a store

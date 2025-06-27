@@ -10,6 +10,8 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -107,19 +109,21 @@ export class CouponEntity extends BaseEntity {
   })
   store_id: number;
 
-  @ManyToOne(() => CategoryEntity, (category) => category.coupons, {
-    onDelete: 'CASCADE',
+  @ManyToMany(() => CategoryEntity, (category) => category.coupons, {
+    cascade: true,
   })
-  @JoinColumn({
-    name: 'category_id',
+  @JoinTable({
+    name: 'coupons-categories',
+    joinColumn: {
+      name: 'coupon_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'category_id',
+      referencedColumnName: 'id',
+    },
   })
-  category: CategoryEntity;
-
-  @Column({
-    type: 'int',
-    nullable: true,
-  })
-  category_id: number;
+  categories: CategoryEntity[];
 
   @Column({
     type: 'boolean',

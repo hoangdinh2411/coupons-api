@@ -7,7 +7,7 @@ import {
   BeforeUpdate,
   Column,
   Entity,
-  OneToMany,
+  ManyToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -35,9 +35,9 @@ export class CategoryEntity extends BaseEntity {
     file_name: string;
   };
 
-  @OneToMany(() => StoreEntity, (store) => store.category)
+  @ManyToMany(() => StoreEntity, (store) => store.categories)
   stores: StoreEntity[];
 
-  @OneToMany(() => CouponEntity, (store) => store.category)
+  @ManyToMany(() => CouponEntity, (store) => store.categories)
   coupons: CouponEntity[];
 }

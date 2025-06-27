@@ -7,7 +7,7 @@ import {
 import { CategoryDto } from './dto/category.dto';
 import { CategoryEntity } from './entities/category.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, ILike, QueryFailedError, Repository } from 'typeorm';
+import { DataSource, ILike, In, QueryFailedError, Repository } from 'typeorm';
 import { FilesService } from 'modules/files/files.service';
 
 @Injectable()
@@ -134,6 +134,13 @@ export class CategoriesService {
     }
   }
 
+  async findAllById(ids: number[]) {
+    return await this.categoryRep.find({
+      where: {
+        id: In(ids),
+      },
+    });
+  }
   async remove(id: number) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
