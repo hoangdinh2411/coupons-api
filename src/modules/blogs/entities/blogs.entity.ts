@@ -1,6 +1,5 @@
 import { BaseEntity } from 'common/constants/base.entity';
 import { generateSlug } from 'common/helpers/generateSlug';
-import { RawDraftContentState } from 'common/helpers/IsNotEmptyDraftContent';
 import { TopicEntity } from 'modules/topic/entities/topic.entity';
 import { UserEntity } from 'modules/users/entities/users.entity';
 import {
@@ -24,9 +23,9 @@ export class BlogsEntity extends BaseEntity {
   title: string;
 
   @Column({
-    type: 'json',
+    type: 'text',
   })
-  content: RawDraftContentState;
+  content: string;
 
   @Column({ type: 'text' })
   slug: string;
@@ -36,9 +35,13 @@ export class BlogsEntity extends BaseEntity {
   generateSlugFromName() {
     return (this.slug = generateSlug(this.title));
   }
-  // image bytes = base 64
-  @Column({ type: 'text' })
-  image_bytes: string;
+
+  @Column({ type: 'jsonb', nullable: true })
+  image: {
+    url: string;
+    public_id: string;
+    file_name: string;
+  };
 
   @Column({
     type: 'text',

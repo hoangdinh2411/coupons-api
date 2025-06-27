@@ -1,3 +1,4 @@
+import { BaseEntity } from 'common/constants/base.entity';
 import { CouponType } from 'common/constants/enum/coupon.enum';
 import dayjs from 'dayjs';
 import { CategoryEntity } from 'modules/categories/entities/category.entity';
@@ -7,17 +8,14 @@ import {
   BeforeInsert,
   BeforeUpdate,
   Column,
-  CreateDateColumn,
-  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('coupon')
-export class CouponEntity {
+export class CouponEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -128,13 +126,4 @@ export class CouponEntity {
     default: false,
   })
   is_verified: boolean;
-
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  created_at: Date;
-
-  @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  updated_at: Date;
-
-  @DeleteDateColumn({ type: 'timestamp', nullable: true, name: 'deleted_at' })
-  deleted_at: Date;
 }

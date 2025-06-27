@@ -28,8 +28,12 @@ export class CategoryEntity extends BaseEntity {
     return (this.slug = generateSlug(this.name));
   }
 
-  @Column({ type: 'text' })
-  image_bytes: string;
+  @Column({ type: 'jsonb', nullable: true })
+  image: {
+    url: string;
+    public_id: string;
+    file_name: string;
+  };
 
   @OneToMany(() => StoreEntity, (store) => store.category)
   stores: StoreEntity[];

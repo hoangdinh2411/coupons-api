@@ -1,26 +1,41 @@
 import {
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { TopicDto } from './dto/topic.dto';
-import { ILike, QueryFailedError, Repository } from 'typeorm';
+import { DataSource, ILike, QueryFailedError, Repository } from 'typeorm';
 import { TopicEntity } from './entities/topic.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { makeMetaDataContent } from 'common/helpers/metadata';
+import { FilesService } from 'modules/files/files.service';
+import { LIMIT_DEFAULT } from 'common/constants/variables';
 
 @Injectable()
 export class TopicService {
   constructor(
     @InjectRepository(TopicEntity)
     private readonly topicRepo: Repository<TopicEntity>,
+    private readonly dataSource: DataSource,
+    private readonly fileService: FilesService,
+
     // private readonly mailerService: MailerService,
   ) {}
   async create(createTopicDto: TopicDto) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
       const data = this.topicRepo.create(createTopicDto);
-      return await this.topicRepo.save(data);
+      const result = await this.topicRepo.save(data);
+      if (result.image !== null) {
+        await this.fileService.markImageAsUsed([result.image.public_id]);
+      }
+      await queryRunner.commitTransaction();
+      return result;
     } catch (error) {
+      await queryRunner.rollbackTransaction();
       if (error instanceof QueryFailedError) {
         const err = error.driverError;
         if (err.code === '23505') {
@@ -29,13 +44,15 @@ export class TopicService {
       } else {
         throw error;
       }
+    } finally {
+      await queryRunner.release();
     }
   }
 
-  async findAll(limit: number, page: number, search_text: string) {
+  async findAll(page: number, search_text: string) {
     const query = this.topicRepo.createQueryBuilder('topic');
-    if (limit && page) {
-      query.skip((page - 1) * limit).take(limit);
+    if (LIMIT_DEFAULT && page) {
+      query.skip((page - 1) * LIMIT_DEFAULT).take(LIMIT_DEFAULT);
     }
 
     if (search_text) {
@@ -51,7 +68,7 @@ export class TopicService {
           ...topic,
           meta_data: makeMetaDataContent(
             topic,
-            topic.image_bytes,
+            topic.image.url,
             '/topic/' + topic.slug,
           ),
         })) || [],
@@ -79,21 +96,74 @@ export class TopicService {
   }
 
   async update(id: number, updateTopicDto: TopicDto) {
-    const result = await this.topicRepo.update(id, updateTopicDto);
-    if (result.affected === 0) {
-      throw new NotFoundException('Topic not found');
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const topic = await this.topicRepo.findOneBy({
+        id,
+      });
+      if (!topic) {
+        throw new NotFoundException('Topic not found');
+      }
+
+      const result = await this.topicRepo.update(id, updateTopicDto);
+      if (result.affected === 0) {
+        throw new InternalServerErrorException('Cannot update topic');
+      }
+      if (
+        updateTopicDto.image !== null &&
+        updateTopicDto.image.public_id !== topic.image.public_id
+      ) {
+        await this.fileService.delete(topic.image.public_id);
+        await this.fileService.markImageAsUsed([
+          updateTopicDto.image.public_id,
+        ]);
+      }
+
+      await queryRunner.commitTransaction();
+      return {
+        id,
+        ...updateTopicDto,
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      if (error instanceof QueryFailedError) {
+        const err = error.driverError;
+        if (err.code === '23505') {
+          throw new ConflictException('Topic already exist');
+        }
+      } else {
+        throw error;
+      }
+    } finally {
+      await queryRunner.release();
     }
-    return {
-      id,
-      ...updateTopicDto,
-    };
   }
 
   async remove(id: number) {
-    const result = await this.topicRepo.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException('Topic not found');
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const topic = await this.topicRepo.findOneBy({
+        id,
+      });
+
+      if (!topic) {
+        throw new NotFoundException('Topic not found');
+      }
+      if (topic.image !== null) {
+        await this.fileService.delete(topic.image.public_id);
+      }
+      await this.topicRepo.delete(id);
+      await queryRunner.commitTransaction();
+      return true;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
-    return true;
   }
 }

@@ -6,13 +6,14 @@ import {
 import { StoreDto } from './dto/store.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StoreEntity } from './entities/store.entity';
-import { ILike, QueryFailedError, Repository } from 'typeorm';
+import { DataSource, ILike, QueryFailedError, Repository } from 'typeorm';
 import { CategoriesService } from 'modules/categories/categories.service';
 import { FilterDto } from '../../common/constants/filter.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { LIMIT_DEFAULT } from 'common/constants/variables';
 import { isNumeric } from 'common/helpers/number';
 import { makeMetaDataContent } from 'common/helpers/metadata';
+import { FilesService } from 'modules/files/files.service';
 
 @Injectable()
 export class StoresService {
@@ -20,16 +21,27 @@ export class StoresService {
     @InjectRepository(StoreEntity)
     private readonly storeRep: Repository<StoreEntity>,
     private readonly categoryService: CategoriesService,
+    private readonly fileService: FilesService,
+    private readonly dataSource: DataSource,
   ) {}
   async create(createStoreDto: StoreDto) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
       const category = await this.categoryService.findOneById(
         createStoreDto.category_id,
       );
 
       const data = this.storeRep.create({ ...createStoreDto, category });
-      return await this.storeRep.save(data);
+      const result = await this.storeRep.save(data);
+      if (result.image !== null) {
+        await this.fileService.markImageAsUsed([result.image.public_id]);
+      }
+      await queryRunner.commitTransaction();
+      return result;
     } catch (error) {
+      await queryRunner.rollbackTransaction();
       if (error instanceof QueryFailedError) {
         const err = error.driverError;
         if (err.code === '23505') {
@@ -38,6 +50,8 @@ export class StoresService {
       } else {
         throw error;
       }
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -85,7 +99,7 @@ export class StoresService {
         ...store,
         meta_data: makeMetaDataContent(
           store,
-          store.image_bytes,
+          store.image.url,
           `/stores/${store.slug}`,
         ),
       })),
@@ -114,7 +128,7 @@ export class StoresService {
             ...store,
             meta_data: makeMetaDataContent(
               store,
-              store.image_bytes,
+              store.image.url,
               `/stores/${store.slug}`,
             ),
           }))
@@ -130,71 +144,120 @@ export class StoresService {
       query.where('store.slug =:slug', { slug: +identifier });
     }
 
-    const data = await query
+    const store = await query
       .leftJoinAndSelect('store.coupons', 'coupons')
       .leftJoinAndSelect('store.category', 'category')
       .getOne();
-    if (!data) {
+    if (!store) {
       throw new NotFoundException('Store not found');
     }
     return {
-      ...data,
+      ...store,
       meta_data: makeMetaDataContent(
-        data,
-        data.image_bytes,
-        `/stores/${data.slug}`,
+        store,
+        store.image.url,
+        `/stores/${store.slug}`,
       ),
     };
   }
 
   async findOneById(id: number) {
-    const data = await this.storeRep
+    const store = await this.storeRep
       .createQueryBuilder('store')
       .where('store.id=:id', {
         id,
       })
       .leftJoinAndSelect('store.coupons', 'coupons')
       .getOne();
-    if (!data) {
+    if (!store) {
       throw new NotFoundException('Store not found');
     }
 
     return {
-      ...data,
+      ...store,
       meta_data: makeMetaDataContent(
-        data,
-        data.image_bytes,
-        `/stores/${data.slug}`,
+        store,
+        store.image.url,
+        `/stores/${store.slug}`,
       ),
     };
   }
 
   async update(id: number, updateStoreDto: UpdateStoreDto) {
-    let category = null;
-    if (updateStoreDto.category_id) {
-      category = await this.categoryService.findOneById(
-        updateStoreDto.category_id,
-      );
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const store = await this.storeRep.findOneBy({
+        id,
+      });
+      if (!store) {
+        throw new NotFoundException('Store not found');
+      }
+      let category = null;
+      if (updateStoreDto.category_id) {
+        category = await this.categoryService.findOneById(
+          updateStoreDto.category_id,
+        );
+      }
+      const data = {
+        ...updateStoreDto,
+        ...(category && { category }),
+      };
+      await this.storeRep.update(id, data);
+      if (
+        updateStoreDto.image !== null &&
+        updateStoreDto.image.public_id !== store.image.public_id
+      ) {
+        await this.fileService.delete(store.image.public_id);
+        await this.fileService.markImageAsUsed([
+          updateStoreDto.image.public_id,
+        ]);
+      }
+
+      await queryRunner.commitTransaction();
+      return {
+        id,
+        ...updateStoreDto,
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      if (error instanceof QueryFailedError) {
+        const err = error.driverError;
+        if (err.code === '23505') {
+          throw new ConflictException('Category already exist');
+        }
+      } else {
+        throw error;
+      }
+    } finally {
+      await queryRunner.release();
     }
-    const data = {
-      ...updateStoreDto,
-      ...(category && { category }),
-    };
-    const result = await this.storeRep.update(id, data);
-    if (result.affected === 0) {
-      throw new NotFoundException('Store not found');
-    }
-    return {
-      id,
-      ...data,
-    };
   }
 
   async remove(id: number) {
-    const result = await this.storeRep.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException('Store not found');
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const store = await this.storeRep.findOneBy({
+        id,
+      });
+
+      if (!store) {
+        throw new NotFoundException('Store not found');
+      }
+      if (store.image !== null) {
+        await this.fileService.delete(store.image.public_id);
+      }
+      await this.storeRep.delete(id);
+      await queryRunner.commitTransaction();
+      return true;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
-    return true;
   }
 }

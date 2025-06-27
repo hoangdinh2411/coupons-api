@@ -6,13 +6,9 @@ import {
   IsArray,
   IsBoolean,
 } from 'class-validator';
-import { SeoDto } from 'common/constants/common.dto';
-import {
-  IsNotEmptyDraftContent,
-  RawDraftContentState,
-} from 'common/helpers/IsNotEmptyDraftContent';
+import { BaseDto } from 'common/constants/common.dto';
 
-export class UpdateBlogDto extends SeoDto {
+export class UpdateBlogDto extends BaseDto {
   @IsString()
   @IsOptional()
   @ApiProperty({
@@ -22,14 +18,14 @@ export class UpdateBlogDto extends SeoDto {
   })
   title: string;
 
-  @IsNotEmptyDraftContent()
+  @IsString()
   @IsOptional()
   @ApiProperty({
     type: () => 'string',
     default: 'content content content',
     description: 'blog content',
   })
-  content: RawDraftContentState;
+  content: string;
 
   @IsArray()
   @IsString({ each: true })
@@ -40,15 +36,6 @@ export class UpdateBlogDto extends SeoDto {
     description: 'keywords that using for SEO',
   })
   keywords: string[];
-
-  @IsString()
-  @IsOptional()
-  @ApiProperty({
-    type: () => 'string',
-    default: 'base 64 url',
-    description: 'Image"',
-  })
-  image_bytes: string;
 
   @IsNumber()
   @IsOptional()

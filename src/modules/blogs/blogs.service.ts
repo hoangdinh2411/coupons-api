@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { UserEntity } from 'modules/users/entities/users.entity';
 import { isNumeric } from 'common/helpers/number';
 import { ROLES } from 'common/constants/enum/roles.enum';
@@ -15,6 +15,7 @@ import { LIMIT_DEFAULT } from 'common/constants/variables';
 import { FilterDto } from 'common/constants/filter.dto';
 import { makeMetaDataContent } from 'common/helpers/metadata';
 import { TopicService } from 'modules/topic/topic.service';
+import { FilesService } from 'modules/files/files.service';
 
 @Injectable()
 export class BlogService {
@@ -22,16 +23,33 @@ export class BlogService {
     @InjectRepository(BlogsEntity)
     private readonly blogRepo: Repository<BlogsEntity>,
     private readonly topicService: TopicService,
+    private readonly fileService: FilesService,
+    private readonly dataSource: DataSource,
   ) {}
   async create(user: UserEntity, createBlogDto: BlogDto) {
-    const topic = await this.topicService.findOneById(createBlogDto.topic_id);
-    const new_blog = this.blogRepo.create({
-      ...createBlogDto,
-      user,
-      created_by: user.id,
-      topic,
-    });
-    return await this.blogRepo.save(new_blog);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const topic = await this.topicService.findOneById(createBlogDto.topic_id);
+      const new_blog = this.blogRepo.create({
+        ...createBlogDto,
+        user,
+        created_by: user.id,
+        topic,
+      });
+      const result = await this.blogRepo.save(new_blog);
+      if (result.image !== null) {
+        await this.fileService.markImageAsUsed([result.image.public_id]);
+      }
+      await queryRunner.commitTransaction();
+      return result;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
   async filter(filterData: FilterDto) {
     const { topics = [], search_text, page, rating } = filterData;
@@ -63,7 +81,7 @@ export class BlogService {
       total,
       results: results.map((blog: BlogsEntity) => ({
         ...blog,
-        meta_data: makeMetaDataContent(blog, blog.image_bytes, blog.slug),
+        meta_data: makeMetaDataContent(blog, blog.image.url, blog.slug),
       })),
     };
   }
@@ -92,7 +110,7 @@ export class BlogService {
     }
     return {
       ...blog,
-      meta_data: makeMetaDataContent(blog, blog.image_bytes, blog.slug),
+      meta_data: makeMetaDataContent(blog, blog.image.url, blog.slug),
     };
   }
   async findOneById(id: number) {
@@ -107,48 +125,81 @@ export class BlogService {
   }
 
   async update(user: UserEntity, id: number, updateBlogDto: UpdateBlogDto) {
-    let topic = null;
-    if (updateBlogDto.topic_id) {
-      topic = await this.topicService.findOneById(updateBlogDto.topic_id);
-    }
-    const blog = await this.blogRepo.findOne({
-      where: {
-        id,
-        deleted_at: null,
-      },
-    });
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      let topic = null;
+      if (updateBlogDto.topic_id) {
+        topic = await this.topicService.findOneById(updateBlogDto.topic_id);
+      }
+      const blog = await this.blogRepo.findOne({
+        where: {
+          id,
+          deleted_at: null,
+        },
+      });
 
-    if (!blog) {
-      throw new NotFoundException('Store not found');
-    }
+      if (!blog) {
+        throw new NotFoundException('Blog not found');
+      }
 
-    if (user.role !== ROLES.ADMIN && blog.created_by !== user.id) {
-      throw new ForbiddenException(
-        'You are not authorized to update this blog',
-      );
-    }
-    const data = {
-      ...blog,
-      ...updateBlogDto,
-      ...(topic && { topic }),
-    };
+      if (user.role !== ROLES.ADMIN && blog.created_by !== user.id) {
+        throw new ForbiddenException(
+          'You are not authorized to update this blog',
+        );
+      }
+      const data = {
+        ...blog,
+        ...updateBlogDto,
+        ...(topic && { topic }),
+      };
+      if (
+        updateBlogDto.image !== null &&
+        updateBlogDto.image.public_id !== blog.image.public_id
+      ) {
+        await this.fileService.delete(blog.image.public_id);
+        await this.fileService.markImageAsUsed([updateBlogDto.image.public_id]);
+      }
 
-    return await this.blogRepo.save(data);
+      await queryRunner.commitTransaction();
+
+      return await this.blogRepo.save(data);
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async remove(id: number, user: UserEntity) {
-    const blog = await this.blogRepo.findOneBy({
-      id,
-    });
-    if (!blog) {
-      throw new NotFoundException('blog not found ');
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const blog = await this.blogRepo.findOneBy({
+        id,
+      });
+      if (!blog) {
+        throw new NotFoundException('Blog not found ');
+      }
+      if (user.role !== ROLES.ADMIN && blog.created_by !== user.id) {
+        throw new ForbiddenException(
+          'You are not authorized to delete this blog',
+        );
+      }
+      if (blog.image !== null) {
+        await this.fileService.delete(blog.image.public_id);
+      }
+      await this.blogRepo.delete(id);
+      await queryRunner.commitTransaction();
+      return true;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
-    if (user.role !== ROLES.ADMIN && blog.created_by !== user.id) {
-      throw new ForbiddenException(
-        'You are not authorized to delete this blog',
-      );
-    }
-    await this.blogRepo.delete(id);
-    return true;
   }
 }

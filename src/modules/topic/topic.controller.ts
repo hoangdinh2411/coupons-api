@@ -27,11 +27,10 @@ export class TopicController {
   @Get()
   @Public()
   findAll(
-    @Query('limit') limit: number,
     @Query('page') page: number,
     @Query('search_text') search_text: string,
   ) {
-    return this.topicService.findAll(limit, page, search_text);
+    return this.topicService.findAll(page, search_text);
   }
 
   @Get(':id')

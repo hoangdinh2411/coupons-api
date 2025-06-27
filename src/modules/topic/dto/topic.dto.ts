@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
-import { SeoDto } from 'common/constants/common.dto';
+import { BaseDto } from 'common/constants/common.dto';
 
-export class TopicDto extends SeoDto {
+export class TopicDto extends BaseDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
@@ -11,13 +11,4 @@ export class TopicDto extends SeoDto {
     description: 'Name of category',
   })
   name: string;
-
-  @IsString()
-  @ApiProperty({
-    type: () => 'string',
-    default: 'icon-1',
-    description: 'Image with format Base64',
-  })
-  // @IsNotEmpty()
-  image_bytes: string;
 }

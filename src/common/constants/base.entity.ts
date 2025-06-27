@@ -14,18 +14,11 @@ export class BaseEntity {
 
   @DeleteDateColumn({ type: 'timestamp', nullable: true, name: 'deleted_at' })
   deleted_at: Date;
-
   //seo
-  @Column({ type: 'text', nullable: true })
-  seo_title: string;
-
-  @Column({ type: 'text', nullable: true })
-  seo_description: string;
-
-  @Column({
-    type: 'text',
-    array: true,
-    nullable: true,
-  })
-  seo_keywords: string[];
+  @Column({ type: 'jsonb', nullable: true })
+  meta_data: {
+    title: string;
+    description: string;
+    keywords: string[];
+  };
 }

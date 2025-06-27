@@ -15,7 +15,7 @@ export class TopicEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', unique: true })
   name: string;
 
   @Column({ type: 'text' })
@@ -27,8 +27,12 @@ export class TopicEntity extends BaseEntity {
     return (this.slug = generateSlug(this.name));
   }
 
-  @Column({ type: 'text' })
-  image_bytes: string;
+  @Column({ type: 'jsonb', nullable: true })
+  image: {
+    url: string;
+    public_id: string;
+    file_name: string;
+  };
 
   @OneToMany(() => BlogsEntity, (blog) => blog.topic)
   blogs: BlogsEntity[];

@@ -1,26 +1,37 @@
 import {
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { CategoryDto } from './dto/category.dto';
 import { CategoryEntity } from './entities/category.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, QueryFailedError, Repository } from 'typeorm';
-import { makeMetaDataContent } from 'common/helpers/metadata';
+import { DataSource, ILike, QueryFailedError, Repository } from 'typeorm';
+import { FilesService } from 'modules/files/files.service';
 
 @Injectable()
 export class CategoriesService {
   constructor(
     @InjectRepository(CategoryEntity)
     private readonly categoryRep: Repository<CategoryEntity>,
-    // private readonly mailerService: MailerService,
+    private readonly fileService: FilesService,
+    private readonly dataSource: DataSource,
   ) {}
   async create(createCategoryDto: CategoryDto) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
-      const data = this.categoryRep.create(createCategoryDto);
-      return await this.categoryRep.save(data);
+      const new_category = this.categoryRep.create(createCategoryDto);
+      const result = await this.categoryRep.save(new_category);
+      if (result.image !== null) {
+        await this.fileService.markImageAsUsed([result.image.public_id]);
+      }
+      await queryRunner.commitTransaction();
+      return result;
     } catch (error) {
+      await queryRunner.rollbackTransaction();
       if (error instanceof QueryFailedError) {
         const err = error.driverError;
         if (err.code === '23505') {
@@ -29,6 +40,8 @@ export class CategoriesService {
       } else {
         throw error;
       }
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -47,15 +60,7 @@ export class CategoriesService {
     const [results, total] = await query.getManyAndCount();
     return {
       total,
-      results:
-        results.map((cat) => ({
-          ...cat,
-          meta_data: makeMetaDataContent(
-            cat,
-            cat.image_bytes,
-            '/categories/' + cat.slug,
-          ),
-        })) || [],
+      results,
     };
   }
   async search(search_text: string) {
@@ -80,21 +85,74 @@ export class CategoriesService {
   }
 
   async update(id: number, updateCategoryDto: CategoryDto) {
-    const result = await this.categoryRep.update(id, updateCategoryDto);
-    if (result.affected === 0) {
-      throw new NotFoundException('Category not found');
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const category = await this.categoryRep.findOneBy({
+        id,
+      });
+      if (!category) {
+        throw new NotFoundException('Category not found');
+      }
+
+      const result = await this.categoryRep.update(id, updateCategoryDto);
+      if (result.affected === 0) {
+        throw new InternalServerErrorException('Cannot update category');
+      }
+      if (
+        updateCategoryDto.image !== null &&
+        updateCategoryDto.image.public_id !== category.image.public_id
+      ) {
+        await this.fileService.delete(category.image.public_id);
+        await this.fileService.markImageAsUsed([
+          updateCategoryDto.image.public_id,
+        ]);
+      }
+
+      await queryRunner.commitTransaction();
+      return {
+        id,
+        ...updateCategoryDto,
+      };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      if (error instanceof QueryFailedError) {
+        const err = error.driverError;
+        if (err.code === '23505') {
+          throw new ConflictException('Category already exist');
+        }
+      } else {
+        throw error;
+      }
+    } finally {
+      await queryRunner.release();
     }
-    return {
-      id,
-      ...updateCategoryDto,
-    };
   }
 
   async remove(id: number) {
-    const result = await this.categoryRep.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException('Category not found');
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const category = await this.categoryRep.findOneBy({
+        id,
+      });
+
+      if (!category) {
+        throw new NotFoundException('Category not found');
+      }
+      if (category.image !== null) {
+        await this.fileService.delete(category.image.public_id);
+      }
+      await this.categoryRep.delete(category.id);
+      await queryRunner.commitTransaction();
+      return true;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
-    return true;
   }
 }

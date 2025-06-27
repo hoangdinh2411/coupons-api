@@ -7,9 +7,9 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import { SeoDto } from 'common/constants/common.dto';
+import { BaseDto } from 'common/constants/common.dto';
 
-export class UpdateStoreDto extends SeoDto {
+export class UpdateStoreDto extends BaseDto {
   @IsString()
   @IsOptional()
   @ApiProperty({
@@ -27,16 +27,6 @@ export class UpdateStoreDto extends SeoDto {
     description: 'Description about the store',
   })
   description: string;
-
-  @IsString()
-  @IsOptional()
-  @ApiProperty({
-    type: () => 'string',
-    default: 'icon-1',
-    description: 'Image with format Base64',
-  })
-  // @IsOptional()
-  image_bytes: string;
 
   @IsNumber()
   @Min(0)

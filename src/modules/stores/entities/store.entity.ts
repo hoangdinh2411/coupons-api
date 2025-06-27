@@ -25,8 +25,12 @@ export class StoreEntity extends BaseEntity {
   })
   name: string;
 
-  @Column({ type: 'text' })
-  image_bytes: string;
+  @Column({ type: 'jsonb', nullable: true })
+  image: {
+    url: string;
+    public_id: string;
+    file_name: string;
+  };
 
   @Column({
     type: 'varchar',
