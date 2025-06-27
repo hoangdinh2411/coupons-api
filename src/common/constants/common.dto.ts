@@ -1,12 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-  IsArray,
-  IsOptional,
-  IsString,
-  IsUrl,
-  ValidateNested,
-} from 'class-validator';
+import { IsArray, IsOptional, IsString, IsUrl } from 'class-validator';
 
 export class MetaDataDto {
   @IsString()
@@ -39,8 +33,8 @@ export class MetaDataDto {
 }
 
 export class ImageDto {
-  @IsOptional()
   @IsUrl()
+  @IsOptional()
   url: string;
 
   @IsString()
@@ -53,8 +47,8 @@ export class ImageDto {
 }
 
 export class BaseDto {
-  @ValidateNested()
   @Type(() => ImageDto)
+  @IsOptional()
   @ApiProperty({
     type: () => 'object',
     default: {
@@ -66,8 +60,8 @@ export class BaseDto {
   })
   image: ImageDto;
 
-  @ValidateNested()
   @Type(() => MetaDataDto)
+  @IsOptional()
   @ApiProperty({
     type: () => 'object',
     default: {

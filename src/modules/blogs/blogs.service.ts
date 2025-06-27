@@ -39,7 +39,7 @@ export class BlogService {
         topic,
       });
       const result = await this.blogRepo.save(new_blog);
-      if (result.image !== null) {
+      if (result.image.public_id) {
         await this.fileService.markImageAsUsed([result.image.public_id]);
       }
       await queryRunner.commitTransaction();
@@ -128,6 +128,7 @@ export class BlogService {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
+
     try {
       let topic = null;
       if (updateBlogDto.topic_id) {
@@ -139,7 +140,6 @@ export class BlogService {
           deleted_at: null,
         },
       });
-
       if (!blog) {
         throw new NotFoundException('Blog not found');
       }
@@ -154,17 +154,20 @@ export class BlogService {
         ...updateBlogDto,
         ...(topic && { topic }),
       };
-      if (
-        updateBlogDto.image !== null &&
-        updateBlogDto.image.public_id !== blog.image.public_id
-      ) {
-        await this.fileService.delete(blog.image.public_id);
+      const result = await this.blogRepo.save(data);
+      const has_new_image =
+        updateBlogDto.image &&
+        updateBlogDto.image.public_id &&
+        updateBlogDto.image.public_id !== blog.image.public_id;
+      if (has_new_image) {
         await this.fileService.markImageAsUsed([updateBlogDto.image.public_id]);
+      }
+      if (has_new_image && blog.image.public_id !== '') {
+        await this.fileService.delete(blog.image.public_id);
       }
 
       await queryRunner.commitTransaction();
-
-      return await this.blogRepo.save(data);
+      return result;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
@@ -189,7 +192,7 @@ export class BlogService {
           'You are not authorized to delete this blog',
         );
       }
-      if (blog.image !== null) {
+      if (blog.image.public_id) {
         await this.fileService.delete(blog.image.public_id);
       }
       await this.blogRepo.delete(id);

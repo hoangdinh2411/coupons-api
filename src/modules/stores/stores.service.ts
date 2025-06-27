@@ -201,25 +201,26 @@ export class StoresService {
         );
       }
       const data = {
+        ...store,
         ...updateStoreDto,
         ...(category && { category }),
       };
-      await this.storeRep.update(id, data);
-      if (
-        updateStoreDto.image !== null &&
-        updateStoreDto.image.public_id !== store.image.public_id
-      ) {
-        await this.fileService.delete(store.image.public_id);
+      const result = await this.storeRep.save(data);
+      const has_new_image =
+        updateStoreDto.image &&
+        updateStoreDto.image.public_id &&
+        updateStoreDto.image.public_id !== store.image.public_id;
+      if (has_new_image) {
         await this.fileService.markImageAsUsed([
           updateStoreDto.image.public_id,
         ]);
       }
+      if (has_new_image && store.image.public_id !== '') {
+        await this.fileService.delete(store.image.public_id);
+      }
 
       await queryRunner.commitTransaction();
-      return {
-        id,
-        ...updateStoreDto,
-      };
+      return result;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       if (error instanceof QueryFailedError) {
@@ -247,7 +248,7 @@ export class StoresService {
       if (!store) {
         throw new NotFoundException('Store not found');
       }
-      if (store.image !== null) {
+      if (store.image.public_id) {
         await this.fileService.delete(store.image.public_id);
       }
       await this.storeRep.delete(id);

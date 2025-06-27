@@ -25,7 +25,7 @@ export class CategoriesService {
     try {
       const new_category = this.categoryRep.create(createCategoryDto);
       const result = await this.categoryRep.save(new_category);
-      if (result.image !== null) {
+      if (result.image.public_id) {
         await this.fileService.markImageAsUsed([result.image.public_id]);
       }
       await queryRunner.commitTransaction();
@@ -100,14 +100,18 @@ export class CategoriesService {
       if (result.affected === 0) {
         throw new InternalServerErrorException('Cannot update category');
       }
-      if (
-        updateCategoryDto.image !== null &&
-        updateCategoryDto.image.public_id !== category.image.public_id
-      ) {
-        await this.fileService.delete(category.image.public_id);
+
+      const has_new_image =
+        updateCategoryDto.image &&
+        updateCategoryDto.image.public_id &&
+        updateCategoryDto.image.public_id !== category.image.public_id;
+      if (has_new_image) {
         await this.fileService.markImageAsUsed([
           updateCategoryDto.image.public_id,
         ]);
+      }
+      if (has_new_image && category.image.public_id !== '') {
+        await this.fileService.delete(category.image.public_id);
       }
 
       await queryRunner.commitTransaction();
@@ -142,7 +146,7 @@ export class CategoriesService {
       if (!category) {
         throw new NotFoundException('Category not found');
       }
-      if (category.image !== null) {
+      if (category.image.public_id) {
         await this.fileService.delete(category.image.public_id);
       }
       await this.categoryRep.delete(category.id);

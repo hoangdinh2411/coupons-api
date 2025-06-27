@@ -29,7 +29,7 @@ export class TopicService {
     try {
       const data = this.topicRepo.create(createTopicDto);
       const result = await this.topicRepo.save(data);
-      if (result.image !== null) {
+      if (result.image.public_id) {
         await this.fileService.markImageAsUsed([result.image.public_id]);
       }
       await queryRunner.commitTransaction();
@@ -111,14 +111,17 @@ export class TopicService {
       if (result.affected === 0) {
         throw new InternalServerErrorException('Cannot update topic');
       }
-      if (
-        updateTopicDto.image !== null &&
-        updateTopicDto.image.public_id !== topic.image.public_id
-      ) {
-        await this.fileService.delete(topic.image.public_id);
+      const has_new_image =
+        updateTopicDto.image &&
+        updateTopicDto.image.public_id &&
+        updateTopicDto.image.public_id !== topic.image.public_id;
+      if (has_new_image) {
         await this.fileService.markImageAsUsed([
           updateTopicDto.image.public_id,
         ]);
+      }
+      if (has_new_image && topic.image.public_id !== '') {
+        await this.fileService.delete(topic.image.public_id);
       }
 
       await queryRunner.commitTransaction();
@@ -153,7 +156,7 @@ export class TopicService {
       if (!topic) {
         throw new NotFoundException('Topic not found');
       }
-      if (topic.image !== null) {
+      if (topic.image.public_id) {
         await this.fileService.delete(topic.image.public_id);
       }
       await this.topicRepo.delete(id);
