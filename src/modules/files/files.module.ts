@@ -4,7 +4,6 @@ import { FilesController } from './files.controller';
 import { FilesService } from './files.service';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { MulterModule } from '@nestjs/platform-express';
-import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -13,7 +12,6 @@ import { ScheduleModule } from '@nestjs/schedule';
     MulterModule.register({
       dest: './uploads',
     }),
-    ScheduleModule.forRoot(),
     CloudinaryModule,
   ],
   providers: [FilesService],

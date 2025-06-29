@@ -18,6 +18,7 @@ export class HealthController {
     private health: HealthCheckService,
     private http: HttpHealthIndicator,
     private db: TypeOrmHealthIndicator,
+    private configService: ConfigService,
   ) {}
 
   @Get()
@@ -33,10 +34,17 @@ export class HealthController {
   @Public()
   @ApiOperation({ summary: 'Health check endpoints' })
   @Cron('0 10 * * * *')
-  keepServerWakeUp() {
-    const configService = new ConfigService();
-    Logger.log('Health check endpoint called', 'HealthController');
-    return axios(configService.get('API_URL') + '/api/v1/health');
+  async keepServerWakeUp() {
+    const url = this.configService.get('API_URL');
+    Logger.log(`Pinging ${url}/api/v1/health`, 'HealthController');
+
+    try {
+      const response = await axios.get(`${url}/api/v1/health`);
+      Logger.log('Wake-up ping successful', 'HealthController');
+      return response.data;
+    } catch (error) {
+      Logger.error('Wake-up ping failed', error, 'HealthController');
+    }
   }
 
   @Get('db')
