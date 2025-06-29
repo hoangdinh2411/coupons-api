@@ -32,11 +32,11 @@ export class HealthController {
 
   @Public()
   @ApiOperation({ summary: 'Health check endpoints' })
-  @Cron('0 */15 6-23 * * *')
+  @Cron('0 10 * * * *')
   keepServerWakeUp() {
     const configService = new ConfigService();
     Logger.log('Health check endpoint called', 'HealthController');
-    return axios(configService.get('API_URL') + '/health');
+    return axios(configService.get('API_URL') + '/api/v1/health');
   }
 
   @Get('db')
