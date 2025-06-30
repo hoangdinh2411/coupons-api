@@ -63,7 +63,6 @@ export class CouponsService {
   }
 
   async findAll(
-    limit: number,
     page: number,
     search_text: string,
     is_verified: boolean = true,

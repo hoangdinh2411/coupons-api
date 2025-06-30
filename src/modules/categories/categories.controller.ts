@@ -10,7 +10,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CategoryDto } from './dto/category.dto';
 import { ROLES } from 'common/constants/enum/roles.enum';
 import { Roles } from 'common/decorators/roles.decorator';
@@ -26,14 +26,16 @@ export class CategoriesController {
   create(@Body() createCategoryDto: CategoryDto) {
     return this.categoriesService.create(createCategoryDto);
   }
+
   @Get()
   @Public()
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'search_text', required: false, type: String })
   findAll(
-    @Query('limit') limit: number,
-    @Query('page') page: number,
-    @Query('search_text') search_text: string,
+    @Query('page') page?: number,
+    @Query('search_text') search_text?: string,
   ) {
-    return this.categoriesService.findAll(+limit, +page, search_text);
+    return this.categoriesService.findAll(+page, search_text);
   }
   @Get('search')
   @Public()

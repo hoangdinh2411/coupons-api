@@ -106,11 +106,11 @@ export class StoresService {
       })),
     };
   }
-  async findAll(limit: number, page: number, search_text: string) {
+  async findAll(page: number, search_text: string) {
     const query = this.storeRep.createQueryBuilder('store');
 
-    if (limit && page) {
-      query.skip((page - 1) * limit).take(limit);
+    if (page) {
+      query.skip((page - 1) * LIMIT_DEFAULT).take(LIMIT_DEFAULT);
     }
     if (search_text) {
       query.andWhere({

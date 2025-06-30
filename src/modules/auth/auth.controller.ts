@@ -107,7 +107,7 @@ export class AuthController {
       res.cookie('token', token, {
         httpOnly: true,
         secure: NODE_ENV === 'production', // enable when client is served over https
-        sameSite: 'none', // enable when client is served over https
+        sameSite: 'lax', // enable when client is served over https
         path: '/',
         maxAge: 1000 * 60 * 60 * 24,
       });

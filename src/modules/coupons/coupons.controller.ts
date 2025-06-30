@@ -17,6 +17,7 @@ import { UserEntity } from 'modules/users/entities/users.entity';
 import { CurrentUser } from 'common/decorators/currentUser.decorator';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
 import { FilterDto } from 'common/constants/filter.dto';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('coupons')
 export class CouponsController {
@@ -30,22 +31,24 @@ export class CouponsController {
 
   @Get()
   @Public()
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'search_text', required: false, type: String })
   findAll(
-    @Query('limit') limit: number,
     @Query('page') page: number,
     @Query('search_text') search_text: string,
   ) {
-    return this.couponsService.findAll(+limit, +page, search_text);
+    return this.couponsService.findAll(+page, search_text);
   }
 
   @Get('/submit')
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'search_text', required: false, type: String })
   @Roles(ROLES.ADMIN)
   getAllInactiveCoupons(
-    @Query('limit') limit: number,
     @Query('page') page: number,
     @Query('search_text') search_text: string,
   ) {
-    return this.couponsService.findAll(+limit, +page, search_text, false);
+    return this.couponsService.findAll(+page, search_text, false);
   }
   @Get(':id')
   @Public()

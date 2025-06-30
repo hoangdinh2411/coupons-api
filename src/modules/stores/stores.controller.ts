@@ -16,6 +16,7 @@ import { Public } from 'common/decorators/public.decorator';
 import { StoreDto } from './dto/store.dto';
 import { FilterDto } from '../../common/constants/filter.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('stores')
 export class StoresController {
@@ -30,12 +31,13 @@ export class StoresController {
 
   @Get()
   @Public()
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'search_text', required: false, type: String })
   findAll(
-    @Query('limit') limit: number,
     @Query('page') page: number,
     @Query('search_text') search_text: string,
   ) {
-    return this.storesService.findAll(+limit, +page, search_text);
+    return this.storesService.findAll(+page, search_text);
   }
 
   @Post('filter')

@@ -9,6 +9,7 @@ import { CategoryEntity } from './entities/category.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, ILike, In, QueryFailedError, Repository } from 'typeorm';
 import { FilesService } from 'modules/files/files.service';
+import { LIMIT_DEFAULT } from 'common/constants/variables';
 
 @Injectable()
 export class CategoriesService {
@@ -45,10 +46,10 @@ export class CategoriesService {
     }
   }
 
-  async findAll(limit: number, page: number, search_text: string) {
+  async findAll(page: number, search_text: string) {
     const query = this.categoryRep.createQueryBuilder('category');
-    if (limit && page) {
-      query.skip((page - 1) * limit).take(limit);
+    if (page) {
+      query.skip((page - 1) * LIMIT_DEFAULT).take(LIMIT_DEFAULT);
     }
 
     if (search_text) {
@@ -57,7 +58,10 @@ export class CategoriesService {
       });
     }
 
-    const [results, total] = await query.getManyAndCount();
+    const [results, total] = await query
+      .leftJoin('category.stores', 'store')
+      .addSelect(['store.id', 'store.name', 'store.slug'])
+      .getManyAndCount();
     return {
       total,
       results,
