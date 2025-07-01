@@ -33,13 +33,18 @@ export class StoresService {
         createStoreDto.categories,
       );
 
-      const data = this.storeRep.create({ ...createStoreDto, categories });
-      await this.storeRep.save(data);
-      if (data) {
-        await this.fileService.markImageAsUsed([data.image.public_id]);
+      const result = this.storeRep.create({ ...createStoreDto, categories });
+      await this.storeRep.save(result);
+      if (result) {
+        await this.fileService.markImageAsUsed([result.image.public_id]);
+      }
+      if (result.description) {
+        await this.fileService.updateTagsFOrUsedImagesFromHtml(
+          result.description,
+        );
       }
       await queryRunner.commitTransaction();
-      return data;
+      return result;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       if (error instanceof QueryFailedError) {
@@ -219,7 +224,11 @@ export class StoresService {
       if (has_new_image && store.image.public_id !== '') {
         await this.fileService.delete(store.image.public_id);
       }
-
+      if (result.description) {
+        await this.fileService.updateTagsFOrUsedImagesFromHtml(
+          result.description,
+        );
+      }
       await queryRunner.commitTransaction();
       return result;
     } catch (error) {

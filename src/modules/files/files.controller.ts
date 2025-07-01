@@ -1,10 +1,9 @@
 import {
   Body,
   Controller,
-  Delete,
   HttpCode,
+  Patch,
   Post,
-  Query,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
@@ -41,10 +40,10 @@ export class FilesController {
     }
     return saved_files;
   }
-  @Delete()
+  @Patch()
   @Roles(ROLES.ADMIN)
   @HttpCode(200)
-  async delete(@Query('public_id') public_id: string) {
-    return await this.fileService.delete(public_id);
+  async delete(@Body() data: string[]) {
+    return await this.fileService.deleteImages(data);
   }
 }

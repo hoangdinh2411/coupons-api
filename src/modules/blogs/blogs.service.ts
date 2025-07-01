@@ -42,6 +42,10 @@ export class BlogService {
       if (result.image.public_id) {
         await this.fileService.markImageAsUsed([result.image.public_id]);
       }
+
+      if (result.content) {
+        await this.fileService.updateTagsFOrUsedImagesFromHtml(result.content);
+      }
       await queryRunner.commitTransaction();
       return result;
     } catch (error) {
@@ -165,7 +169,9 @@ export class BlogService {
       if (has_new_image && blog.image.public_id !== '') {
         await this.fileService.delete(blog.image.public_id);
       }
-
+      if (result.content) {
+        await this.fileService.updateTagsFOrUsedImagesFromHtml(result.content);
+      }
       await queryRunner.commitTransaction();
       return result;
     } catch (error) {

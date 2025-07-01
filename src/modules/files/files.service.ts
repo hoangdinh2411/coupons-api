@@ -3,6 +3,7 @@ import { FileAdapter } from './files.adapter';
 import { CloudinaryService } from './cloudinary/cloudinary.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { unlinkSync } from 'fs';
+import { extractPublicIdsFromHtml } from 'common/helpers/image';
 
 export class FilesService {
   constructor(
@@ -17,7 +18,13 @@ export class FilesService {
   }
 
   async delete(public_id: string) {
-    return await this.fileAdapter.deleteOne(public_id);
+    try {
+      return await this.fileAdapter.deleteOne(public_id);
+    } catch (_error) {
+      throw new ConflictException(
+        'cannot delete image with public id ' + public_id,
+      );
+    }
   }
 
   @Cron(CronExpression.EVERY_HOUR)
@@ -36,11 +43,9 @@ export class FilesService {
   }
 
   // make Image Type to be used in other modules
-  async deleteImages(images: any[]) {
-    if (images && images.length > 0) {
-      for (let i = 0; i < images.length; i++) {
-        await this.fileAdapter.deleteOne(images[i].public_id);
-      }
+  async deleteImages(ids: string[]) {
+    for (const id of ids) {
+      await this.delete(id);
     }
   }
   async markImageAsUsed(public_ids: string[]) {
@@ -48,5 +53,12 @@ export class FilesService {
       throw new ConflictException('Do not have any publics id to remove tag');
     }
     return await this.fileAdapter.markImageAsUsed(public_ids);
+  }
+
+  async updateTagsFOrUsedImagesFromHtml(html: string) {
+    const public_ids = extractPublicIdsFromHtml(html);
+    if (public_ids) {
+      await this.markImageAsUsed(public_ids);
+    }
   }
 }

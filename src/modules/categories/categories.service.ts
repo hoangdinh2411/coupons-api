@@ -57,16 +57,17 @@ export class CategoriesService {
         name: ILike(`%${search_text}%`),
       });
     }
-
     const [results, total] = await query
       .leftJoin('category.stores', 'store')
       .addSelect(['store.id', 'store.name', 'store.slug'])
+      .orderBy('category.name', 'ASC')
       .getManyAndCount();
     return {
       total,
       results,
     };
   }
+
   async search(search_text: string) {
     const [results, total] = await this.categoryRep
       .createQueryBuilder('category')

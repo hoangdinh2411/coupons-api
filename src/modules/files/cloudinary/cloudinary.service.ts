@@ -27,10 +27,10 @@ export class CloudinaryService implements FileAdapter {
     }
   }
 
-  async deleteOne(public_id: string): Promise<boolean> {
+  async deleteOne(public_id: string): Promise<string> {
     try {
       await v2.uploader.destroy(public_id);
-      return true;
+      return public_id;
     } catch (error) {
       const cloudErr = error as UploadApiErrorResponse;
 

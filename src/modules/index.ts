@@ -10,6 +10,7 @@ import { CouponsModule } from './coupons/coupons.module';
 import { BlogsModule } from './blogs/blogs.module';
 import { TopicModule } from './topic/topic.module';
 import { FilesModule } from './files/files.module';
+import { ClientModule } from './client/client.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { FilesModule } from './files/files.module';
     BlogsModule,
     TopicModule,
     FilesModule,
+    ClientModule,
   ],
   providers: [JWTAuthStrategy],
 })

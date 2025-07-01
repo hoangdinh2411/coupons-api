@@ -5,6 +5,6 @@ export abstract class FileAdapter {
     _file: Express.Multer.File,
     _folder: string,
   ): Promise<UploadApiResponse>;
-  public abstract deleteOne(_public_id: string): Promise<boolean>;
+  public abstract deleteOne(_public_id: string): Promise<string>;
   public abstract markImageAsUsed(_public_ids: string[]): Promise<boolean>;
 }

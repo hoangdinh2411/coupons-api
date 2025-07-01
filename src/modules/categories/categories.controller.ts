@@ -37,6 +37,7 @@ export class CategoriesController {
   ) {
     return this.categoriesService.findAll(+page, search_text);
   }
+
   @Get('search')
   @Public()
   @Roles(ROLES.ADMIN)
