@@ -15,8 +15,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       context.getHandler(),
       context.getClass(),
     ]);
-    if (isPublic) {
-      return true;
+    const request = context.switchToHttp().getRequest();
+    const path = request.path;
+    request.skipRoles = isPublic || path.includes('client');
+    if (request.skipRoles) {
+      return true; // skip JWT auth too
     }
 
     return super.canActivate(context);

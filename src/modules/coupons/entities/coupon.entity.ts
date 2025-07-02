@@ -58,6 +58,9 @@ export class CouponEntity extends BaseEntity {
   })
   user: UserEntity;
 
+  @ManyToMany(() => UserEntity, (user) => user.saved_coupons)
+  saved_by_user: UserEntity[];
+
   @Column({
     type: 'int',
     nullable: true,
@@ -82,12 +85,12 @@ export class CouponEntity extends BaseEntity {
     nullable: true,
   })
   start_date: string;
+
   @Column({
     type: 'date',
     nullable: true,
   })
   expire_date: string;
-
   @BeforeInsert()
   @BeforeUpdate()
   validateDate() {
@@ -95,6 +98,7 @@ export class CouponEntity extends BaseEntity {
       throw new Error('End date must be after start date');
     }
   }
+
   @ManyToOne(() => StoreEntity, (store) => store.coupons, {
     onDelete: 'CASCADE',
   })

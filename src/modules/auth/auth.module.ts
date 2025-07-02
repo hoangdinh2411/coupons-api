@@ -7,7 +7,6 @@ import { LocalStrategy } from './strategy/local.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { JWTAuthStrategy } from './strategy/jwt.strategy';
-import { UserService } from 'modules/users/users.service';
 import { UserEntity } from 'modules/users/entities/users.entity';
 import { UserModule } from 'modules/users/users.module';
 import { EmailModule } from 'modules/emailer/emailer.module';
@@ -32,7 +31,6 @@ import { SignUpStrategyFactory } from './factory/signup-strategy.factory';
   controllers: [AuthController],
   providers: [
     AuthService,
-    UserService,
     LocalStrategy,
     JWTAuthStrategy,
     RegularUserStrategy,

@@ -10,12 +10,15 @@ import { UserEntity } from './entities/users.entity';
 import { ROLES } from 'common/constants/enum/roles.enum';
 import { SignUpDto } from 'modules/auth/dtos/auth.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { CouponEntity } from 'modules/coupons/entities/coupon.entity';
+import { CouponsService } from 'modules/coupons/coupons.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
+    readonly couponService: CouponsService,
   ) {}
 
   async verifyEmail(email: string, verify_code: number) {
@@ -42,6 +45,39 @@ export class UserService {
     if (user) {
       throw new ConflictException('Email already exists');
     }
+  }
+  async getSavedCoupons(user_id: number): Promise<CouponEntity[]> {
+    const user = await this.userRepo.findOne({
+      where: { id: user_id },
+      relations: ['saved_coupons'],
+    });
+    if (!user) {
+      throw new NotFoundException('User does not exist');
+    }
+    return user.saved_coupons;
+  }
+
+  async saveCouponForUser(id: number, user_id: number) {
+    const couponData = await this.couponService.findOne(id);
+    const coupon = Object.assign(new CouponEntity(), couponData);
+
+    const user = await this.userRepo.findOne({
+      where: {
+        id: user_id,
+      },
+      relations: ['saved_coupons'],
+    });
+
+    const already_saved = user.saved_coupons.some(
+      (c: CouponEntity) => c.id === id,
+    );
+    if (already_saved) {
+      user.saved_coupons = user.saved_coupons.filter((c) => c.id !== id);
+    } else {
+      user.saved_coupons.push(coupon);
+    }
+
+    await this.userRepo.save(user);
   }
   async hasSuperAdmin(): Promise<void> {
     const user = await this.userRepo.findOne({

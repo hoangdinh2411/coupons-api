@@ -1,5 +1,13 @@
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Body, Controller, Delete, Get, HttpCode, Patch } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { UserEntity } from './entities/users.entity';
 import { CurrentUser } from 'common/decorators/currentUser.decorator';
 import { UserService } from './users.service';
@@ -37,6 +45,7 @@ export class UserController {
   async update(@CurrentUser() user: UserEntity, @Body() data: UpdateUserDto) {
     return await this.userService.updateAccount(user.id, data);
   }
+
   @Delete()
   @HttpCode(200)
   @Roles(ROLES.ADMIN)
@@ -48,5 +57,21 @@ export class UserController {
   @HttpCode(200)
   async verifyAccount(@Body() data: VerifyEmailDto) {
     return this.userService.verifyEmail(data.email, data.code);
+  }
+
+  @Post('my-coupons')
+  @Roles(ROLES.USER)
+  saveCoupon(
+    @CurrentUser() user: UserEntity,
+    @Body() { coupon_id }: UpdateUserDto,
+  ) {
+    return this.userService.saveCouponForUser(+coupon_id, +user.id);
+  }
+
+  @Get('my-coupons')
+  @HttpCode(200)
+  @Roles(ROLES.PARTNER, ROLES.USER)
+  async getMyCoupons(@CurrentUser() user: UserEntity) {
+    return await this.userService.getSavedCoupons(+user.id);
   }
 }

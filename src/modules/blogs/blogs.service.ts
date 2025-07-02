@@ -211,4 +211,13 @@ export class BlogService {
       await queryRunner.release();
     }
   }
+
+  async getLatestBlogs() {
+    return await this.blogRepo.find({
+      take: LIMIT_DEFAULT,
+      order: {
+        created_at: 'ASC',
+      },
+    });
+  }
 }

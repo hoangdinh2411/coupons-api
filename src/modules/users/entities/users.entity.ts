@@ -1,16 +1,15 @@
 import { Exclude } from 'class-transformer';
+import { BaseEntity } from 'common/constants/base.entity';
 import { ROLES } from 'common/constants/enum/roles.enum';
 import { BlogsEntity } from 'modules/blogs/entities/blogs.entity';
 import { CouponEntity } from 'modules/coupons/entities/coupon.entity';
 import {
-  BaseEntity,
   Column,
-  CreateDateColumn,
-  DeleteDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('user')
@@ -67,15 +66,20 @@ export class UserEntity extends BaseEntity {
   @OneToMany(() => CouponEntity, (coupons) => coupons.added_by)
   coupons: CouponEntity[];
 
+  @ManyToMany(() => CouponEntity, (coupons) => coupons.saved_by_user)
+  @JoinTable({
+    name: 'users-coupons',
+    joinColumn: {
+      name: 'user_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'coupon_id',
+      referencedColumnName: 'id',
+    },
+  })
+  saved_coupons: CouponEntity[];
+
   @OneToMany(() => BlogsEntity, (posts) => posts.created_by)
   blogs: BlogsEntity[];
-
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  created_at: Date;
-
-  @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  updated_at: Date;
-
-  @DeleteDateColumn({ type: 'timestamp', nullable: true, name: 'deleted_at' })
-  deleted_at: Date;
 }

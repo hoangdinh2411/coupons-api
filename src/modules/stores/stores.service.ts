@@ -271,4 +271,24 @@ export class StoresService {
       await queryRunner.release();
     }
   }
+
+  async findStoreForClient(first_letter: string, search_text: string = '') {
+    const query = this.storeRep.createQueryBuilder('store');
+    if (search_text !== '') {
+      query
+        .andWhere({
+          name: ILike(`%${search_text}%`),
+        })
+        .take(LIMIT_DEFAULT);
+    } else {
+      query.andWhere(`store.name ILIKE :first_letter`, {
+        first_letter: `${first_letter}%`,
+      });
+    }
+
+    return await query
+      .orderBy('name', 'ASC')
+      .select(['store.name', 'store.id', 'store.slug', 'store.url'])
+      .getMany();
+  }
 }

@@ -49,7 +49,7 @@ export class TopicService {
     }
   }
 
-  async findAll(page: number, search_text: string) {
+  async findAll(page?: number, search_text?: string) {
     const query = this.topicRepo.createQueryBuilder('topic');
     if (page) {
       query.skip((page - 1) * LIMIT_DEFAULT).take(LIMIT_DEFAULT);

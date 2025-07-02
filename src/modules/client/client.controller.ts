@@ -1,35 +1,41 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ClientService } from './client.service';
-import { Public } from 'common/decorators/public.decorator';
 import { ApiQuery } from '@nestjs/swagger';
+import { TopicService } from 'modules/topic/topic.service';
+import { BlogService } from 'modules/blogs/blogs.service';
+import { StoresService } from 'modules/stores/stores.service';
+import { CategoriesService } from 'modules/categories/categories.service';
 
 @Controller('client')
 export class ClientController {
-  constructor(private readonly clientService: ClientService) {}
+  constructor(
+    private readonly clientService: ClientService,
+    private readonly topicService: TopicService,
+    protected readonly blogsService: BlogService,
+    private readonly storeService: StoresService,
+    private readonly categoryService: CategoriesService,
+  ) {}
 
   @Get('/menu')
-  @Public()
   menu() {
     return this.clientService.getMenu();
   }
   @Get('/categories')
-  @Public()
-  allCategories() {
-    return this.clientService.getAllCategoryWithAllStore();
+  async allCategories() {
+    const { results } = await this.categoryService.findAll();
+    return results;
   }
   @Get('/topics')
-  @Public()
-  allTopics() {
-    return this.clientService.getTopics();
+  async allTopics() {
+    const { results } = await this.topicService.findAll();
+    return results;
   }
 
   @Get('/blogs')
-  @Public()
   getBlogs() {
-    return this.clientService.getLatestBlogs();
+    return this.blogsService.getLatestBlogs();
   }
   @Get('/stores')
-  @Public()
   @ApiQuery({ name: 'first_letter', required: false, type: String })
   @ApiQuery({ name: 'search_text', required: false, type: String })
   allStores(
@@ -40,6 +46,6 @@ export class ClientController {
       first_letter = 'A';
     }
 
-    return this.clientService.getStores(first_letter, search_text);
+    return this.storeService.findStoreForClient(first_letter, search_text);
   }
 }

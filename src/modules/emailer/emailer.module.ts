@@ -24,7 +24,10 @@ import { EmailerService } from './emailer.service';
             from: configService.get<string>('EMAIL_FROM'),
           },
           template: {
-            dir: join(__dirname, '..', '..', 'templates'),
+            dir:
+              configService.get<string>('NODE_ENV') === 'production'
+                ? join(__dirname, '..', '..', 'templates')
+                : join(process.cwd(), 'src', 'templates'),
             adapter: new HandlebarsAdapter(),
             options: {
               strict: true,

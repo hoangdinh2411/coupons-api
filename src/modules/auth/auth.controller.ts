@@ -16,7 +16,6 @@ import { LocalAuthGuard } from 'common/guards/localAuth.guard';
 import { Public } from 'common/decorators/public.decorator';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SignUpDto, AuthDto } from './dtos/auth.dto';
-import { UserService } from 'modules/users/users.service';
 import { ROLES } from 'common/constants/enum/roles.enum';
 import { SignUpStrategyFactory } from './factory/signup-strategy.factory';
 import { ConfigService } from '@nestjs/config';
@@ -27,7 +26,6 @@ import { ConfigService } from '@nestjs/config';
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly userService: UserService,
     private readonly signUpStrategyFactory: SignUpStrategyFactory,
     private configService: ConfigService,
   ) {}
@@ -105,7 +103,7 @@ export class AuthController {
       const NODE_ENV = this.configService.get<string>('NODE_ENV') || '';
       //io
       res.cookie('token', token, {
-        httpOnly: true,
+        httpOnly: NODE_ENV === 'production',
         secure: NODE_ENV === 'production', // enable when client is served over https
         sameSite: 'lax', // enable when client is served over https
         path: '/',

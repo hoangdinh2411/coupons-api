@@ -46,7 +46,7 @@ export class CategoriesService {
     }
   }
 
-  async findAll(page: number, search_text: string) {
+  async findAll(page?: number, search_text?: string) {
     const query = this.categoryRep.createQueryBuilder('category');
     if (page) {
       query.skip((page - 1) * LIMIT_DEFAULT).take(LIMIT_DEFAULT);
@@ -61,19 +61,7 @@ export class CategoriesService {
       .leftJoin('category.stores', 'store')
       .addSelect(['store.id', 'store.name', 'store.slug'])
       .orderBy('category.name', 'ASC')
-      .getManyAndCount();
-    return {
-      total,
-      results,
-    };
-  }
-
-  async search(search_text: string) {
-    const [results, total] = await this.categoryRep
-      .createQueryBuilder('category')
-      .where({
-        name: ILike(`%${search_text}%`),
-      })
+      .addOrderBy('store.name', 'ASC')
       .getManyAndCount();
     return {
       total,

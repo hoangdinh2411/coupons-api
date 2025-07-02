@@ -13,11 +13,12 @@ import { ROLES } from 'common/constants/enum/roles.enum';
 export class RoleGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
   canActivate(context: ExecutionContext): boolean {
+    const request = context.switchToHttp().getRequest();
     const isPublic = this.reflector.getAllAndOverride<boolean>('isPublic', [
       context.getHandler(),
       context.getClass(),
     ]);
-    if (isPublic) {
+    if (isPublic || request.skipRoles) {
       return true;
     }
     const requiredRoles =
