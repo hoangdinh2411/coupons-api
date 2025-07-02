@@ -115,11 +115,9 @@ export class CouponsService {
         },
       );
     }
-    if (is_verified !== undefined) {
-      query.andWhere('cp.is_verified = :is_verified', {
-        is_verified,
-      });
-    }
+    query.andWhere('cp.is_verified = :is_verified', {
+      is_verified,
+    });
     if (rating !== undefined) {
       query.andWhere('cp.rating <= :rating', {
         rating: Number(rating),

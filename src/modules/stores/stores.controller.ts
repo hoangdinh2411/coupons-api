@@ -12,7 +12,6 @@ import {
 import { StoresService } from './stores.service';
 import { Roles } from 'common/decorators/roles.decorator';
 import { ROLES } from 'common/constants/enum/roles.enum';
-import { Public } from 'common/decorators/public.decorator';
 import { StoreDto } from './dto/store.dto';
 import { FilterDto } from '../../common/constants/filter.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
@@ -30,7 +29,7 @@ export class StoresController {
   }
 
   @Get()
-  @Public()
+  @Roles(ROLES.ADMIN)
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'search_text', required: false, type: String })
   findAll(
@@ -41,15 +40,15 @@ export class StoresController {
   }
 
   @Post('filter')
-  @Public()
+  @Roles(ROLES.ADMIN)
   filterStore(@Body() filterData: FilterDto) {
     return this.storesService.filter(filterData);
   }
 
-  @Get(':identifier')
-  @Public()
-  findOne(@Param('identifier') identifier: string) {
-    return this.storesService.findOne(identifier);
+  @Get(':id')
+  @Roles(ROLES.ADMIN)
+  findOneById(@Param('id') id: string) {
+    return this.storesService.findOne(id);
   }
 
   @Patch(':id')

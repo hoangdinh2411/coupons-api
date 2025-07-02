@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { Public } from 'common/decorators/public.decorator';
 import { CurrentUser } from 'common/decorators/currentUser.decorator';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 import { BlogService } from './blogs.service';
@@ -27,20 +26,15 @@ export class BlogsController {
     return this.blogsService.create(user, createPostDto);
   }
 
-  @Get()
-  @Public()
-  findAll() {
-    return this.blogsService.findAll();
-  }
   @Post('filter')
-  @Public()
+  @Roles(ROLES.ADMIN)
   filterStore(@Body() filterData: FilterDto) {
     return this.blogsService.filter(filterData);
   }
-  @Get(':identifier')
-  @Public()
-  findOne(@Param('identifier') identifier: string) {
-    return this.blogsService.findOne(identifier);
+  @Get(':id')
+  @Roles(ROLES.ADMIN)
+  findOne(@Param('id') id: string) {
+    return this.blogsService.findOne(id);
   }
   @Patch(':id')
   @Roles(ROLES.ADMIN)

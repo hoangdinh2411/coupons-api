@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { LIMIT_DEFAULT } from 'common/constants/variables';
 import { CategoryEntity } from 'modules/categories/entities/category.entity';
 import { StoreEntity } from 'modules/stores/entities/store.entity';
-import { DataSource } from 'typeorm';
+import { TopicEntity } from 'modules/topic/entities/topic.entity';
+import { DataSource, ILike } from 'typeorm';
 
 @Injectable()
 export class ClientService {
@@ -63,5 +64,44 @@ export class ClientService {
       .addOrderBy('store.name', 'ASC')
       .getMany();
     return categories;
+  }
+
+  async getTopics() {
+    return await this.dataSource
+      .getRepository(TopicEntity)
+      .createQueryBuilder('topic')
+      .addOrderBy('topic.name', 'ASC')
+      .select(['topic.id', 'topic.name', 'topic.slug'])
+      .getMany();
+  }
+  async getLatestBlogs() {
+    return await this.dataSource
+      .getRepository(TopicEntity)
+      .createQueryBuilder('topic')
+      .addOrderBy('topic.name', 'ASC')
+      .select(['topic.id', 'topic.name', 'topic.slug'])
+      .getMany();
+  }
+
+  async getStores(first_letter: string, search_text: string = '') {
+    const query = this.dataSource
+      .getRepository(StoreEntity)
+      .createQueryBuilder('store');
+    if (search_text !== '') {
+      query
+        .andWhere({
+          name: ILike(`%${search_text}%`),
+        })
+        .take(LIMIT_DEFAULT);
+    } else {
+      query.andWhere(`store.name ILIKE :first_letter`, {
+        first_letter: `${first_letter}%`,
+      });
+    }
+
+    return await query
+      .orderBy('name', 'ASC')
+      .select(['store.name', 'store.id', 'store.slug', 'store.url'])
+      .getMany();
   }
 }

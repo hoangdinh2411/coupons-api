@@ -6,18 +6,15 @@ import {
   Patch,
   Param,
   Delete,
-  Query,
 } from '@nestjs/common';
 import { CouponsService } from './coupons.service';
 import { CouponDto } from './dto/coupon.dt';
 import { Roles } from 'common/decorators/roles.decorator';
 import { ROLES } from 'common/constants/enum/roles.enum';
-import { Public } from 'common/decorators/public.decorator';
 import { UserEntity } from 'modules/users/entities/users.entity';
 import { CurrentUser } from 'common/decorators/currentUser.decorator';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
 import { FilterDto } from 'common/constants/filter.dto';
-import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('coupons')
 export class CouponsController {
@@ -29,29 +26,8 @@ export class CouponsController {
     return this.couponsService.create(createCouponDto, user);
   }
 
-  @Get()
-  @Public()
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'search_text', required: false, type: String })
-  findAll(
-    @Query('page') page: number,
-    @Query('search_text') search_text: string,
-  ) {
-    return this.couponsService.findAll(+page, search_text);
-  }
-
-  @Get('/submit')
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'search_text', required: false, type: String })
-  @Roles(ROLES.ADMIN)
-  getAllInactiveCoupons(
-    @Query('page') page: number,
-    @Query('search_text') search_text: string,
-  ) {
-    return this.couponsService.findAll(+page, search_text, false);
-  }
   @Get(':id')
-  @Public()
+  @Roles(ROLES.ADMIN, ROLES.USER)
   findOne(@Param('id') id: string) {
     return this.couponsService.findOne(+id);
   }
@@ -78,7 +54,7 @@ export class CouponsController {
   }
 
   @Post('filter')
-  @Public()
+  @Roles(ROLES.ADMIN)
   filterCoupon(@Body() filterData: FilterDto) {
     return this.couponsService.filter(filterData);
   }

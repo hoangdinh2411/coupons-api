@@ -51,7 +51,7 @@ export class TopicService {
 
   async findAll(page: number, search_text: string) {
     const query = this.topicRepo.createQueryBuilder('topic');
-    if (LIMIT_DEFAULT && page) {
+    if (page) {
       query.skip((page - 1) * LIMIT_DEFAULT).take(LIMIT_DEFAULT);
     }
 
@@ -60,7 +60,9 @@ export class TopicService {
         name: ILike(`%${search_text}%`),
       });
     }
-    const [results, total] = await query.getManyAndCount();
+    const [results, total] = await query
+      .orderBy('topic.name', 'ASC')
+      .getManyAndCount();
     return {
       total,
       results:

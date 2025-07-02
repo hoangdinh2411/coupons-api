@@ -14,7 +14,6 @@ import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CategoryDto } from './dto/category.dto';
 import { ROLES } from 'common/constants/enum/roles.enum';
 import { Roles } from 'common/decorators/roles.decorator';
-import { Public } from 'common/decorators/public.decorator';
 @ApiTags('Categories')
 @Controller('categories')
 export class CategoriesController {
@@ -28,7 +27,7 @@ export class CategoriesController {
   }
 
   @Get()
-  @Public()
+  @Roles(ROLES.ADMIN)
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'search_text', required: false, type: String })
   findAll(
@@ -36,19 +35,6 @@ export class CategoriesController {
     @Query('search_text') search_text?: string,
   ) {
     return this.categoriesService.findAll(+page, search_text);
-  }
-
-  @Get('search')
-  @Public()
-  @Roles(ROLES.ADMIN)
-  searchByName(@Query('name') name?: string) {
-    return this.categoriesService.search(name);
-  }
-
-  @Get(':id')
-  @Roles(ROLES.ADMIN)
-  findOne(@Param('id') id: string) {
-    return this.categoriesService.findOneById(+id);
   }
 
   @Patch(':id')
