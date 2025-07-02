@@ -15,7 +15,6 @@ import { UserEntity } from 'modules/users/entities/users.entity';
 import { CurrentUser } from 'common/decorators/currentUser.decorator';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
 import { FilterDto } from 'common/constants/filter.dto';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('coupons')
 export class CouponsController {
@@ -43,17 +42,6 @@ export class CouponsController {
     return this.couponsService.update(+id, updateCouponDto, user);
   }
 
-  @ApiOperation({
-    summary: 'Toggle coupon on wishlist',
-    description: 'User save into list or delete from the list',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'User saved or deleted success',
-    example: {
-      success: true,
-    },
-  })
   @Delete(':id')
   @Roles(ROLES.ADMIN, ROLES.USER)
   remove(@CurrentUser() user: UserEntity, @Param('id') id: string) {
