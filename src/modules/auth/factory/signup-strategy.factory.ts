@@ -1,4 +1,4 @@
-import { ROLES } from 'common/constants/enum/roles.enum';
+import { ROLES } from 'common/constants/enums';
 import { RegularUserStrategy } from '../strategy/regular-user.strategy';
 import { SuperAdminStrategy } from '../strategy/super-admin.strategy';
 import { BadRequestException, Injectable } from '@nestjs/common';
@@ -14,7 +14,7 @@ export class SignUpStrategyFactory {
     if (!type) {
       type = ROLES.USER;
     }
-    switch (type.toUpperCase()) {
+    switch (type.toUpperCase() as ROLES) {
       // case ROLES.PARTNER:
       case ROLES.ADMIN:
         return this.superAdmin;

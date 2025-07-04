@@ -11,7 +11,7 @@ import {
 import { TopicService } from './topic.service';
 import { TopicDto } from './dto/topic.dto';
 import { Roles } from 'common/decorators/roles.decorator';
-import { ROLES } from 'common/constants/enum/roles.enum';
+import { ROLES } from 'common/constants/enums';
 import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('topic')

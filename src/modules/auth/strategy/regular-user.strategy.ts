@@ -1,7 +1,7 @@
 import { SignUpStrategy } from '../interface/signup-strategy.interface';
 import { SignUpDto } from '../dtos/auth.dto';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { UserService } from 'modules/users/users.service';
+import { UserService } from 'modules/users/services/users.service';
 import { EmailerService } from 'modules/emailer/emailer.service';
 import { DataSource } from 'typeorm';
 
@@ -22,11 +22,11 @@ export class RegularUserStrategy implements SignUpStrategy {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const new_user = await this.userService.createRegularUser(
+      const { user, verify_code } = await this.userService.createRegularUser(
         data,
         queryRunner.manager,
       );
-      await this.emailerService.sendVerifyCode(new_user);
+      await this.emailerService.sendVerifyCode(user, verify_code);
       await queryRunner.commitTransaction();
       return true;
     } catch (error) {

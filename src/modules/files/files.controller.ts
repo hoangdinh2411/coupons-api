@@ -12,7 +12,7 @@ import { FileValidationPipe } from './pipes/fileValidation.pipe';
 import { FilesService } from './files.service';
 import { ApiTags } from '@nestjs/swagger';
 import { Roles } from 'common/decorators/roles.decorator';
-import { ROLES } from 'common/constants/enum/roles.enum';
+import { ROLES } from 'common/constants/enums';
 
 @Controller('files')
 @ApiTags('Files')

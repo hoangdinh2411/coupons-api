@@ -11,7 +11,7 @@ import {
   IsInt,
   ArrayNotEmpty,
 } from 'class-validator';
-import { CouponType } from 'common/constants/enum/coupon.enum';
+import { CouponType } from 'common/constants/enums';
 import { IsAfterStartDate } from './coupon.dt';
 import { Type } from 'class-transformer';
 

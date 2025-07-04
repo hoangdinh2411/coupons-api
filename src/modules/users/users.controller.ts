@@ -10,11 +10,10 @@ import {
 } from '@nestjs/common';
 import { UserEntity } from './entities/users.entity';
 import { CurrentUser } from 'common/decorators/currentUser.decorator';
-import { UserService } from './users.service';
+import { UserService } from './services/users.service';
 import { Roles } from 'common/decorators/roles.decorator';
-import { ROLES } from 'common/constants/enum/roles.enum';
-import { VerifyEmailDto } from './dto/user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ROLES } from 'common/constants/enums';
 
 @ApiTags('Users')
 @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -51,12 +50,6 @@ export class UserController {
   @Roles(ROLES.ADMIN)
   async deleteAccount(@CurrentUser() user: UserEntity) {
     await this.userService.delete(user.id);
-  }
-
-  @Patch('verify-account')
-  @HttpCode(200)
-  async verifyAccount(@Body() data: VerifyEmailDto) {
-    return this.userService.verifyEmail(data.email, data.code);
   }
 
   @Post('my-coupons')

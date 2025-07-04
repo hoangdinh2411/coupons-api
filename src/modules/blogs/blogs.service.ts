@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { UserEntity } from 'modules/users/entities/users.entity';
 import { isNumeric } from 'common/helpers/number';
-import { ROLES } from 'common/constants/enum/roles.enum';
+import { ROLES } from 'common/constants/enums';
 import { BlogsEntity } from './entities/blogs.entity';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 import { BlogDto } from './dto/blog.dto';

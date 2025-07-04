@@ -29,14 +29,6 @@ export function getDbConfig(
       database: 'coupons',
     };
   }
-  // // connect database local
-  // environmentOptions = {
-  //   host: configService.get<string>('POSTGRES_HOST'),
-  //   port: parseInt(configService.get<string>('POSTGRES_PORT'), 10),
-  //   username: configService.get<string>('POSTGRES_USERNAME'),
-  //   password: configService.get<string>('POSTGRES_PASSWORD'),
-  //   database: configService.get<string>('POSTGRES_DATABASE'),
-  // };
 
   return {
     ...baseOptions,

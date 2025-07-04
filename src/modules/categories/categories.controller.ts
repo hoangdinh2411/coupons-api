@@ -12,7 +12,7 @@ import {
 import { CategoriesService } from './categories.service';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CategoryDto } from './dto/category.dto';
-import { ROLES } from 'common/constants/enum/roles.enum';
+import { ROLES } from 'common/constants/enums';
 import { Roles } from 'common/decorators/roles.decorator';
 @ApiTags('Categories')
 @Controller('categories')

@@ -10,12 +10,11 @@ import { Brackets, ILike, Repository } from 'typeorm';
 import { StoresService } from 'modules/stores/stores.service';
 import dayjs from 'dayjs';
 import { UserEntity } from 'modules/users/entities/users.entity';
-import { ROLES } from 'common/constants/enum/roles.enum';
 import { CategoriesService } from 'modules/categories/categories.service';
 import { LIMIT_DEFAULT } from 'common/constants/variables';
-import { CouponStatus } from 'common/constants/enum/status.enum';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
 import { FilterDto } from 'common/constants/filter.dto';
+import { CouponStatus, ROLES } from 'common/constants/enums';
 // import { makeMetaDataContent } from 'common/helpers/metadata';
 
 @Injectable()

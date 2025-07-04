@@ -1,17 +1,20 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, QueryFailedError, Repository } from 'typeorm';
-import * as bcrypt from 'bcrypt';
-import { UserEntity } from './entities/users.entity';
-import { ROLES } from 'common/constants/enum/roles.enum';
+import { UserEntity } from '../entities/users.entity';
 import { SignUpDto } from 'modules/auth/dtos/auth.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDto } from '../dto/update-user.dto';
 import { CouponEntity } from 'modules/coupons/entities/coupon.entity';
 import { CouponsService } from 'modules/coupons/coupons.service';
+import { generateCode } from 'common/helpers/code';
+import { VerifyCodeDto } from 'modules/auth/dtos/verify-code.dto';
+import { ROLES, VerifyCodeType } from 'common/constants/enums';
+import { BcryptService } from './bcrypt.service';
 
 @Injectable()
 export class UserService {
@@ -19,32 +22,23 @@ export class UserService {
     @InjectRepository(UserEntity)
     private readonly userRepo: Repository<UserEntity>,
     readonly couponService: CouponsService,
+    readonly bcryptService: BcryptService,
   ) {}
 
-  async verifyEmail(email: string, verify_code: number) {
-    const data = await this.userRepo.update(
-      {
-        email,
-        verify_code,
-        email_verified: false,
-      },
-      {
-        email_verified: true,
-        verify_code: null,
-      },
-    );
-    if (data.affected === 0) {
-      throw new ConflictException('Email or code is invalid');
-    }
+  async setEmailIsVerified(user: UserEntity) {
+    user.verify_code = null;
+    user.email_verified = true;
+    await this.userRepo.save(user);
     return true;
   }
-  async isExisting(email: string): Promise<void> {
+  async getUserByEmail(email: string): Promise<UserEntity> {
     const user = await this.userRepo.findOne({
-      where: { email },
+      where: { email, deleted_at: null },
     });
-    if (user) {
-      throw new ConflictException('Email already exists');
+    if (!user) {
+      throw new ConflictException('Email is incorrect');
     }
+    return user;
   }
   async getSavedCoupons(user_id: number): Promise<CouponEntity[]> {
     const user = await this.userRepo.findOne({
@@ -90,9 +84,12 @@ export class UserService {
   async createRegularUser(
     data: SignUpDto,
     manager: EntityManager,
-  ): Promise<UserEntity> {
+  ): Promise<{
+    user: UserEntity;
+    verify_code: number;
+  }> {
     try {
-      const hashedPassword = await this.hashPassword(data.password);
+      const hashedPassword = await this.bcryptService.hashData(data.password);
       const user = this.userRepo.create({
         ...data,
         role: ROLES.USER,
@@ -100,11 +97,17 @@ export class UserService {
       });
 
       // generate a random code with 6 number
-      const verify_code = Math.round(100000 + Math.random() * 900000);
-
+      const verify_code = generateCode();
+      const hashed_code = await this.bcryptService.hashData(
+        verify_code.toString(),
+      );
       // send code to email
-      user.verify_code = verify_code;
-      return await manager.save(user);
+      user.verify_code = hashed_code;
+      const saved_data = await manager.save(user);
+      return {
+        user: saved_data,
+        verify_code,
+      };
     } catch (error) {
       if (error instanceof QueryFailedError) {
         const err = error.driverError;
@@ -121,7 +124,7 @@ export class UserService {
     last_name,
     password,
   }: SignUpDto): Promise<UserEntity> {
-    const hashedPassword = await this.hashPassword(password);
+    const hashedPassword = await this.bcryptService.hashData(password);
     const user = this.userRepo.create({
       email,
       password: hashedPassword,
@@ -140,22 +143,17 @@ export class UserService {
       select: ['id', 'email', 'password', 'role', 'email_verified'],
     });
     if (!user) {
-      throw new NotFoundException('User does not exist');
+      throw new BadRequestException('Email is incorrect');
     }
-    await this.validatePassword(password, user.password);
+    const is_valid = await this.bcryptService.compareData(
+      password,
+      user.password,
+    );
+    if (!is_valid) {
+      throw new BadRequestException('Password not correct');
+    }
     delete user.password;
     return user;
-  }
-
-  async hashPassword(password: string): Promise<string> {
-    const salt = await bcrypt.genSalt();
-    return await bcrypt.hash(password, salt);
-  }
-  async validatePassword(password: string, hash: string) {
-    const isValid = await bcrypt.compare(password, hash);
-    if (!isValid) {
-      throw new ConflictException('Password is incorrect');
-    }
   }
 
   async verifyUser(user_id: number): Promise<UserEntity> {
@@ -184,6 +182,20 @@ export class UserService {
       id: user_id,
       ...data,
     };
+  }
+
+  async saveCode(email: string, code: number) {
+    const user = await this.userRepo.findOne({
+      where: {
+        email,
+        deleted_at: null,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException('Email not found');
+    }
+    user.verify_code = await this.bcryptService.hashData(code.toString());
+    return this.userRepo.save(user);
   }
   async getUser(user_id: number): Promise<UserEntity> {
     const user = await this.userRepo.findOne({
@@ -216,5 +228,42 @@ export class UserService {
       where: { id: user_id },
       relations: ['company'],
     });
+  }
+
+  async verifyCode({ email, code, type }: VerifyCodeDto) {
+    const user = await this.getUserByEmail(email);
+    if (type === VerifyCodeType.VERIFY_ACCOUNT && user.email_verified) {
+      throw new ConflictException('Email is verified');
+    }
+
+    if (type === VerifyCodeType.FORGET_PASSWORD && !user.verify_code) {
+      throw new ConflictException(
+        'No verification code found. Please request a new one',
+      );
+    }
+    const is_correct_code = await this.bcryptService.compareData(
+      code.toString(),
+      user.verify_code,
+    );
+
+    if (!is_correct_code) {
+      throw new BadRequestException('Code is incorrect');
+    }
+
+    return user;
+  }
+
+  async updateNewPassword(user_id: number, new_pass: string) {
+    const user = await this.getUser(user_id);
+    if (!user.verify_code) {
+      throw new ConflictException(
+        'No verification code found. Please request a new one',
+      );
+    }
+    const hashedPassword = await this.bcryptService.hashData(new_pass);
+    user.password = hashedPassword;
+    user.verify_code = null;
+
+    return await this.userRepo.save(user);
   }
 }

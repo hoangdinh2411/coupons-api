@@ -6,14 +6,30 @@ import { UserEntity } from 'modules/users/entities/users.entity';
 export class EmailerService {
   constructor(private readonly mailerService: MailerService) {}
 
-  async sendVerifyCode(new_user: UserEntity) {
+  async sendVerifyCode(new_user: UserEntity, verify_code) {
     try {
       await this.mailerService.sendMail({
         to: new_user.email,
         template: 'verifyCode',
         subject: 'Verify email',
         context: {
-          code: new_user.verify_code,
+          code: verify_code,
+          name:
+            new_user.first_name + ' ' + new_user.last_name || new_user.email,
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+  async sendCodeForChangePassword(new_user: UserEntity, code: number) {
+    try {
+      await this.mailerService.sendMail({
+        to: new_user.email,
+        template: 'changePasswordCode',
+        subject: 'Your One-Time Code for Password Reset',
+        context: {
+          code: code,
           name:
             new_user.first_name + ' ' + new_user.last_name || new_user.email,
         },

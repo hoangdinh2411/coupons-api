@@ -1,5 +1,5 @@
 import { BaseEntity } from 'common/constants/base.entity';
-import { CouponType } from 'common/constants/enum/coupon.enum';
+import { CouponType } from 'common/constants/enums';
 import dayjs from 'dayjs';
 import { CategoryEntity } from 'modules/categories/entities/category.entity';
 import { StoreEntity } from 'modules/stores/entities/store.entity';

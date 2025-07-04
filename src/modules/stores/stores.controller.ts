@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { StoresService } from './stores.service';
 import { Roles } from 'common/decorators/roles.decorator';
-import { ROLES } from 'common/constants/enum/roles.enum';
+import { ROLES } from 'common/constants/enums';
 import { StoreDto } from './dto/store.dto';
 import { FilterDto } from '../../common/constants/filter.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';

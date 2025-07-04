@@ -14,7 +14,7 @@ import { BlogDto } from './dto/blog.dto';
 import { UserEntity } from 'modules/users/entities/users.entity';
 import { FilterDto } from 'common/constants/filter.dto';
 import { Roles } from 'common/decorators/roles.decorator';
-import { ROLES } from 'common/constants/enum/roles.enum';
+import { ROLES } from 'common/constants/enums';
 
 @Controller('blogs')
 export class BlogsController {

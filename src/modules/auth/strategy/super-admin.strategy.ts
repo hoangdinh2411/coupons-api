@@ -1,7 +1,7 @@
 import { SignUpStrategy } from '../interface/signup-strategy.interface';
 import { SignUpDto } from '../dtos/auth.dto';
 import { Injectable } from '@nestjs/common';
-import { UserService } from 'modules/users/users.service';
+import { UserService } from 'modules/users/services/users.service';
 
 @Injectable()
 export class SuperAdminStrategy implements SignUpStrategy {

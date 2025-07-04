@@ -15,7 +15,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import { CouponType } from 'common/constants/enum/coupon.enum';
+import { CouponType } from 'common/constants/enums';
 import dayjs from 'dayjs';
 
 @ValidatorConstraint({ async: false })

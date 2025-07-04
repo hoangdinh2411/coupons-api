@@ -1,6 +1,6 @@
 import { Exclude } from 'class-transformer';
 import { BaseEntity } from 'common/constants/base.entity';
-import { ROLES } from 'common/constants/enum/roles.enum';
+import { ROLES } from 'common/constants/enums';
 import { BlogsEntity } from 'modules/blogs/entities/blogs.entity';
 import { CouponEntity } from 'modules/coupons/entities/coupon.entity';
 import {
@@ -57,11 +57,11 @@ export class UserEntity extends BaseEntity {
   email_verified: boolean;
 
   @Column({
-    type: 'int',
+    type: 'text',
     nullable: true,
   })
   @Exclude()
-  verify_code: number;
+  verify_code: string;
 
   @OneToMany(() => CouponEntity, (coupons) => coupons.added_by)
   coupons: CouponEntity[];
