@@ -33,8 +33,7 @@ export class StoreEntity extends BaseEntity {
   };
 
   @Column({
-    type: 'varchar',
-    length: 250,
+    type: 'text',
   })
   description: string;
 
