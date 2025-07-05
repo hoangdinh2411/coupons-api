@@ -1,10 +1,7 @@
 import { BaseEntity } from 'common/constants/base.entity';
-import { generateSlug } from 'common/helpers/generateSlug';
 import { CategoryEntity } from 'modules/categories/entities/category.entity';
 import { CouponEntity } from 'modules/coupons/entities/coupon.entity';
 import {
-  BeforeInsert,
-  BeforeUpdate,
   Column,
   Entity,
   JoinTable,
@@ -21,7 +18,6 @@ export class StoreEntity extends BaseEntity {
   @Column({
     type: 'varchar',
     length: 250,
-    unique: true,
   })
   name: string;
 
@@ -34,6 +30,7 @@ export class StoreEntity extends BaseEntity {
 
   @Column({
     type: 'text',
+    nullable: false,
   })
   description: string;
 
@@ -74,11 +71,7 @@ export class StoreEntity extends BaseEntity {
     unique: true,
   })
   slug: string;
-  @BeforeInsert()
-  @BeforeUpdate()
-  generateSlugFromName() {
-    return (this.slug = generateSlug(this.name));
-  }
+
   @ManyToMany(() => CategoryEntity, (category) => category.stores, {
     cascade: true,
   })

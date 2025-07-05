@@ -62,6 +62,15 @@ export class StoreDto extends BaseDto {
   })
   url: string;
 
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    type: () => 'string',
+    default: 'store-abc-c',
+    description: 'Slug will be generated on frontend',
+  })
+  slug: string;
+
   @IsArray()
   @ArrayNotEmpty({ message: 'At least one category ID is required' })
   @IsInt({ each: true, message: 'Each category must be an integer' })
@@ -76,5 +85,4 @@ export class StoreDto extends BaseDto {
   @IsNumber()
   @IsOptional()
   rating: number;
-  slug: string;
 }

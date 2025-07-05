@@ -11,7 +11,7 @@ import { EmailerService } from './emailer.service';
       useFactory: (configService: ConfigService) => {
         return {
           transport: {
-            host: 'smtp.gmail.com',
+            host: configService.get<string>('EMAIL_HOST'),
             port: 465,
             // tls: {
             //   ciphers: 'SSLv3',

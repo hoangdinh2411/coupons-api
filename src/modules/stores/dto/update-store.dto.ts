@@ -78,5 +78,12 @@ export class UpdateStoreDto extends BaseDto {
   @IsOptional()
   rating: number;
 
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    type: () => 'string',
+    default: 'store-abc-c',
+    description: 'Slug will be generated on frontend',
+  })
   slug: string;
 }

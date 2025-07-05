@@ -50,7 +50,7 @@ export class StoresService {
       if (error instanceof QueryFailedError) {
         const err = error.driverError;
         if (err.code === '23505') {
-          throw new ConflictException('Store already exist');
+          throw new ConflictException('Slug already exists');
         }
       } else {
         throw error;
@@ -236,7 +236,7 @@ export class StoresService {
       if (error instanceof QueryFailedError) {
         const err = error.driverError;
         if (err.code === '23505') {
-          throw new ConflictException('Category already exist');
+          throw new ConflictException('Slug already exists');
         }
       } else {
         throw error;
