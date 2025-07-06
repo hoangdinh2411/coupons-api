@@ -12,16 +12,19 @@ import { EmailerService } from './emailer.service';
         return {
           transport: {
             host: configService.get<string>('EMAIL_HOST'),
-            port: 465,
+            port: Number(configService.get<string>('EMAIL_PORT')),
             // tls: {
             //   ciphers: 'SSLv3',
             // },
-            secure: true, // true for 465, false for other ports
+            secure: Number(configService.get<string>('EMAIL_PORT')) === 465, // true for 465, false for other ports
             auth: {
               user: configService.get<string>('EMAIL_ID'), // generated ethereal user
               pass: configService.get<string>('EMAIL_PASS'), // generated ethereal password
             },
             from: configService.get<string>('EMAIL_FROM'),
+          },
+          defaults: {
+            from: `Trust Coupon ${configService.get<string>('EMAIL_FROM')}`,
           },
           template: {
             dir:

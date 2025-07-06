@@ -6,7 +6,7 @@ import { UserEntity } from 'modules/users/entities/users.entity';
 export class EmailerService {
   constructor(private readonly mailerService: MailerService) {}
 
-  async sendVerifyCode(new_user: UserEntity, verify_code) {
+  async sendVerifyCode(new_user: UserEntity, verify_code: number) {
     try {
       await this.mailerService.sendMail({
         to: new_user.email,
