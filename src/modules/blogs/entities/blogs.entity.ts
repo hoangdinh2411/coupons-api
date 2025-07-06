@@ -1,10 +1,7 @@
 import { BaseEntity } from 'common/constants/base.entity';
-import { generateSlug } from 'common/helpers/generateSlug';
 import { TopicEntity } from 'modules/topic/entities/topic.entity';
 import { UserEntity } from 'modules/users/entities/users.entity';
 import {
-  BeforeInsert,
-  BeforeUpdate,
   Column,
   Entity,
   JoinColumn,
@@ -27,14 +24,8 @@ export class BlogsEntity extends BaseEntity {
   })
   content: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: false, unique: true })
   slug: string;
-
-  @BeforeInsert()
-  @BeforeUpdate()
-  generateSlugFromName() {
-    return (this.slug = generateSlug(this.title));
-  }
 
   @Column({ type: 'jsonb', nullable: true })
   image: {

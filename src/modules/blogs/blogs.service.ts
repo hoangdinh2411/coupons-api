@@ -1,10 +1,11 @@
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, QueryFailedError, Repository } from 'typeorm';
 import { UserEntity } from 'modules/users/entities/users.entity';
 import { isNumeric } from 'common/helpers/number';
 import { ROLES } from 'common/constants/enums';
@@ -50,6 +51,14 @@ export class BlogService {
       return result;
     } catch (error) {
       await queryRunner.rollbackTransaction();
+      if (error instanceof QueryFailedError) {
+        const err = error.driverError;
+        if (err.code === '23505') {
+          throw new ConflictException('Slug already exists');
+        }
+      } else {
+        throw error;
+      }
       throw error;
     } finally {
       await queryRunner.release();
@@ -176,7 +185,14 @@ export class BlogService {
       return result;
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      throw error;
+      if (error instanceof QueryFailedError) {
+        const err = error.driverError;
+        if (err.code === '23505') {
+          throw new ConflictException('Slug already exists');
+        }
+      } else {
+        throw error;
+      }
     } finally {
       await queryRunner.release();
     }

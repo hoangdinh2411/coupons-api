@@ -21,6 +21,15 @@ export class BlogDto extends BaseDto {
   })
   content: string;
 
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    type: () => 'string',
+    default: 'blog-a-b-c',
+    description: 'slug',
+  })
+  slug: string;
+
   @IsArray()
   @IsString({ each: true })
   @ApiProperty({

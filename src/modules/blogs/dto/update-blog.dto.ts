@@ -71,4 +71,13 @@ export class UpdateBlogDto extends BaseDto {
     description: 'is_indexed',
   })
   is_indexed: boolean;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    type: () => 'string',
+    default: 'blog-a-b-c',
+    description: 'slug',
+  })
+  slug: string;
 }
