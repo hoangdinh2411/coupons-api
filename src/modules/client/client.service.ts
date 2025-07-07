@@ -24,7 +24,6 @@ export class ClientService {
         order: {
           name: 'ASC',
         },
-        take: LIMIT_DEFAULT,
         select: ['name', 'id', 'slug', 'stores'],
       });
     const categories_with_limited_store = await Promise.all(
@@ -36,7 +35,6 @@ export class ClientService {
           .where('category.id = :id', { id: cat.id })
           .orderBy('store.name', 'ASC')
           .select(['store.id', 'store.name', 'store.slug'])
-          .limit(LIMIT_DEFAULT)
           .getMany();
         return {
           id: cat.id,

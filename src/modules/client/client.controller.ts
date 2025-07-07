@@ -20,11 +20,6 @@ export class ClientController {
   menu() {
     return this.clientService.getMenu();
   }
-  @Get('/categories')
-  async allCategories() {
-    const { results } = await this.categoryService.findAll();
-    return results;
-  }
   @Get('/topics')
   async allTopics() {
     const { results } = await this.topicService.findAll();
