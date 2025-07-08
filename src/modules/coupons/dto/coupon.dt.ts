@@ -11,6 +11,7 @@ import {
   IsString,
   Matches,
   Validate,
+  ValidateIf,
   ValidationArguments,
   ValidatorConstraint,
   ValidatorConstraintInterface,
@@ -41,8 +42,14 @@ export class CouponDto {
   })
   title: string;
 
+  @ValidateIf(
+    (o) =>
+      o.type.toLowerCase() === CouponType.ONLINE_AND_IN_STORE.toLowerCase(),
+  )
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({
+    message: 'Offer link is required if type = Online & In-Store ',
+  })
   @ApiProperty({
     type: () => 'string',
     default: 'offer_link',
@@ -50,8 +57,11 @@ export class CouponDto {
   })
   offer_link: string;
 
+  @ValidateIf((o) => o.type.toLowerCase() === CouponType.CODE.toLowerCase())
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({
+    message: 'Code is required if type = Code',
+  })
   @ApiProperty({
     type: () => 'string',
     default: 'ABC123',
@@ -82,9 +92,8 @@ export class CouponDto {
   @IsInt({ each: true, message: 'Each category must be an integer' })
   @Type(() => Number)
   @ApiProperty({
-    type: () => 'number',
-    default: 1,
-    description: 'Category id',
+    default: [1, 2],
+    description: 'Category ids',
   })
   categories: number[];
 
@@ -103,7 +112,7 @@ export class CouponDto {
   })
   @IsNotEmpty()
   @ApiProperty({
-    default: '2025-12-05',
+    default: '2025/11/05',
     description: 'When does coupon end?',
   })
   start_date: string;
@@ -114,7 +123,7 @@ export class CouponDto {
   })
   @IsNotEmpty()
   @ApiProperty({
-    default: '2025-12-05',
+    default: '2025/12/05',
     description: 'When does coupon end?',
   })
   expire_date: string;
@@ -123,6 +132,13 @@ export class CouponDto {
   @IsEnum(CouponType, {
     message: 'Not support this type',
   })
+  @ApiProperty({
+    default: 'code',
+    description: 'Coupon type',
+  })
   @IsNotEmpty()
+  @IsEnum(CouponType, {
+    message: 'Just support ' + Object.values(CouponType).join(','),
+  })
   type: CouponType;
 }

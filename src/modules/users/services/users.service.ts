@@ -140,7 +140,15 @@ export class UserService {
   async validateUser(email: string, password: string): Promise<UserEntity> {
     const user = await this.userRepo.findOne({
       where: { email, deleted_at: null },
-      select: ['id', 'email', 'password', 'role', 'email_verified'],
+      select: [
+        'password',
+        'id',
+        'role',
+        'email_verified',
+        'email',
+        'first_name',
+        'last_name',
+      ],
     });
     if (!user) {
       throw new BadRequestException('Email is incorrect');

@@ -10,6 +10,8 @@ import {
   IsArray,
   IsInt,
   ArrayNotEmpty,
+  ValidateIf,
+  IsNotEmpty,
 } from 'class-validator';
 import { CouponType } from 'common/constants/enums';
 import { IsAfterStartDate } from './coupon.dt';
@@ -25,17 +27,26 @@ export class UpdateCouponDto {
   })
   title: string;
 
-  @IsOptional()
+  @ValidateIf(
+    (o) =>
+      o.type.toLowerCase() === CouponType.ONLINE_AND_IN_STORE.toLowerCase(),
+  )
   @IsString()
+  @IsNotEmpty({
+    message: 'Offer link is required if type = Online & In-Store ',
+  })
   @ApiProperty({
     type: () => 'string',
     default: 'offer_link',
-    description: 'offer_link',
+    description: 'offer link',
   })
   offer_link: string;
 
-  @IsOptional()
+  @ValidateIf((o) => o.type.toLowerCase() === CouponType.CODE.toLowerCase())
   @IsString()
+  @IsNotEmpty({
+    message: 'Code is required if type = Code',
+  })
   @ApiProperty({
     type: () => 'string',
     default: 'ABC123',
@@ -67,9 +78,8 @@ export class UpdateCouponDto {
   @IsInt({ each: true, message: 'Each category must be an integer' })
   @Type(() => Number)
   @ApiProperty({
-    type: () => 'number',
-    default: 1,
-    description: 'Category id',
+    default: [1, 2],
+    description: 'Category ids',
   })
   categories: number[];
 
@@ -97,8 +107,8 @@ export class UpdateCouponDto {
   })
   @IsOptional()
   @ApiProperty({
-    default: '2025-12-05',
-    description: 'When does coupon end?',
+    default: '2025/11/05',
+    description: 'When does coupon start?',
   })
   start_date: string;
 
@@ -108,15 +118,19 @@ export class UpdateCouponDto {
   })
   @IsOptional()
   @ApiProperty({
-    default: '2025-12-05',
+    default: '2025/12/05',
     description: 'When does coupon end?',
   })
   expire_date: string;
   @Validate(IsAfterStartDate) private readonly _range!: never;
 
-  @IsEnum(CouponType, {
-    message: 'Not support this type',
-  })
   @IsOptional()
+  @ApiProperty({
+    default: 'code',
+    description: 'Coupon type',
+  })
+  @IsEnum(CouponType, {
+    message: 'Just support ' + Object.values(CouponType).join(','),
+  })
   type: CouponType;
 }

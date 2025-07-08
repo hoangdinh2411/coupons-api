@@ -33,7 +33,7 @@ export class HealthController {
 
   @Public()
   @ApiOperation({ summary: 'Health check endpoints' })
-  @Cron('45 * * * * *')
+  @Cron('0 10 * * * *')
   async keepServerWakeUp() {
     const url = this.configService.get('API_URL');
     Logger.log(`Pinging ${url}/api/v1/health`, 'HealthController');

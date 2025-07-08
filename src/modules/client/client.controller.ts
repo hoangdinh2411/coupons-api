@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ClientService } from './client.service';
 import { ApiQuery } from '@nestjs/swagger';
 import { TopicService } from 'modules/topic/topic.service';
@@ -30,6 +30,7 @@ export class ClientController {
   getBlogs() {
     return this.blogsService.getLatestBlogs();
   }
+
   @Get('/stores')
   @ApiQuery({ name: 'first_letter', required: false, type: String })
   @ApiQuery({ name: 'search_text', required: false, type: String })
@@ -42,5 +43,9 @@ export class ClientController {
     }
 
     return this.storeService.findStoreForClient(first_letter, search_text);
+  }
+  @Get('/stores/:slug')
+  getStoreBySlug(@Param('slug') slug: string) {
+    return this.storeService.findOne(slug);
   }
 }

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -14,7 +15,7 @@ import { CategoriesService } from 'modules/categories/categories.service';
 import { LIMIT_DEFAULT } from 'common/constants/variables';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
 import { FilterDto } from 'common/constants/filter.dto';
-import { CouponStatus, ROLES } from 'common/constants/enums';
+import { CouponStatus, CouponType, ROLES } from 'common/constants/enums';
 // import { makeMetaDataContent } from 'common/helpers/metadata';
 
 @Injectable()
@@ -30,8 +31,11 @@ export class CouponsService {
     const categories = await this.categoryService.findAllById(
       createCouponDto.categories,
     );
+
+    const payload = this.buildPayloadByType(createCouponDto);
+
     const new_coupon = this.couponRep.create({
-      ...createCouponDto,
+      ...payload,
       store,
       categories,
       added_by: added_by.id,
@@ -45,6 +49,20 @@ export class CouponsService {
       },
     });
   }
+
+  private buildPayloadByType(dto: CouponDto | UpdateCouponDto) {
+    switch (dto.type as CouponType) {
+      case CouponType.CODE:
+        return { ...dto, code: dto.code, offer_link: null };
+      case CouponType.ONLINE_AND_IN_STORE:
+        return { ...dto, code: null, offer_link: dto.offer_link };
+      case CouponType.SALE:
+        return { ...dto, code: null, offer_link: null };
+      default:
+        throw new BadRequestException('Not support this type' + dto.type);
+    }
+  }
+
   async submitCoupon(id: number) {
     const data = await this.couponRep.update(
       {
@@ -212,18 +230,18 @@ export class CouponsService {
         'You are not authorized to update this coupon',
       );
     }
-    const data = {
+    const payload = this.buildPayloadByType(updateCouponDto);
+
+    await this.couponRep.save({
       ...coupon,
-      ...updateCouponDto,
+      ...payload,
       ...(store && { store }),
       ...(categories && { categories }),
-    };
-
-    await this.couponRep.save(data);
+    });
 
     return {
       id: coupon.id,
-      ...data,
+      ...payload,
     };
   }
 

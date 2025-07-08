@@ -65,7 +65,7 @@ export class BlogService {
     }
   }
   async filter(filterData: FilterDto) {
-    const { topics = [], search_text, page, rating } = filterData;
+    const { topics = [], search_text, page = 1, rating } = filterData;
     const query = this.blogRepo
       .createQueryBuilder('blog')
       .leftJoinAndSelect('blog.topic', 'topic');

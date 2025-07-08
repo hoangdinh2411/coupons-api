@@ -147,7 +147,7 @@ export class StoresService {
     if (isNumeric(identifier)) {
       query.where('store.id =:id', { id: +identifier });
     } else {
-      query.where('store.slug =:slug', { slug: +identifier });
+      query.where('store.slug =:slug', { slug: identifier });
     }
 
     const store = await query
@@ -274,16 +274,22 @@ export class StoresService {
 
   async findStoreForClient(first_letter: string, search_text: string = '') {
     const query = this.storeRep.createQueryBuilder('store');
-    if (search_text !== '') {
+    if (search_text) {
       query
         .andWhere({
           name: ILike(`%${search_text}%`),
         })
         .take(LIMIT_DEFAULT);
-    } else {
-      query.andWhere(`store.name ILIKE :first_letter`, {
-        first_letter: `${first_letter}%`,
-      });
+    }
+    if (first_letter) {
+      const number_regex = /^[0-9]/;
+      if (number_regex.test(first_letter)) {
+        query.andWhere(`store.name ~ '^[0-9]'`);
+      } else {
+        query.andWhere({
+          name: ILike(`${first_letter}%`),
+        });
+      }
     }
 
     return await query

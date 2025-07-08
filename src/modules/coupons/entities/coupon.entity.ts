@@ -30,6 +30,7 @@ export class CouponEntity extends BaseEntity {
   @Column({
     type: 'varchar',
     length: 100,
+    nullable: true,
   })
   code: string;
 

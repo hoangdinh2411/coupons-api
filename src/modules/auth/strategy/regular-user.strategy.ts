@@ -28,7 +28,11 @@ export class RegularUserStrategy implements SignUpStrategy {
       );
       await this.emailerService.sendVerifyCode(user, verify_code);
       await queryRunner.commitTransaction();
-      return true;
+      return {
+        id: user.id,
+        email_verified: user.email_verified,
+        email: user.email,
+      };
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
