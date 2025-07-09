@@ -27,14 +27,8 @@ export class UpdateCouponDto {
   })
   title: string;
 
-  @ValidateIf(
-    (o) =>
-      o.type.toLowerCase() === CouponType.ONLINE_AND_IN_STORE.toLowerCase(),
-  )
   @IsString()
-  @IsNotEmpty({
-    message: 'Offer link is required if type = Online & In-Store ',
-  })
+  @IsNotEmpty()
   @ApiProperty({
     type: () => 'string',
     default: 'offer_link',

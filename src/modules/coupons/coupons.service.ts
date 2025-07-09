@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -32,7 +31,15 @@ export class CouponsService {
       createCouponDto.categories,
     );
 
-    const payload = this.buildPayloadByType(createCouponDto);
+    const payload = {
+      ...createCouponDto,
+      code:
+        createCouponDto.type === CouponType.CODE ? createCouponDto.code : null,
+      store,
+      categories,
+      added_by: added_by.id,
+      is_verified: added_by.role === ROLES.ADMIN,
+    };
 
     const new_coupon = this.couponRep.create({
       ...payload,
@@ -48,19 +55,6 @@ export class CouponsService {
         name: store.name,
       },
     });
-  }
-
-  private buildPayloadByType(dto: CouponDto | UpdateCouponDto) {
-    switch (dto.type as CouponType) {
-      case CouponType.CODE:
-        return { ...dto, code: dto.code, offer_link: null };
-      case CouponType.ONLINE_AND_IN_STORE:
-        return { ...dto, code: null, offer_link: dto.offer_link };
-      case CouponType.SALE:
-        return { ...dto, code: null, offer_link: null };
-      default:
-        throw new BadRequestException('Not support this type' + dto.type);
-    }
   }
 
   async submitCoupon(id: number) {
@@ -230,14 +224,16 @@ export class CouponsService {
         'You are not authorized to update this coupon',
       );
     }
-    const payload = this.buildPayloadByType(updateCouponDto);
-
-    await this.couponRep.save({
+    const payload = {
       ...coupon,
-      ...payload,
+      ...updateCouponDto,
+      code:
+        updateCouponDto.type === CouponType.CODE ? updateCouponDto.code : null,
       ...(store && { store }),
       ...(categories && { categories }),
-    });
+    };
+
+    await this.couponRep.save(payload);
 
     return {
       id: coupon.id,

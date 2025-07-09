@@ -41,7 +41,6 @@ export class CouponEntity extends BaseEntity {
 
   @Column({
     type: 'text',
-    nullable: true,
   })
   offer_link: string;
 
