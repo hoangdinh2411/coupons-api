@@ -16,6 +16,7 @@ export class ClientService {
         },
         take: LIMIT_DEFAULT,
         relations: ['categories'],
+        select: ['name', 'id', 'slug', 'rating'],
       });
     const popular = popular_stores.sort((a, b) => a.name.localeCompare(b.name));
     const categories = await this.dataSource
@@ -24,6 +25,7 @@ export class ClientService {
         order: {
           name: 'ASC',
         },
+        select: ['name', 'id', 'slug'],
       });
     const categories_with_limited_store = await Promise.all(
       categories.map(async (cat) => {
@@ -31,6 +33,7 @@ export class ClientService {
           .getRepository(StoreEntity)
           .createQueryBuilder('store')
           .innerJoin('store.categories', 'category')
+          .addSelect(['store.name', 'store.id', 'store.slug'])
           .where('category.id = :id', { id: cat.id })
           .orderBy('store.name', 'ASC')
           .getMany();
