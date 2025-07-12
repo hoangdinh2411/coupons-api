@@ -5,7 +5,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, QueryFailedError, Repository } from 'typeorm';
+import {
+  DataSource,
+  QueryFailedError,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 import { UserEntity } from 'modules/users/entities/users.entity';
 import { isNumeric } from 'common/helpers/number';
 import { ROLES } from 'common/constants/enums';
@@ -98,12 +103,39 @@ export class BlogService {
       })),
     };
   }
-  findAll() {
-    return this.blogRepo.find({
-      order: {
-        created_at: 'DESC',
-      },
-    });
+  async findLatestBlogPerTopic() {
+    const new_blogs_of_each_topic = await this.blogRepo
+      .createQueryBuilder('blog')
+      // .where({
+      //   is_published: true,
+      // })
+      .innerJoin('blog.topic', 'topic')
+      .where((qb: SelectQueryBuilder<BlogsEntity>) => {
+        const sub_query = qb
+          .subQuery()
+          .select('b.id')
+          .from(BlogsEntity, 'b')
+          .where('b.topic_id = blog.topic_id')
+          .orderBy('b.created_at', 'DESC')
+          .limit(6)
+          .getQuery();
+        return 'blog.id IN ' + sub_query;
+      })
+      .leftJoin('blog.user', 'user')
+      .addSelect(['user.id', 'user.email', 'user.first_name', 'user.last_name'])
+      .addSelect(['topic.id', 'topic.name', 'topic.slug', 'topic.image'])
+      .orderBy('topic.id', 'ASC')
+      .addOrderBy('blog.created_at', 'DESC')
+      .getMany();
+    const grouped_topics = new_blogs_of_each_topic.reduce((acc, blog) => {
+      const topic_id = blog.topic_id;
+      if (!acc[topic_id]) {
+        acc[topic_id] = [];
+      }
+      acc[topic_id].push(blog);
+      return acc;
+    }, {});
+    return grouped_topics;
   }
 
   async findOne(identifier: string) {
@@ -111,12 +143,15 @@ export class BlogService {
     if (isNumeric(identifier)) {
       query.where('blog.id =:id', { id: +identifier });
     } else {
-      query.where('blog.slug =:slug', { slug: +identifier });
+      query.where('blog.slug ILIKE :slug', { slug: `%${identifier}%` });
     }
 
     const blog = await query
-      .leftJoinAndSelect('blog.user', 'created_by')
-      .leftJoinAndSelect('blog.topic', 'topic')
+      .leftJoin('blog.user', 'user')
+      .addSelect(['user.id', 'user.email', 'user.first_name', 'user.last_name'])
+      .leftJoin('blog.topic', 'topic')
+      .addSelect(['topic.id', 'topic.name', 'topic.slug', 'topic.image'])
+
       .getOne();
     if (!blog) {
       throw new NotFoundException('Blog not found');
@@ -229,11 +264,16 @@ export class BlogService {
   }
 
   async getLatestBlogs() {
-    return await this.blogRepo.find({
-      take: LIMIT_DEFAULT,
-      order: {
-        created_at: 'ASC',
-      },
-    });
+    return await this.blogRepo
+      .createQueryBuilder('blog')
+      .orderBy('blog.created_at', 'DESC')
+      // .where({
+      //   is_published: true,
+      // })
+      .leftJoin('blog.user', 'user')
+      .addSelect(['user.id', 'user.email', 'user.first_name', 'user.last_name'])
+      .leftJoin('blog.topic', 'topic')
+      .addSelect(['topic.id', 'topic.name', 'topic.slug', 'topic.image'])
+      .getOne();
   }
 }

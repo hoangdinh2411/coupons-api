@@ -26,11 +26,6 @@ export class ClientController {
     return results;
   }
 
-  @Get('/blogs')
-  getBlogs() {
-    return this.blogsService.getLatestBlogs();
-  }
-
   @Get('/stores')
   @ApiQuery({ name: 'first_letter', required: false, type: String })
   @ApiQuery({ name: 'search_text', required: false, type: String })
@@ -47,5 +42,35 @@ export class ClientController {
   @Get('/stores/:slug')
   getStoreBySlug(@Param('slug') slug: string) {
     return this.storeService.findOne(slug);
+  }
+
+  @Get('/blogs')
+  async getLatestBlogs() {
+    const latest = await this.blogsService.getLatestBlogs();
+    const blogs_per_topic = await this.blogsService.findLatestBlogPerTopic();
+    return {
+      latest,
+      blogs_per_topic,
+    };
+  }
+
+  @Get('/blogs/:slug')
+  async getBlogBySlug(@Param('slug') slug: string) {
+    return this.blogsService.findOne(slug);
+  }
+
+  @Get('/search')
+  @ApiQuery({ name: 'search_text', required: true, type: String })
+  async search(@Query('search_text') search_text?: string) {
+    const [blogs, categories, stores] = await Promise.all([
+      this.blogsService.filter({ search_text }),
+      this.categoryService.findAll(null, search_text),
+      this.storeService.findStoreForClient(null, search_text),
+    ]);
+    return {
+      blogs: blogs.results ?? [],
+      categories: categories.results ?? [],
+      stores: stores ?? [],
+    };
   }
 }

@@ -38,6 +38,6 @@ export class CategoryEntity extends BaseEntity {
   @ManyToMany(() => StoreEntity, (store) => store.categories)
   stores: StoreEntity[];
 
-  @ManyToMany(() => CouponEntity, (store) => store.categories)
+  @ManyToMany(() => CouponEntity, (coupon) => coupon.categories)
   coupons: CouponEntity[];
 }

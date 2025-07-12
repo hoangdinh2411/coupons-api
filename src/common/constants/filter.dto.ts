@@ -17,7 +17,7 @@ export class FilterDto {
     default: 'Store abc',
     description: 'Search text',
   })
-  search_text: string;
+  search_text?: string;
 
   @IsNumber()
   @IsOptional()
@@ -29,7 +29,7 @@ export class FilterDto {
     description:
       'The coupon caps the discount at 58 % off the item or order total.',
   })
-  max_discount_pct: number;
+  max_discount_pct?: number;
 
   @IsNumber()
   @IsOptional()
@@ -40,7 +40,7 @@ export class FilterDto {
     default: 1,
     description: 'Rating',
   })
-  rating: number;
+  rating?: number;
 
   @IsNumber()
   @IsOptional()
@@ -49,7 +49,7 @@ export class FilterDto {
     default: 1,
     description: 'page',
   })
-  page: number;
+  page?: number;
 
   @IsArray()
   @IsOptional()
@@ -58,7 +58,7 @@ export class FilterDto {
     default: [1, 2, 3],
     description: 'an array of category ids',
   })
-  categories: number[];
+  categories?: number[];
 
   @IsArray()
   @IsOptional()
@@ -67,7 +67,7 @@ export class FilterDto {
     default: [1, 2, 3],
     description: 'an array of topic ids',
   })
-  topics: number[];
+  topics?: number[];
 
   @IsArray()
   @IsOptional()
@@ -76,7 +76,7 @@ export class FilterDto {
     default: 1,
     description: 'Store ids',
   })
-  stores: number[];
+  stores?: number[];
 
   @IsArray()
   @IsOptional()
@@ -84,7 +84,7 @@ export class FilterDto {
     default: [0, 1, 2],
     description: 'Status',
   })
-  status: number[];
+  status?: number[];
 
   @IsBoolean()
   @IsOptional()
@@ -92,5 +92,5 @@ export class FilterDto {
     default: false,
     description: 'is_verified',
   })
-  is_verified: boolean;
+  is_verified?: boolean;
 }

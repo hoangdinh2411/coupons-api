@@ -1,12 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { LIMIT_DEFAULT } from 'common/constants/variables';
+import { CategoriesService } from 'modules/categories/categories.service';
 import { CategoryEntity } from 'modules/categories/entities/category.entity';
 import { StoreEntity } from 'modules/stores/entities/store.entity';
 import { DataSource } from 'typeorm';
 
 @Injectable()
 export class ClientService {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly categoryService: CategoriesService,
+  ) {}
   async getMenu() {
     const popular_stores = await this.dataSource
       .getRepository(StoreEntity)
@@ -19,6 +23,15 @@ export class ClientService {
         select: ['name', 'id', 'slug', 'rating'],
       });
     const popular = popular_stores.sort((a, b) => a.name.localeCompare(b.name));
+    const top_categories = await this.dataSource
+      .getRepository(CategoryEntity)
+      .createQueryBuilder('category')
+      .leftJoin('category.coupons', 'coupon')
+      .addSelect('COUNT(coupon.id)', 'total_coupons')
+      .groupBy('category.id')
+      .orderBy('total_coupons', 'DESC')
+      .take(5)
+      .getMany();
     const categories = await this.dataSource
       .getRepository(CategoryEntity)
       .find({
@@ -32,8 +45,8 @@ export class ClientService {
         const stores = await this.dataSource
           .getRepository(StoreEntity)
           .createQueryBuilder('store')
+          .select(['store.id', 'store.name', 'store.slug'])
           .innerJoin('store.categories', 'category')
-          .addSelect(['store.name', 'store.id', 'store.slug'])
           .where('category.id = :id', { id: cat.id })
           .orderBy('store.name', 'ASC')
           .getMany();
@@ -47,6 +60,7 @@ export class ClientService {
     );
 
     return {
+      top_categories,
       popular,
       categories: categories_with_limited_store,
     };

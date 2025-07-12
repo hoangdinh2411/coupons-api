@@ -147,7 +147,7 @@ export class StoresService {
     if (isNumeric(identifier)) {
       query.where('store.id =:id', { id: +identifier });
     } else {
-      query.where('store.slug =:slug', { slug: identifier });
+      query.where('store.slug ILIKE :slug', { slug: `%${identifier}%` });
     }
 
     const store = await query

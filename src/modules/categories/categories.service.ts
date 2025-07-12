@@ -159,4 +159,14 @@ export class CategoriesService {
       await queryRunner.release();
     }
   }
+
+  async getCategoriesHasMostCoupons() {
+    return await this.categoryRep
+      .createQueryBuilder('category')
+      .leftJoin('category.coupons', 'coupons')
+      .loadRelationCountAndMap('category.total_coupons', 'category.coupons')
+      .orderBy('category.total_coupons', 'DESC')
+      .take(5)
+      .getMany();
+  }
 }
