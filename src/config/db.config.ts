@@ -10,14 +10,14 @@ export function getDbConfig(
     retryDelay: 3000,
     retryAttempts: 10,
     autoLoadEntities: true,
-    entities: [__dirname + '/../**/*.entity.{js,ts}'],
+    entities: [__dirname + '/**/*.entity.{js,ts}'],
     logging: ['query', 'error', 'warn'],
     synchronize: !isProduction,
     name: 'analytics',
   };
   let environmentOptions: Partial<TypeOrmModuleOptions> = {};
   const isProd = configService.get('NODE_ENV') === 'production';
-  if (isProd) {
+  if (!isProd) {
     environmentOptions = {
       url: configService.get<string>('POSTGRES_URL'),
     };
