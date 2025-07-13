@@ -112,7 +112,8 @@ export class CouponsService {
       status = [],
       stores = [],
       search_text = '',
-      page = 1,
+      page,
+      limit,
       rating,
       is_verified,
     } = data;
@@ -167,9 +168,10 @@ export class CouponsService {
         });
     }
 
+    if (limit && page) {
+      query.skip((page - 1) * LIMIT_DEFAULT).take(LIMIT_DEFAULT);
+    }
     const [results, total] = await query
-      .skip((page - 1) * LIMIT_DEFAULT)
-      .take(LIMIT_DEFAULT)
       .leftJoinAndSelect('cp.store', 'store')
       .leftJoinAndSelect('cp.categories', 'categories')
       .getManyAndCount();

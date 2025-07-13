@@ -10,7 +10,6 @@ import { TopicEntity } from './entities/topic.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { makeMetaDataContent } from 'common/helpers/metadata';
 import { FilesService } from 'modules/files/files.service';
-import { LIMIT_DEFAULT } from 'common/constants/variables';
 
 @Injectable()
 export class TopicService {
@@ -48,10 +47,10 @@ export class TopicService {
     }
   }
 
-  async findAll(page?: number, search_text?: string) {
+  async findAll(page?: number, limit?: number, search_text?: string) {
     const query = this.topicRepo.createQueryBuilder('topic');
-    if (page) {
-      query.skip((page - 1) * LIMIT_DEFAULT).take(LIMIT_DEFAULT);
+    if (page && limit) {
+      query.skip((page - 1) * limit).take(limit);
     }
 
     if (search_text) {

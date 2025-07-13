@@ -9,7 +9,6 @@ import { CategoryEntity } from './entities/category.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, ILike, In, QueryFailedError, Repository } from 'typeorm';
 import { FilesService } from 'modules/files/files.service';
-import { LIMIT_DEFAULT } from 'common/constants/variables';
 
 @Injectable()
 export class CategoriesService {
@@ -45,10 +44,10 @@ export class CategoriesService {
     }
   }
 
-  async findAll(page?: number, search_text?: string) {
+  async findAll(page?: number, limit?: number, search_text?: string) {
     const query = this.categoryRep.createQueryBuilder('category');
-    if (page) {
-      query.skip((page - 1) * LIMIT_DEFAULT).take(LIMIT_DEFAULT);
+    if (page && limit) {
+      query.skip((page - 1) * limit).take(limit);
     }
 
     if (search_text) {
@@ -56,12 +55,17 @@ export class CategoriesService {
         name: ILike(`%${search_text}%`),
       });
     }
-    const [results, total] = await query
+
+    const [categories, total] = await query.getManyAndCount();
+    const ids = categories.map((c) => c.id);
+    const results = await this.categoryRep
+      .createQueryBuilder('category')
+      .whereInIds(ids)
       .leftJoin('category.stores', 'store')
       .addSelect(['store.id', 'store.name', 'store.slug'])
       .orderBy('category.name', 'ASC')
       .addOrderBy('store.name', 'ASC')
-      .getManyAndCount();
+      .getMany();
     return {
       total,
       results,

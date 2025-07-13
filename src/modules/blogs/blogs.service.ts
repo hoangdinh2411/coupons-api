@@ -69,7 +69,7 @@ export class BlogService {
     }
   }
   async filter(filterData: FilterDto) {
-    const { topics = [], search_text, page = 1, rating } = filterData;
+    const { topics = [], search_text, page, limit, rating } = filterData;
     const query = this.blogRepo
       .createQueryBuilder('blog')
       .leftJoinAndSelect('blog.topic', 'topic');
@@ -88,11 +88,10 @@ export class BlogService {
         topics,
       });
     }
-
-    const [results, total] = await query
-      .skip((page - 1) * LIMIT_DEFAULT)
-      .take(LIMIT_DEFAULT)
-      .getManyAndCount();
+    if (page && limit) {
+      query.skip((page - 1) * limit).take(limit);
+    }
+    const [results, total] = await query.getManyAndCount();
 
     return {
       total,

@@ -29,12 +29,14 @@ export class CategoriesController {
   @Get()
   @Roles(ROLES.ADMIN)
   @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'search_text', required: false, type: String })
   findAll(
     @Query('page') page?: number,
+    @Query('limit') limit?: number,
     @Query('search_text') search_text?: string,
   ) {
-    return this.categoriesService.findAll(+page, search_text);
+    return this.categoriesService.findAll(+page, +limit, search_text);
   }
 
   @Patch(':id')

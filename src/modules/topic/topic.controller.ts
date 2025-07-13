@@ -27,12 +27,14 @@ export class TopicController {
   @Get()
   @Roles(ROLES.ADMIN)
   @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'search_text', required: false, type: String })
   findAll(
     @Query('page') page: number,
+    @Query('limit') limit: number,
     @Query('search_text') search_text: string,
   ) {
-    return this.topicService.findAll(page, search_text);
+    return this.topicService.findAll(+page, +limit, search_text);
   }
 
   @Patch(':id')

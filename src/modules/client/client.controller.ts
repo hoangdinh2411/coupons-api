@@ -69,7 +69,7 @@ export class ClientController {
   async search(@Query('search_text') search_text?: string) {
     const [blogs, categories, stores] = await Promise.all([
       this.blogsService.filter({ search_text }),
-      this.categoryService.findAll(null, search_text),
+      this.categoryService.findAll(null, null, search_text),
       this.storeService.findStoreForClient(null, search_text),
     ]);
     return {

@@ -74,6 +74,7 @@ export class StoresService {
       max_discount_pct = 100,
       search_text,
       page,
+      limit,
       rating,
     } = filterData;
     const query = this.storeRep.createQueryBuilder('store');
@@ -100,13 +101,13 @@ export class StoresService {
         max_discount_pct,
       });
     }
+    if (page && limit) {
+      query.skip((page - 1) * limit).take(limit);
+    }
 
     const [results, total] = await query
-      .skip((page - 1) * LIMIT_DEFAULT)
-      .take(LIMIT_DEFAULT)
       .leftJoinAndSelect('store.categories', 'categories')
       .getManyAndCount();
-
     return {
       total,
       results: results.map((store: StoreEntity) => ({
@@ -294,11 +295,9 @@ export class StoresService {
   async findStoreForClient(first_letter: string, search_text: string = '') {
     const query = this.storeRep.createQueryBuilder('store');
     if (search_text) {
-      query
-        .andWhere({
-          name: ILike(`%${search_text}%`),
-        })
-        .take(LIMIT_DEFAULT);
+      query.andWhere({
+        name: ILike(`%${search_text}%`),
+      });
     }
     if (first_letter) {
       const number_regex = /^[0-9]/;

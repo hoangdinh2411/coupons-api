@@ -51,6 +51,15 @@ export class FilterDto {
   })
   page?: number;
 
+  @IsNumber()
+  @IsOptional()
+  @ApiProperty({
+    type: () => 'limit',
+    default: 1,
+    description: 'limit',
+  })
+  limit?: number;
+
   @IsArray()
   @IsOptional()
   @ApiProperty({
