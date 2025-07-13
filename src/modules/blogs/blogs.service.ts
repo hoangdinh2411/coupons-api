@@ -61,9 +61,8 @@ export class BlogService {
         if (err.code === '23505') {
           throw new ConflictException('Slug already exists');
         }
-      } else {
-        throw error;
       }
+      throw error;
       throw error;
     } finally {
       await queryRunner.release();
@@ -225,9 +224,8 @@ export class BlogService {
         if (err.code === '23505') {
           throw new ConflictException('Slug already exists');
         }
-      } else {
-        throw error;
       }
+      throw error;
     } finally {
       await queryRunner.release();
     }
@@ -274,6 +272,7 @@ export class BlogService {
       .addSelect(['user.id', 'user.email', 'user.first_name', 'user.last_name'])
       .leftJoin('blog.topic', 'topic')
       .addSelect(['topic.id', 'topic.name', 'topic.slug', 'topic.image'])
-      .getOne();
+      .take(LIMIT_DEFAULT)
+      .getMany();
   }
 }

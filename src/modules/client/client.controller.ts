@@ -3,7 +3,7 @@ import { ClientService } from './client.service';
 import { ApiQuery } from '@nestjs/swagger';
 import { TopicService } from 'modules/topic/topic.service';
 import { BlogService } from 'modules/blogs/blogs.service';
-import { StoresService } from 'modules/stores/stores.service';
+import { StoresService } from 'modules/stores/services/stores.service';
 import { CategoriesService } from 'modules/categories/categories.service';
 
 @Controller('client')
@@ -56,7 +56,12 @@ export class ClientController {
 
   @Get('/blogs/:slug')
   async getBlogBySlug(@Param('slug') slug: string) {
-    return this.blogsService.findOne(slug);
+    const latest = await this.blogsService.getLatestBlogs();
+    const blog = await this.blogsService.findOne(slug);
+    return {
+      latest,
+      blog,
+    };
   }
 
   @Get('/search')

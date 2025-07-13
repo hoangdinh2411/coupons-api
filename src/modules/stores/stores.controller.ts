@@ -9,7 +9,7 @@ import {
   HttpCode,
   Query,
 } from '@nestjs/common';
-import { StoresService } from './stores.service';
+import { StoresService } from './services/stores.service';
 import { Roles } from 'common/decorators/roles.decorator';
 import { ROLES } from 'common/constants/enums';
 import { StoreDto } from './dto/store.dto';

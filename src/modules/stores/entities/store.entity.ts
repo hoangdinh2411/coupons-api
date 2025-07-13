@@ -9,6 +9,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { FAQEntity } from './faq.entity';
 
 @Entity('store')
 export class StoreEntity extends BaseEntity {
@@ -93,4 +94,9 @@ export class StoreEntity extends BaseEntity {
     eager: false, // keep false unless you always need them
   })
   coupons: CouponEntity[];
+
+  @OneToMany(() => FAQEntity, (faq) => faq.store, {
+    cascade: ['insert', 'update', 'remove'],
+  })
+  faqs: FAQEntity[];
 }

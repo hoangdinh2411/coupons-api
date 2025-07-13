@@ -9,8 +9,10 @@ import {
   IsString,
   Max,
   Min,
+  ValidateNested,
 } from 'class-validator';
 import { BaseDto } from 'common/constants/common.dto';
+import { FAQDto } from './faq.dto';
 
 export class UpdateStoreDto extends BaseDto {
   @IsString()
@@ -86,4 +88,15 @@ export class UpdateStoreDto extends BaseDto {
     description: 'Slug will be generated on frontend',
   })
   slug: string;
+
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => FAQDto)
+  @ApiProperty({
+    type: () => FAQDto,
+    default: 1,
+    description: 'FAQs ',
+  })
+  faqs: FAQDto[];
 }

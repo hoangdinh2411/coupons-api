@@ -17,7 +17,7 @@ export function getDbConfig(
   };
   let environmentOptions: Partial<TypeOrmModuleOptions> = {};
   const isProd = configService.get('NODE_ENV') === 'production';
-  if (!isProd) {
+  if (isProd) {
     environmentOptions = {
       url: configService.get<string>('POSTGRES_URL'),
     };

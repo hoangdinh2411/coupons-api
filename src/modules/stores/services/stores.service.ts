@@ -3,23 +3,25 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { StoreDto } from './dto/store.dto';
+import { StoreDto } from '../dto/store.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { StoreEntity } from './entities/store.entity';
+import { StoreEntity } from '../entities/store.entity';
 import { DataSource, ILike, QueryFailedError, Repository } from 'typeorm';
 import { CategoriesService } from 'modules/categories/categories.service';
-import { FilterDto } from '../../common/constants/filter.dto';
-import { UpdateStoreDto } from './dto/update-store.dto';
+import { FilterDto } from '../../../common/constants/filter.dto';
+import { UpdateStoreDto } from '../dto/update-store.dto';
 import { LIMIT_DEFAULT } from 'common/constants/variables';
 import { isNumeric } from 'common/helpers/number';
 import { makeMetaDataContent } from 'common/helpers/metadata';
 import { FilesService } from 'modules/files/files.service';
+import { FAQService } from './faqs.service';
 
 @Injectable()
 export class StoresService {
   constructor(
     @InjectRepository(StoreEntity)
     private readonly storeRep: Repository<StoreEntity>,
+    private readonly faqService: FAQService,
     private readonly categoryService: CategoriesService,
     private readonly fileService: FilesService,
     private readonly dataSource: DataSource,
@@ -33,18 +35,25 @@ export class StoresService {
         createStoreDto.categories,
       );
 
-      const result = this.storeRep.create({ ...createStoreDto, categories });
-      await this.storeRep.save(result);
-      if (result) {
-        await this.fileService.markImageAsUsed([result.image.public_id]);
+      const store = this.storeRep.create({ ...createStoreDto, categories });
+      await this.storeRep.save(store);
+      if (createStoreDto.faqs) {
+        await this.faqService.saveFaqs(
+          createStoreDto.faqs,
+          store,
+          queryRunner.manager,
+        );
       }
-      if (result.description) {
+      if (store) {
+        await this.fileService.markImageAsUsed([store.image.public_id]);
+      }
+      if (store.description) {
         await this.fileService.updateTagsFOrUsedImagesFromHtml(
-          result.description,
+          store.description,
         );
       }
       await queryRunner.commitTransaction();
-      return result;
+      return store;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       if (error instanceof QueryFailedError) {
@@ -52,9 +61,8 @@ export class StoresService {
         if (err.code === '23505') {
           throw new ConflictException('Slug already exists');
         }
-      } else {
-        throw error;
       }
+      throw error;
     } finally {
       await queryRunner.release();
     }
@@ -206,16 +214,21 @@ export class StoresService {
           updateStoreDto.categories,
         );
       }
+      if (store.faqs) {
+        await this.faqService.deleteFaqs(store.id, queryRunner.manager);
+      }
+
       const data = {
         ...store,
         ...updateStoreDto,
         ...(categories && { categories }),
       };
-      const result = await this.storeRep.save(data);
+      const updated_store = await this.storeRep.save(data);
       const has_new_image =
         updateStoreDto.image &&
         updateStoreDto.image.public_id &&
         updateStoreDto.image.public_id !== store.image.public_id;
+
       if (has_new_image) {
         await this.fileService.markImageAsUsed([
           updateStoreDto.image.public_id,
@@ -224,13 +237,20 @@ export class StoresService {
       if (has_new_image && store.image.public_id !== '') {
         await this.fileService.delete(store.image.public_id);
       }
-      if (result.description) {
+      if (updated_store.description) {
         await this.fileService.updateTagsFOrUsedImagesFromHtml(
-          result.description,
+          updated_store.description,
+        );
+      }
+      if (updateStoreDto.faqs) {
+        await this.faqService.saveFaqs(
+          updateStoreDto.faqs,
+          updated_store,
+          queryRunner.manager,
         );
       }
       await queryRunner.commitTransaction();
-      return result;
+      return updated_store;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       if (error instanceof QueryFailedError) {
@@ -238,9 +258,8 @@ export class StoresService {
         if (err.code === '23505') {
           throw new ConflictException('Slug already exists');
         }
-      } else {
-        throw error;
       }
+      throw error;
     } finally {
       await queryRunner.release();
     }

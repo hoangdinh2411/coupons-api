@@ -7,7 +7,7 @@ import { CouponDto } from './dto/coupon.dt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CouponEntity } from './entities/coupon.entity';
 import { Brackets, ILike, Repository } from 'typeorm';
-import { StoresService } from 'modules/stores/stores.service';
+import { StoresService } from 'modules/stores/services/stores.service';
 import dayjs from 'dayjs';
 import { UserEntity } from 'modules/users/entities/users.entity';
 import { CategoriesService } from 'modules/categories/categories.service';

@@ -26,6 +26,7 @@ import { ForgetPasswordDto, VerifyCodeDto } from './dtos/verify-code.dto';
 import { VerifyCodeFactory } from './factory/verify-code-strategy.factory';
 import { TokenService } from './services/token.service';
 import { ChangePasswordDto } from './dtos/change-password.dto';
+import { AuthService } from './services/auth.service';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -38,6 +39,7 @@ export class AuthController {
     private readonly emailerService: EmailerService,
     private readonly dataSource: DataSource,
     private readonly tokenService: TokenService,
+    private readonly authService: AuthService,
   ) {}
 
   @ApiOperation({
@@ -51,11 +53,7 @@ export class AuthController {
   @Post('sign-up')
   @Public()
   async signUp(@Query('type') type: ROLES, @Body() body: SignUpDto) {
-    if (body.password !== body.confirm_password) {
-      throw new BadRequestException(
-        'Password and confirm password do not match',
-      );
-    }
+    this.authService.comparePassword(body.password, body.confirm_password);
     const strategy = this.signUpStrategyFactory.getStrategy(type);
     return await strategy.execute(body);
   }
@@ -174,11 +172,7 @@ export class AuthController {
   @HttpCode(200)
   @Post('change-pass')
   async changePassword(@Body() body: ChangePasswordDto) {
-    if (body.password !== body.confirm_password) {
-      throw new BadRequestException(
-        'Password and confirm password do not match',
-      );
-    }
+    this.authService.comparePassword(body.password, body.confirm_password);
     const decoded = await this.tokenService.verifyToken(body.reset_token);
     if (!decoded.id) {
       throw new BadRequestException('Invalid change password token');

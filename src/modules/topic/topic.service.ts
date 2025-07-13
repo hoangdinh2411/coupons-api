@@ -41,9 +41,8 @@ export class TopicService {
         if (err.code === '23505') {
           throw new ConflictException('Topic already exist');
         }
-      } else {
-        throw error;
       }
+      throw error;
     } finally {
       await queryRunner.release();
     }
@@ -138,9 +137,8 @@ export class TopicService {
         if (err.code === '23505') {
           throw new ConflictException('Topic already exist');
         }
-      } else {
-        throw error;
       }
+      throw error;
     } finally {
       await queryRunner.release();
     }

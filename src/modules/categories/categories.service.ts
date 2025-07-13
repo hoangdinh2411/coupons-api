@@ -38,9 +38,8 @@ export class CategoriesService {
         if (err.code === '23505') {
           throw new ConflictException('Category already exist');
         }
-      } else {
-        throw error;
       }
+      throw error;
     } finally {
       await queryRunner.release();
     }
@@ -119,9 +118,8 @@ export class CategoriesService {
         if (err.code === '23505') {
           throw new ConflictException('Category already exist');
         }
-      } else {
-        throw error;
       }
+      throw error;
     } finally {
       await queryRunner.release();
     }

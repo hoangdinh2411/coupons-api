@@ -10,8 +10,10 @@ import {
   IsString,
   Max,
   Min,
+  ValidateNested,
 } from 'class-validator';
 import { BaseDto } from 'common/constants/common.dto';
+import { FAQDto } from './faq.dto';
 
 export class StoreDto extends BaseDto {
   @IsString()
@@ -77,10 +79,29 @@ export class StoreDto extends BaseDto {
   @Type(() => Number)
   @ApiProperty({
     type: () => 'number',
-    default: 1,
+    default: [1, 2],
     description: 'Category id',
   })
   categories: number[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => FAQDto)
+  @ApiProperty({
+    type: () => FAQDto,
+    default: [
+      {
+        question: 'question 1?',
+        answer: 'answer 1',
+      },
+      {
+        question: 'question 2?',
+        answer: 'answer 2',
+      },
+    ],
+    description: 'FAQs ',
+  })
+  faqs: FAQDto[];
 
   @IsNumber()
   @IsOptional()

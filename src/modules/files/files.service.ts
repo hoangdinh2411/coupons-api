@@ -12,9 +12,13 @@ export class FilesService {
   ) {}
 
   async upload(file: Express.Multer.File, folder: string) {
-    const result = await this.fileAdapter.upload(file, folder);
-    unlinkSync(file.path);
-    return result;
+    try {
+      const result = await this.fileAdapter.upload(file, folder);
+      unlinkSync(file.path);
+      return result;
+    } catch (error) {
+      throw error; // 👈 propagate lỗi lên để transaction biết
+    }
   }
 
   async delete(public_id: string) {
@@ -44,21 +48,33 @@ export class FilesService {
 
   // make Image Type to be used in other modules
   async deleteImages(ids: string[]) {
-    for (const id of ids) {
-      await this.delete(id);
+    try {
+      for (const id of ids) {
+        await this.delete(id);
+      }
+    } catch (error) {
+      throw error; // 👈 propagate lỗi lên để transaction biết
     }
   }
   async markImageAsUsed(public_ids: string[]) {
-    if (!public_ids) {
-      throw new ConflictException('Do not have any publics id to remove tag');
+    try {
+      if (!public_ids) {
+        throw new ConflictException('Do not have any publics id to remove tag');
+      }
+      return await this.fileAdapter.markImageAsUsed(public_ids);
+    } catch (error) {
+      throw error; // 👈 propagate lỗi lên để transaction biết
     }
-    return await this.fileAdapter.markImageAsUsed(public_ids);
   }
 
   async updateTagsFOrUsedImagesFromHtml(html: string) {
-    const public_ids = extractPublicIdsFromHtml(html);
-    if (public_ids) {
-      await this.markImageAsUsed(public_ids);
+    try {
+      const public_ids = extractPublicIdsFromHtml(html);
+      if (public_ids) {
+        await this.markImageAsUsed(public_ids);
+      }
+    } catch (error) {
+      throw error; // 👈 propagate lỗi lên để transaction biết
     }
   }
 }
