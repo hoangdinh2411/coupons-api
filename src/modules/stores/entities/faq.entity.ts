@@ -1,4 +1,10 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { StoreEntity } from './store.entity';
 
 @Entity('faq')
@@ -26,5 +32,6 @@ export class FAQEntity {
   @ManyToOne(() => StoreEntity, (store) => store.faqs, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'store_id' })
   store: StoreEntity;
 }

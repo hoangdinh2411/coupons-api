@@ -162,6 +162,7 @@ export class StoresService {
     const store = await query
       .leftJoinAndSelect('store.coupons', 'coupons')
       .leftJoinAndSelect('store.categories', 'categories')
+      .leftJoinAndSelect('store.faqs', 'faqs')
       .getOne();
     if (!store) {
       throw new NotFoundException('Store not found');
@@ -203,8 +204,11 @@ export class StoresService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const store = await this.storeRep.findOneBy({
-        id,
+      const store = await this.storeRep.findOne({
+        where: {
+          id,
+        },
+        relations: ['faqs'],
       });
       if (!store) {
         throw new NotFoundException('Store not found');
@@ -215,13 +219,14 @@ export class StoresService {
           updateStoreDto.categories,
         );
       }
-      if (store.faqs) {
+      if (store.faqs.length) {
         await this.faqService.deleteFaqs(store.id, queryRunner.manager);
       }
+      const { faqs: _omitFaqs, ...dtoWithoutFaqs } = updateStoreDto;
 
       const data = {
         ...store,
-        ...updateStoreDto,
+        ...dtoWithoutFaqs,
         ...(categories && { categories }),
       };
       const updated_store = await this.storeRep.save(data);
@@ -243,7 +248,7 @@ export class StoresService {
           updated_store.description,
         );
       }
-      if (updateStoreDto.faqs) {
+      if (updateStoreDto.faqs.length) {
         await this.faqService.saveFaqs(
           updateStoreDto.faqs,
           updated_store,

@@ -13,13 +13,11 @@ export class FAQService {
   ) {}
   async saveFaqs(data: FAQDto[], store: StoreEntity, manager: EntityManager) {
     try {
-      const faqs = data.map((f, index) =>
-        this.faqRep.create({
-          ...f,
-          order: index + 1,
-          store,
-        }),
-      );
+      const faqs = data.map((f, index) => ({
+        ...f,
+        order: index + 1,
+        store,
+      }));
       await manager.save(FAQEntity, faqs);
     } catch (error) {
       throw error;
@@ -28,11 +26,13 @@ export class FAQService {
 
   async deleteFaqs(store_id: number, manager: EntityManager) {
     try {
-      const result = await manager.delete(FAQEntity, {
-        store: {
-          id: store_id,
-        },
-      });
+      const result = await manager
+        .createQueryBuilder()
+        .delete()
+        .from(FAQEntity)
+        .where('store_id = :storeId', { storeId: store_id })
+        .execute();
+
       if (result.affected === 0) {
         throw new ConflictException(
           'Cannot delete FAQs by store id ' + store_id,

@@ -96,7 +96,8 @@ export class StoreEntity extends BaseEntity {
   coupons: CouponEntity[];
 
   @OneToMany(() => FAQEntity, (faq) => faq.store, {
-    cascade: ['insert', 'update', 'remove'],
+    cascade: true, // optional: saves coupons when you save a store
+    eager: false,
   })
   faqs: FAQEntity[];
 }
