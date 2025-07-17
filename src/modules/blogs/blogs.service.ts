@@ -17,7 +17,6 @@ import { ROLES } from 'common/constants/enums';
 import { BlogsEntity } from './entities/blogs.entity';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 import { BlogDto } from './dto/blog.dto';
-import { LIMIT_DEFAULT } from 'common/constants/variables';
 import { FilterDto } from 'common/constants/filter.dto';
 import { makeMetaDataContent } from 'common/helpers/metadata';
 import { TopicService } from 'modules/topic/topic.service';
@@ -136,12 +135,33 @@ export class BlogService {
     return grouped_topics;
   }
 
+  async findBlogsByTopic(topic_id: number, limit?: number, page?: number) {
+    const query = this.blogRepo
+      .createQueryBuilder('blog')
+      .orderBy('blog.created_at', 'DESC')
+      .where('blog.topic_id = :topic_id', {
+        topic_id,
+      });
+    // .andWhere('blog.is_published = :is_published', {
+    //   is_published: true,
+    // });
+    if (limit && page) {
+      query.skip((page - 1) * limit).take(limit);
+    }
+    query
+      .leftJoin('blog.user', 'user')
+      .addSelect(['user.id', 'user.email', 'user.first_name', 'user.last_name'])
+      .leftJoin('blog.topic', 'topic')
+      .addSelect(['topic.id', 'topic.name', 'topic.slug', 'topic.image']);
+    return await query.getManyAndCount();
+  }
+
   async findOne(identifier: string) {
     const query = this.blogRepo.createQueryBuilder('blog');
     if (isNumeric(identifier)) {
       query.where('blog.id =:id', { id: +identifier });
     } else {
-      query.where('blog.slug ILIKE :slug', { slug: `%${identifier}%` });
+      query.where('blog.slug ILIKE :slug', { slug: `%${identifier.trim()}%` });
     }
 
     const blog = await query
@@ -149,7 +169,6 @@ export class BlogService {
       .addSelect(['user.id', 'user.email', 'user.first_name', 'user.last_name'])
       .leftJoin('blog.topic', 'topic')
       .addSelect(['topic.id', 'topic.name', 'topic.slug', 'topic.image'])
-
       .getOne();
     if (!blog) {
       throw new NotFoundException('Blog not found');
@@ -260,7 +279,7 @@ export class BlogService {
     }
   }
 
-  async getLatestBlogs() {
+  async getLatestBlogs(limit: number) {
     return await this.blogRepo
       .createQueryBuilder('blog')
       .orderBy('blog.created_at', 'DESC')
@@ -271,7 +290,30 @@ export class BlogService {
       .addSelect(['user.id', 'user.email', 'user.first_name', 'user.last_name'])
       .leftJoin('blog.topic', 'topic')
       .addSelect(['topic.id', 'topic.name', 'topic.slug', 'topic.image'])
-      .take(LIMIT_DEFAULT)
+      .take(limit)
       .getMany();
+  }
+
+  getTrending(limit: number) {
+    return (
+      this.blogRepo
+        .createQueryBuilder('blog')
+        .orderBy('blog.rating', 'DESC')
+        .addOrderBy('blog.created_at', 'DESC')
+        // .where({
+        //   is_published: true,
+        // })
+        .leftJoin('blog.user', 'user')
+        .addSelect([
+          'user.id',
+          'user.email',
+          'user.first_name',
+          'user.last_name',
+        ])
+        .leftJoin('blog.topic', 'topic')
+        .addSelect(['topic.id', 'topic.name', 'topic.slug', 'topic.image'])
+        .take(limit)
+        .getMany()
+    );
   }
 }

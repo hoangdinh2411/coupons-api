@@ -20,6 +20,15 @@ export class UpdateUserDto {
   })
   last_name: string = '';
 
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    type: () => 'string',
+    default: 'description',
+    description: 'description',
+  })
+  description: string = '';
+
   @IsNumber()
   @IsOptional()
   @ApiProperty({

@@ -44,23 +44,36 @@ export class ClientController {
     return this.storeService.findOne(slug);
   }
 
-  @Get('/blogs')
+  @Get('/blogs/latest')
   async getLatestBlogs() {
-    const latest = await this.blogsService.getLatestBlogs();
-    const blogs_per_topic = await this.blogsService.findLatestBlogPerTopic();
-    return {
-      latest,
-      blogs_per_topic,
-    };
+    return await this.blogsService.getLatestBlogs(6);
+  }
+  @Get('/blogs/trending')
+  async getTrendingBlogs() {
+    return await this.blogsService.getTrending(6);
   }
 
-  @Get('/blogs/:slug')
-  async getBlogBySlug(@Param('slug') slug: string) {
-    const latest = await this.blogsService.getLatestBlogs();
+  @Get('/blogs/topics')
+  async getBlogsPerTopic() {
+    return await this.blogsService.findLatestBlogPerTopic();
+  }
+
+  @Get('/blogs')
+  async getBlogBySlug(@Query('slug') slug: string) {
     const blog = await this.blogsService.findOne(slug);
+    let read_more = [];
+    if (blog.topic_id) {
+      const [result] = await this.blogsService.findBlogsByTopic(
+        blog.topic_id,
+        5,
+        1,
+      );
+      read_more = result;
+    }
+
     return {
-      latest,
       blog,
+      read_more,
     };
   }
 

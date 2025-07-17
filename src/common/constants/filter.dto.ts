@@ -38,7 +38,7 @@ export class FilterDto {
   @ApiProperty({
     type: () => 'number',
     default: 1,
-    description: 'Rating',
+    description: 'Rating of ',
   })
   rating?: number;
 
@@ -74,7 +74,7 @@ export class FilterDto {
   @ApiProperty({
     type: () => 'array',
     default: [1, 2, 3],
-    description: 'an array of topic ids',
+    description: 'an array of topic ids for blogs',
   })
   topics?: number[];
 
@@ -91,7 +91,7 @@ export class FilterDto {
   @IsOptional()
   @ApiProperty({
     default: [0, 1, 2],
-    description: 'Status',
+    description: 'Status coupon',
   })
   status?: number[];
 
@@ -99,7 +99,7 @@ export class FilterDto {
   @IsOptional()
   @ApiProperty({
     default: false,
-    description: 'is_verified',
+    description: 'coupon is verified?',
   })
   is_verified?: boolean;
 }

@@ -2,6 +2,7 @@ import { Exclude } from 'class-transformer';
 import { BaseEntity } from 'common/constants/base.entity';
 import { ROLES } from 'common/constants/enums';
 import { BlogsEntity } from 'modules/blogs/entities/blogs.entity';
+import { CommentEntity } from 'modules/comments/entities/comment.entity';
 import { CouponEntity } from 'modules/coupons/entities/coupon.entity';
 import {
   Column,
@@ -61,6 +62,13 @@ export class UserEntity extends BaseEntity {
     nullable: true,
   })
   @Exclude()
+  description: string;
+
+  @Column({
+    type: 'text',
+    nullable: true,
+  })
+  @Exclude()
   verify_code: string;
 
   @OneToMany(() => CouponEntity, (coupons) => coupons.added_by)
@@ -82,4 +90,7 @@ export class UserEntity extends BaseEntity {
 
   @OneToMany(() => BlogsEntity, (posts) => posts.created_by)
   blogs: BlogsEntity[];
+
+  @OneToMany(() => CommentEntity, (comment) => comment.user)
+  comments: CommentEntity[];
 }

@@ -11,6 +11,7 @@ import { BlogsModule } from './blogs/blogs.module';
 import { TopicModule } from './topic/topic.module';
 import { FilesModule } from './files/files.module';
 import { ClientModule } from './client/client.module';
+import { CommentsModule } from './comments/comments.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { ClientModule } from './client/client.module';
     TopicModule,
     FilesModule,
     ClientModule,
+    CommentsModule,
   ],
   providers: [JWTAuthStrategy],
 })

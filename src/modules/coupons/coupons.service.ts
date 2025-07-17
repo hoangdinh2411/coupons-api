@@ -258,4 +258,14 @@ export class CouponsService {
     await this.couponRep.delete(id);
     return true;
   }
+
+  getTrending() {
+    return this.couponRep.find({
+      order: {
+        rating: 'DESC',
+        created_at: 'DESC',
+      },
+      take: 5,
+    });
+  }
 }
