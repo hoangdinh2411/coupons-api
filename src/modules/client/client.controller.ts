@@ -5,6 +5,7 @@ import { TopicService } from 'modules/topic/topic.service';
 import { BlogService } from 'modules/blogs/blogs.service';
 import { StoresService } from 'modules/stores/services/stores.service';
 import { CategoriesService } from 'modules/categories/categories.service';
+import { CommentsService } from 'modules/comments/comments.service';
 
 @Controller('client')
 export class ClientController {
@@ -14,6 +15,7 @@ export class ClientController {
     protected readonly blogsService: BlogService,
     private readonly storeService: StoresService,
     private readonly categoryService: CategoriesService,
+    private readonly commentService: CommentsService,
   ) {}
 
   @Get('/menu')
@@ -62,9 +64,9 @@ export class ClientController {
   async getBlogBySlug(@Query('slug') slug: string) {
     const blog = await this.blogsService.findOne(slug);
     let read_more = [];
-    if (blog.topic_id) {
+    if (blog.topic.id) {
       const [result] = await this.blogsService.findBlogsByTopic(
-        blog.topic_id,
+        blog.topic.id,
         5,
         1,
       );
@@ -74,6 +76,24 @@ export class ClientController {
     return {
       blog,
       read_more,
+    };
+  }
+  @Get('/blogs/:blog_id/comments')
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  async getAllCommentForBlog(
+    @Param('blog_id') blog_id: string,
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+  ) {
+    const [results, total] = await this.commentService.findAll(
+      +blog_id,
+      +page,
+      +limit,
+    );
+    return {
+      results,
+      total,
     };
   }
 

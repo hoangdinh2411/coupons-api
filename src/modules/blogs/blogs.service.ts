@@ -40,7 +40,6 @@ export class BlogService {
       const new_blog = this.blogRepo.create({
         ...createBlogDto,
         user,
-        created_by: user.id,
         topic,
       });
       const result = await this.blogRepo.save(new_blog);
@@ -125,7 +124,7 @@ export class BlogService {
       .addOrderBy('blog.created_at', 'DESC')
       .getMany();
     const grouped_topics = new_blogs_of_each_topic.reduce((acc, blog) => {
-      const topic_id = blog.topic_id;
+      const topic_id = blog.topic.id;
       if (!acc[topic_id]) {
         acc[topic_id] = [];
       }
@@ -165,6 +164,7 @@ export class BlogService {
     }
 
     const blog = await query
+      .andWhere('blog.deleted_at IS NULL')
       .leftJoin('blog.user', 'user')
       .addSelect(['user.id', 'user.email', 'user.first_name', 'user.last_name'])
       .leftJoin('blog.topic', 'topic')
@@ -178,16 +178,6 @@ export class BlogService {
       meta_data: makeMetaDataContent(blog, blog.image.url, blog.slug),
     };
   }
-  async findOneById(id: number) {
-    const data = await this.blogRepo.findOneBy({
-      id,
-    });
-    if (!data) {
-      throw new NotFoundException('Blog not found');
-    }
-
-    return data;
-  }
 
   async update(user: UserEntity, id: number, updateBlogDto: UpdateBlogDto) {
     const queryRunner = this.dataSource.createQueryRunner();
@@ -199,17 +189,12 @@ export class BlogService {
       if (updateBlogDto.topic_id) {
         topic = await this.topicService.findOneById(updateBlogDto.topic_id);
       }
-      const blog = await this.blogRepo.findOne({
-        where: {
-          id,
-          deleted_at: null,
-        },
-      });
+      const blog = await this.findOne(id.toString());
       if (!blog) {
         throw new NotFoundException('Blog not found');
       }
 
-      if (user.role !== ROLES.ADMIN && blog.created_by !== user.id) {
+      if (user.role !== ROLES.ADMIN && blog.user.id !== user.id) {
         throw new ForbiddenException(
           'You are not authorized to update this blog',
         );
@@ -254,13 +239,11 @@ export class BlogService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const blog = await this.blogRepo.findOneBy({
-        id,
-      });
+      const blog = await this.findOne(id.toString());
       if (!blog) {
         throw new NotFoundException('Blog not found ');
       }
-      if (user.role !== ROLES.ADMIN && blog.created_by !== user.id) {
+      if (user.role !== ROLES.ADMIN && blog.user.id !== user.id) {
         throw new ForbiddenException(
           'You are not authorized to delete this blog',
         );

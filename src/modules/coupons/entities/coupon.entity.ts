@@ -62,12 +62,6 @@ export class CouponEntity extends BaseEntity {
   saved_by_user: UserEntity[];
 
   @Column({
-    type: 'int',
-    nullable: true,
-  })
-  added_by: number;
-
-  @Column({
     type: 'enum',
     enum: CouponType,
     default: CouponType.CODE,
@@ -106,12 +100,6 @@ export class CouponEntity extends BaseEntity {
     name: 'store_id',
   })
   store: StoreEntity;
-
-  @Column({
-    type: 'int',
-    nullable: true,
-  })
-  store_id: number;
 
   @ManyToMany(() => CategoryEntity, (category) => category.coupons, {
     cascade: true,

@@ -82,7 +82,7 @@ export class FilterDto {
   @IsOptional()
   @ApiProperty({
     type: [Number],
-    default: 1,
+    default: [1],
     description: 'Store ids',
   })
   stores?: number[];

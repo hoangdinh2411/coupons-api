@@ -16,7 +16,6 @@ import { Public } from 'common/decorators/public.decorator';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SignUpDto, AuthDto } from './dtos/auth.dto';
 import { SignUpStrategyFactory } from './factory/signup-strategy.factory';
-import { ConfigService } from '@nestjs/config';
 import { UserService } from 'modules/users/services/users.service';
 import { generateCode } from 'common/helpers/code';
 import { EmailerService } from 'modules/emailer/emailer.service';
@@ -35,7 +34,6 @@ export class AuthController {
     private readonly signUpStrategyFactory: SignUpStrategyFactory,
     private readonly verifyCodeFactory: VerifyCodeFactory,
     private readonly userService: UserService,
-    private configService: ConfigService,
     private readonly emailerService: EmailerService,
     private readonly dataSource: DataSource,
     private readonly tokenService: TokenService,
@@ -82,20 +80,11 @@ export class AuthController {
   @ApiBody({
     type: AuthDto,
   })
-  async signIn(@Req() req, @Res({ passthrough: true }) res: Response) {
+  async signIn(@Req() req, @Res({ passthrough: true }) _res: Response) {
     const token = await this.tokenService.generateToken(req.user);
     // const configService = new ConfigService();
     // const NODE_ENV = configService.get('NODE_ENV');
     if (token) {
-      const NODE_ENV = this.configService.get<string>('NODE_ENV') || '';
-      //io
-      res.cookie('token', token, {
-        httpOnly: NODE_ENV === 'production',
-        secure: NODE_ENV === 'production', // enable when client is served over https
-        sameSite: 'lax', // enable when client is served over https
-        path: '/',
-        maxAge: 1000 * 60 * 60 * 24,
-      });
       return {
         ...req.user,
         token,

@@ -16,15 +16,15 @@ export class JWTAuthStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromExtractors([
         JWTAuthStrategy.tokenExtractor,
       ]),
-      ignoreExpiration: false,
+      ignoreExpiration: true,
       secretOrKey: configService.get<string>('JWT_SECRET'),
     });
   }
 
   private static tokenExtractor(req: Request): string | null {
     let token = null;
-    if (req && 'token' in req.cookies) {
-      token = req.cookies.token;
+    if (req && req.headers['authorization']) {
+      token = req.headers['authorization'].split(' ')[1];
     }
     return token;
   }

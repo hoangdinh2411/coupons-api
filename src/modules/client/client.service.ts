@@ -1,16 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { LIMIT_DEFAULT } from 'common/constants/variables';
-import { CategoriesService } from 'modules/categories/categories.service';
 import { CategoryEntity } from 'modules/categories/entities/category.entity';
 import { StoreEntity } from 'modules/stores/entities/store.entity';
 import { DataSource } from 'typeorm';
 
 @Injectable()
 export class ClientService {
-  constructor(
-    private readonly dataSource: DataSource,
-    private readonly categoryService: CategoriesService,
-  ) {}
+  constructor(private readonly dataSource: DataSource) {}
   async getMenu() {
     const popular_stores = await this.dataSource
       .getRepository(StoreEntity)

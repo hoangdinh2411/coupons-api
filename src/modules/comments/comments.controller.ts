@@ -10,33 +10,43 @@ import {
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
+import { Roles } from 'common/decorators/roles.decorator';
+import { ROLES } from 'common/constants/enums';
+import { UserEntity } from 'modules/users/entities/users.entity';
+import { CurrentUser } from 'common/decorators/currentUser.decorator';
 
 @Controller('comments')
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
   @Post()
-  create(@Body() createCommentDto: CreateCommentDto) {
-    return this.commentsService.create(createCommentDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.commentsService.findAll();
+  @Roles(ROLES.USER, ROLES.PARTNER, ROLES.ADMIN)
+  create(
+    @Body() createCommentDto: CreateCommentDto,
+    @CurrentUser() user: UserEntity,
+  ) {
+    return this.commentsService.create(createCommentDto, user);
   }
 
   @Get(':id')
+  @Roles(ROLES.USER, ROLES.PARTNER, ROLES.ADMIN)
   findOne(@Param('id') id: string) {
     return this.commentsService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto) {
-    return this.commentsService.update(+id, updateCommentDto);
+  @Roles(ROLES.USER, ROLES.PARTNER, ROLES.ADMIN)
+  update(
+    @Param('id') id: string,
+    @Body() updateCommentDto: UpdateCommentDto,
+    @CurrentUser() user: UserEntity,
+  ) {
+    return this.commentsService.update(id, updateCommentDto, user);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.commentsService.remove(+id);
+  @Roles(ROLES.USER, ROLES.PARTNER, ROLES.ADMIN)
+  remove(@Param('id') id: string, @CurrentUser() user: UserEntity) {
+    return this.commentsService.remove(id, user);
   }
 }

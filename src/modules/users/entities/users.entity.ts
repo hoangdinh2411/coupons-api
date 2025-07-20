@@ -71,7 +71,7 @@ export class UserEntity extends BaseEntity {
   @Exclude()
   verify_code: string;
 
-  @OneToMany(() => CouponEntity, (coupons) => coupons.added_by)
+  @OneToMany(() => CouponEntity, (coupons) => coupons.user)
   coupons: CouponEntity[];
 
   @ManyToMany(() => CouponEntity, (coupons) => coupons.saved_by_user)
@@ -88,7 +88,7 @@ export class UserEntity extends BaseEntity {
   })
   saved_coupons: CouponEntity[];
 
-  @OneToMany(() => BlogsEntity, (posts) => posts.created_by)
+  @OneToMany(() => BlogsEntity, (posts) => posts.user)
   blogs: BlogsEntity[];
 
   @OneToMany(() => CommentEntity, (comment) => comment.user)

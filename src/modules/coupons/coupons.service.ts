@@ -45,7 +45,7 @@ export class CouponsService {
       ...payload,
       store,
       categories,
-      added_by: added_by.id,
+      user: added_by,
       is_verified: added_by.role === ROLES.ADMIN,
     });
     return await this.couponRep.save({
@@ -193,6 +193,8 @@ export class CouponsService {
       })
       .leftJoinAndSelect('coupon.store', 'store')
       .leftJoinAndSelect('coupon.categories', 'categories')
+      .leftJoin('coupon.user', 'user')
+      .addSelect(['user.id', 'user.email', 'user.first_name', 'user.last_name'])
       .getOne();
     if (!data) {
       throw new NotFoundException('Coupon not found');
@@ -215,13 +217,11 @@ export class CouponsService {
         updateCouponDto.categories,
       );
     }
-    const coupon = await this.couponRep.findOneBy({
-      id,
-    });
+    const coupon = await this.findOne(id);
     if (!coupon) {
       throw new NotFoundException('Coupon not found');
     }
-    if (user.role !== ROLES.ADMIN && coupon.added_by !== user.id) {
+    if (user.role !== ROLES.ADMIN && coupon.user.id !== user.id) {
       throw new ForbiddenException(
         'You are not authorized to update this coupon',
       );
@@ -244,13 +244,11 @@ export class CouponsService {
   }
 
   async remove(id: number, user: UserEntity) {
-    const coupon = await this.couponRep.findOneBy({
-      id,
-    });
+    const coupon = await this.findOne(id);
     if (!coupon) {
       throw new NotFoundException('Coupon not found');
     }
-    if (user.role !== ROLES.ADMIN && coupon.added_by !== user.id) {
+    if (user.role !== ROLES.ADMIN && coupon.user.id !== user.id) {
       throw new ForbiddenException(
         'You are not authorized to delete this coupon',
       );
