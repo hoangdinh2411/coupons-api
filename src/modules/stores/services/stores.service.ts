@@ -12,9 +12,9 @@ import { FilterDto } from '../../../common/constants/filter.dto';
 import { UpdateStoreDto } from '../dto/update-store.dto';
 import { LIMIT_DEFAULT } from 'common/constants/variables';
 import { isNumeric } from 'common/helpers/number';
-import { makeMetaDataContent } from 'common/helpers/metadata';
 import { FilesService } from 'modules/files/files.service';
 import { FAQService } from './faqs.service';
+import { CouponType } from 'common/constants/enums';
 
 @Injectable()
 export class StoresService {
@@ -110,14 +110,7 @@ export class StoresService {
       .getManyAndCount();
     return {
       total,
-      results: results.map((store: StoreEntity) => ({
-        ...store,
-        meta_data: makeMetaDataContent(
-          store,
-          store.image.url,
-          `/stores/${store.slug}`,
-        ),
-      })),
+      results,
     };
   }
   async findAll(page: number, search_text: string) {
@@ -138,16 +131,7 @@ export class StoresService {
       .getManyAndCount();
     return {
       total,
-      results: results
-        ? results.map((store: StoreEntity) => ({
-            ...store,
-            meta_data: makeMetaDataContent(
-              store,
-              store.image.url,
-              `/stores/${store.slug}`,
-            ),
-          }))
-        : [],
+      results,
     };
   }
 
@@ -167,35 +151,61 @@ export class StoresService {
     if (!store) {
       throw new NotFoundException('Store not found');
     }
-    return {
-      ...store,
-      meta_data: makeMetaDataContent(
-        store,
-        store.image.url,
-        `/stores/${store.slug}`,
-      ),
-    };
+    return store;
   }
-
-  async findOneById(id: number) {
+  async getStoreDetail(slug: string) {
     const store = await this.storeRep
       .createQueryBuilder('store')
-      .where('store.id=:id', {
-        id,
-      })
+      .where('store.slug ILIKE :slug', { slug: `%${slug}%` })
+      // count total coupons
+      .loadRelationCountAndMap('store.total_coupons', 'store.coupons')
+      // count total coupon codes
+      .loadRelationCountAndMap(
+        'store.total_coupon_codes',
+        'store.coupons',
+        'coupon',
+        (qb) => qb.where('coupon.type=:type', { type: CouponType.CODE }),
+      )
+      // count total sale coupons
+      .loadRelationCountAndMap(
+        'store.total_sale_coupons',
+        'store.coupons',
+        'coupon',
+        (qb) => qb.where('coupon.type=:type', { type: CouponType.SALE }),
+      )
+      // count total in-store coupons
+      .loadRelationCountAndMap(
+        'store.total_in_store_coupons',
+        'store.coupons',
+        'coupon',
+        (qb) =>
+          qb.where('coupon.type= :type', {
+            type: CouponType.ONLINE_AND_IN_STORE,
+          }),
+      )
       .leftJoinAndSelect('store.coupons', 'coupons')
+      .leftJoin('store.categories', 'category')
+      .addSelect(['category.id', 'category.name', 'category.slug'])
+      .leftJoinAndSelect('store.faqs', 'faqs')
       .getOne();
     if (!store) {
       throw new NotFoundException('Store not found');
     }
+    const similar_stores = await this.storeRep
+      .createQueryBuilder('s')
+      .leftJoin('s.categories', 'category')
+      .addSelect(['category.id', 'category.name', 'category.slug'])
+      .leftJoinAndSelect('s.coupons', 'coupons')
+      .where('category.id IN (:...categories)', {
+        categories: store.categories.map((c) => c.id),
+      })
+      .orderBy('s.rating', 'DESC')
+      .take(LIMIT_DEFAULT)
+      .getMany();
 
     return {
-      ...store,
-      meta_data: makeMetaDataContent(
-        store,
-        store.image.url,
-        `/stores/${store.slug}`,
-      ),
+      store,
+      similar_stores,
     };
   }
 

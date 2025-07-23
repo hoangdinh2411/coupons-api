@@ -8,7 +8,6 @@ import { TopicDto } from './dto/topic.dto';
 import { DataSource, ILike, QueryFailedError, Repository } from 'typeorm';
 import { TopicEntity } from './entities/topic.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { makeMetaDataContent } from 'common/helpers/metadata';
 import { FilesService } from 'modules/files/files.service';
 
 @Injectable()
@@ -63,15 +62,7 @@ export class TopicService {
       .getManyAndCount();
     return {
       total,
-      results:
-        results.map((topic) => ({
-          ...topic,
-          meta_data: makeMetaDataContent(
-            topic,
-            topic.image.url,
-            '/topic/' + topic.slug,
-          ),
-        })) || [],
+      results,
     };
   }
   async search(search_text: string) {

@@ -18,7 +18,6 @@ import { BlogsEntity } from './entities/blogs.entity';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 import { BlogDto } from './dto/blog.dto';
 import { FilterDto } from 'common/constants/filter.dto';
-import { makeMetaDataContent } from 'common/helpers/metadata';
 import { TopicService } from 'modules/topic/topic.service';
 import { FilesService } from 'modules/files/files.service';
 
@@ -93,10 +92,7 @@ export class BlogService {
 
     return {
       total,
-      results: results.map((blog: BlogsEntity) => ({
-        ...blog,
-        meta_data: makeMetaDataContent(blog, blog.image.url, blog.slug),
-      })),
+      results,
     };
   }
   async findLatestBlogPerTopic() {
@@ -173,10 +169,7 @@ export class BlogService {
     if (!blog) {
       throw new NotFoundException('Blog not found');
     }
-    return {
-      ...blog,
-      meta_data: makeMetaDataContent(blog, blog.image.url, blog.slug),
-    };
+    return blog;
   }
 
   async update(user: UserEntity, id: number, updateBlogDto: UpdateBlogDto) {

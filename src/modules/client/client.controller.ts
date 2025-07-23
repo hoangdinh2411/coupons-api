@@ -43,7 +43,7 @@ export class ClientController {
   }
   @Get('/stores/:slug')
   getStoreBySlug(@Param('slug') slug: string) {
-    return this.storeService.findOne(slug);
+    return this.storeService.getStoreDetail(slug);
   }
 
   @Get('/blogs/latest')

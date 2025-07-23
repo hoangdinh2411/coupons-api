@@ -26,7 +26,9 @@ export class CouponsService {
     private readonly categoryService: CategoriesService,
   ) {}
   async create(createCouponDto: CouponDto, added_by: UserEntity) {
-    const store = await this.storeService.findOneById(createCouponDto.store_id);
+    const store = await this.storeService.findOne(
+      createCouponDto.store_id.toString(),
+    );
     const categories = await this.categoryService.findAllById(
       createCouponDto.categories,
     );
@@ -208,7 +210,9 @@ export class CouponsService {
   async update(id: number, updateCouponDto: UpdateCouponDto, user: UserEntity) {
     let store = null;
     if (updateCouponDto.store_id) {
-      store = await this.storeService.findOneById(updateCouponDto.store_id);
+      store = await this.storeService.findOne(
+        updateCouponDto.store_id.toString(),
+      );
     }
     let categories = [];
 
