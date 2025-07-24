@@ -6,6 +6,7 @@ import { BlogService } from 'modules/blogs/blogs.service';
 import { StoresService } from 'modules/stores/services/stores.service';
 import { CategoriesService } from 'modules/categories/categories.service';
 import { CommentsService } from 'modules/comments/comments.service';
+import { CouponsService } from 'modules/coupons/coupons.service';
 
 @Controller('client')
 export class ClientController {
@@ -16,6 +17,7 @@ export class ClientController {
     private readonly storeService: StoresService,
     private readonly categoryService: CategoriesService,
     private readonly commentService: CommentsService,
+    private readonly couponService: CouponsService,
   ) {}
 
   @Get('/menu')
@@ -110,5 +112,9 @@ export class ClientController {
       categories: categories.results ?? [],
       stores: stores ?? [],
     };
+  }
+  @Get('/coupons')
+  async getCouponById(@Query('id') id?: string) {
+    return await this.couponService.findOne(+id);
   }
 }

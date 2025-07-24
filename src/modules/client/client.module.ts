@@ -6,6 +6,7 @@ import { BlogsModule } from 'modules/blogs/blogs.module';
 import { StoresModule } from 'modules/stores/stores.module';
 import { CategoriesModule } from 'modules/categories/categories.module';
 import { CommentsModule } from 'modules/comments/comments.module';
+import { CouponsModule } from 'modules/coupons/coupons.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { CommentsModule } from 'modules/comments/comments.module';
     StoresModule,
     CategoriesModule,
     CommentsModule,
+    CouponsModule,
   ],
   controllers: [ClientController],
   providers: [ClientService],
