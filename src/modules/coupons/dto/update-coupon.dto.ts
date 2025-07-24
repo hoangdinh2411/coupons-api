@@ -27,6 +27,15 @@ export class UpdateCouponDto {
   })
   title: string;
 
+  @IsNumber()
+  @IsOptional()
+  @ApiProperty({
+    type: () => 'number',
+    default: 1,
+    description: 'Discount up to ',
+  })
+  discount: number;
+
   @IsString()
   @IsNotEmpty()
   @ApiProperty({

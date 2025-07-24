@@ -15,6 +15,7 @@ import { isNumeric } from 'common/helpers/number';
 import { FilesService } from 'modules/files/files.service';
 import { FAQService } from './faqs.service';
 import { CouponType } from 'common/constants/enums';
+import dayjs from 'dayjs';
 
 @Injectable()
 export class StoresService {
@@ -191,11 +192,18 @@ export class StoresService {
     if (!store) {
       throw new NotFoundException('Store not found');
     }
+
+    const expired_coupons = store.coupons.filter(
+      (c) => dayjs(c.expire_date) < dayjs(),
+    );
+    const unexpired_coupons = store.coupons.filter(
+      (c) => dayjs(c.expire_date) >= dayjs(),
+    );
     const similar_stores = await this.storeRep
       .createQueryBuilder('s')
       .leftJoin('s.categories', 'category')
       .addSelect(['category.id', 'category.name', 'category.slug'])
-      .leftJoinAndSelect('s.coupons', 'coupons')
+      // .leftJoinAndSelect('s.coupons', 'coupons')
       .where('category.id IN (:...categories)', {
         categories: store.categories.map((c) => c.id),
       })
@@ -204,7 +212,11 @@ export class StoresService {
       .getMany();
 
     return {
-      store,
+      store: {
+        ...store,
+        expired_coupons,
+        unexpired_coupons,
+      },
       similar_stores,
     };
   }

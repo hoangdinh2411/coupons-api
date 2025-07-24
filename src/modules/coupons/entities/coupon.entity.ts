@@ -50,6 +50,12 @@ export class CouponEntity extends BaseEntity {
   })
   rating: number;
 
+  @Column({
+    type: 'int',
+    default: 0,
+  })
+  discount: number;
+
   @ManyToOne(() => UserEntity, (user) => user.coupons, {
     onDelete: 'CASCADE',
   })
