@@ -10,12 +10,13 @@ import {
   Query,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { CategoryDto } from './dto/category.dto';
 import { ROLES } from 'common/constants/enums';
 import { Roles } from 'common/decorators/roles.decorator';
 @ApiTags('Categories')
 @Controller('categories')
+@ApiSecurity('bearer')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 

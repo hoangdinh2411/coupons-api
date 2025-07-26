@@ -11,4 +11,13 @@ export class CategoryDto extends BaseDto {
     description: 'Name of category',
   })
   name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    type: () => 'string',
+    default: 'description',
+    description: 'description of category',
+  })
+  description: string;
 }

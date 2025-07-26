@@ -1,4 +1,9 @@
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 import {
   Body,
   Controller,
@@ -20,6 +25,7 @@ import { ROLES } from 'common/constants/enums';
 @ApiResponse({ status: 400, description: 'Bad request' })
 @ApiResponse({ status: 200, description: 'Success' })
 @Controller('users')
+@ApiSecurity('bearer')
 export class UserController {
   constructor(private userService: UserService) {}
 

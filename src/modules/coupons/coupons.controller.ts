@@ -15,8 +15,10 @@ import { UserEntity } from 'modules/users/entities/users.entity';
 import { CurrentUser } from 'common/decorators/currentUser.decorator';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
 import { FilterDto } from 'common/constants/filter.dto';
+import { ApiSecurity } from '@nestjs/swagger';
 
 @Controller('coupons')
+@ApiSecurity('bearer')
 export class CouponsController {
   constructor(private readonly couponsService: CouponsService) {}
 

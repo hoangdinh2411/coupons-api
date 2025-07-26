@@ -9,6 +9,7 @@ import { CategoryEntity } from './entities/category.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, ILike, In, QueryFailedError, Repository } from 'typeorm';
 import { FilesService } from 'modules/files/files.service';
+import { isNumeric } from 'common/helpers/number';
 
 @Injectable()
 export class CategoriesService {
@@ -72,8 +73,25 @@ export class CategoriesService {
     };
   }
 
-  async findOneById(id: number) {
-    const data = await this.categoryRep.findOneBy({ id });
+  async findOne(identifier: string) {
+    const query = this.categoryRep.createQueryBuilder('c');
+    if (isNumeric(identifier)) {
+      query.where('c.id =:id', { id: +identifier });
+    } else {
+      query.where('c.slug ILIKE :slug', { slug: `%${identifier}%` });
+    }
+    const category = await query.getOne();
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+    return category;
+  }
+  async findOneBySlugWithCoupons(slug: string) {
+    const data = await this.categoryRep
+      .createQueryBuilder('c')
+      .where('c.slug=:slug', { slug })
+      .loadRelationCountAndMap('c.total_coupons', 'c.coupons')
+      .getOne();
     if (!data) {
       throw new NotFoundException('Category not found');
     }

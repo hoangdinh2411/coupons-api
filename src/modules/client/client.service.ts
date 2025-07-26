@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { CouponType } from 'common/constants/enums';
 import { LIMIT_DEFAULT } from 'common/constants/variables';
 import { CategoryEntity } from 'modules/categories/entities/category.entity';
+import { CouponEntity } from 'modules/coupons/entities/coupon.entity';
 import { StoreEntity } from 'modules/stores/entities/store.entity';
 import { DataSource } from 'typeorm';
 
@@ -60,5 +62,57 @@ export class ClientService {
       popular,
       categories: categories_with_limited_store,
     };
+  }
+
+  async countCouponsByCategory(category_id: number) {
+    return await this.dataSource
+      .getRepository(CouponEntity)
+      .createQueryBuilder('coupon')
+      .innerJoin('coupon.categories', 'category')
+      .where('category.id =:category_id', { category_id })
+      .select('COUNT(*)', 'total_coupons')
+      .addSelect(
+        `COUNT(*) FILTER (WHERE coupon.type = '${CouponType.CODE}')`,
+        'total_coupon_codes',
+      )
+      .addSelect(
+        `COUNT(*) FILTER (WHERE coupon.type = '${CouponType.ONLINE_AND_IN_STORE}')`,
+        'total_in_store_coupons',
+      )
+      .addSelect(
+        `COUNT(*) FILTER (WHERE coupon.type = '${CouponType.SALE}')`,
+        'total_sale_coupons',
+      )
+      .getRawOne();
+  }
+  async getCouponsByCategory(category_id: number, page: number) {
+    if (!page) page = 1;
+    return await this.dataSource
+      .getRepository(CouponEntity)
+      .createQueryBuilder('coupon')
+      .innerJoin('coupon.categories', 'category')
+      .leftJoinAndSelect('coupon.store', 'store')
+      .where('category.id =:category_id', { category_id })
+      .orderBy('store.rating', 'DESC')
+      .skip((page - 1) * LIMIT_DEFAULT)
+      .take(LIMIT_DEFAULT)
+      .getMany();
+  }
+  async getSimilarStoresByCategory(category_id: number) {
+    return await this.dataSource
+      .getRepository(StoreEntity)
+      .createQueryBuilder('store')
+      .select([
+        'store.id',
+        'store.name',
+        'store.rating',
+        'store.slug',
+        'category.id',
+      ])
+      .innerJoin('store.categories', 'category')
+      .where('category.id =:category_id', { category_id })
+      .orderBy('store.rating', 'DESC')
+      .take(LIMIT_DEFAULT)
+      .getMany();
   }
 }

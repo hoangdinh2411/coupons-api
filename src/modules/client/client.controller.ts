@@ -117,4 +117,21 @@ export class ClientController {
   async getCouponById(@Query('id') id?: string) {
     return await this.couponService.findOne(+id);
   }
+
+  @Get('/categories/:slug')
+  async getCategoryDetail(@Param('slug') slug?: string) {
+    const category = await this.categoryService.findOne(slug);
+    const [count_coupons, similar_stores] = await Promise.all([
+      this.clientService.countCouponsByCategory(category.id),
+      this.clientService.getSimilarStoresByCategory(category.id),
+    ]);
+    return { category, count_coupons, similar_stores };
+  }
+  @Get('/categories/:id/coupons')
+  async getCouponByCategory(
+    @Param('id') id: string,
+    @Query('page') page: string,
+  ) {
+    return this.clientService.getCouponsByCategory(+id, +page);
+  }
 }

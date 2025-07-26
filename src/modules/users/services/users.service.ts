@@ -219,7 +219,14 @@ export class UserService {
   getProfile(user_id: number): Promise<UserEntity> {
     return this.userRepo
       .createQueryBuilder('u')
-      .select(['u.id', 'u.first_name', 'u.last_name', 'u.email', 'u.role'])
+      .select([
+        'u.id',
+        'u.first_name',
+        'u.last_name',
+        'u.email',
+        'u.role',
+        'u.description',
+      ])
       .where('u.id = :user_id AND u.deleted_at IS NULL', {
         user_id,
       })

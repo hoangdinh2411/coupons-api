@@ -15,9 +15,10 @@ import { ROLES } from 'common/constants/enums';
 import { StoreDto } from './dto/store.dto';
 import { FilterDto } from '../../common/constants/filter.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
-import { ApiQuery } from '@nestjs/swagger';
+import { ApiQuery, ApiSecurity } from '@nestjs/swagger';
 
 @Controller('stores')
+@ApiSecurity('bearer')
 export class StoresController {
   constructor(private readonly storesService: StoresService) {}
 

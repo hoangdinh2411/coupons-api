@@ -9,20 +9,9 @@ export class SwaggerApiDocService {
   getSwaggerConfig(): Omit<OpenAPIObject, 'paths'> {
     return (
       new DocumentBuilder()
-        .addCookieAuth('token', {
-          in: 'cookie',
-          type: 'apiKey',
-          name: 'token',
-          description: 'Enter your token here',
-        })
         .setTitle('Localite guide app API')
         .setDescription('API Documentation for the travel social media app')
         .setVersion('1.0')
-        .addCookieAuth('token', {
-          in: 'cookie',
-          type: 'apiKey',
-          name: 'token',
-        })
         .addServer(this.configService.get('API_URL'), 'Development server')
         // .addServer(
         //   this.configService.get<string>('STAGING_DOMAIN'),
@@ -32,6 +21,10 @@ export class SwaggerApiDocService {
         //   this.configService.get<string>('PRODUCTION_DOMAIN'),
         //   'Production server',
         // )
+        .addSecurity('bearer', {
+          type: 'http',
+          scheme: 'bearer',
+        })
         .build()
     );
   }

@@ -22,6 +22,9 @@ export class CategoryEntity extends BaseEntity {
   @Column({ type: 'text' })
   slug: string;
 
+  @Column({ type: 'text', nullable: true })
+  description: string;
+
   @BeforeInsert()
   @BeforeUpdate()
   generateSlugFromName() {

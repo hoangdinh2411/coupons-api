@@ -12,9 +12,10 @@ import { TopicService } from './topic.service';
 import { TopicDto } from './dto/topic.dto';
 import { Roles } from 'common/decorators/roles.decorator';
 import { ROLES } from 'common/constants/enums';
-import { ApiQuery } from '@nestjs/swagger';
+import { ApiQuery, ApiSecurity } from '@nestjs/swagger';
 
 @Controller('topic')
+@ApiSecurity('bearer')
 export class TopicController {
   constructor(private readonly topicService: TopicService) {}
 

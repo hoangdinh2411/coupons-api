@@ -15,8 +15,10 @@ import { UserEntity } from 'modules/users/entities/users.entity';
 import { FilterDto } from 'common/constants/filter.dto';
 import { Roles } from 'common/decorators/roles.decorator';
 import { ROLES } from 'common/constants/enums';
+import { ApiSecurity } from '@nestjs/swagger';
 
 @Controller('blogs')
+@ApiSecurity('bearer')
 export class BlogsController {
   constructor(private readonly blogsService: BlogService) {}
 
