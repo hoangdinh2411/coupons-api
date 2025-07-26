@@ -60,7 +60,6 @@ export class BlogService {
         }
       }
       throw error;
-      throw error;
     } finally {
       await queryRunner.release();
     }
@@ -130,22 +129,36 @@ export class BlogService {
     return grouped_topics;
   }
 
-  async findBlogsByTopic(topic_id: number, limit?: number, page?: number) {
+  async findBlogsByTopic(
+    slug: string,
+    limit?: number,
+    page?: number,
+    exclude_blog_id?: number,
+  ) {
     const query = this.blogRepo
       .createQueryBuilder('blog')
       .orderBy('blog.created_at', 'DESC')
-      .where('blog.topic_id = :topic_id', {
-        topic_id,
-      });
+      .where('topic.slug ILIKE :slug', { slug: `%${slug.trim()}%` });
+
     // .andWhere('blog.is_published = :is_published', {
     //   is_published: true,
     // });
+
+    if (exclude_blog_id) {
+      query.andWhere('blog.id != :exclude_blog_id', { exclude_blog_id });
+    }
     if (limit && page) {
       query.skip((page - 1) * limit).take(limit);
     }
     query
       .leftJoin('blog.user', 'user')
-      .addSelect(['user.id', 'user.email', 'user.first_name', 'user.last_name'])
+      .addSelect([
+        'user.id',
+        'user.email',
+        'user.first_name',
+        'user.last_name',
+        'user.description',
+      ])
       .leftJoin('blog.topic', 'topic')
       .addSelect(['topic.id', 'topic.name', 'topic.slug', 'topic.image']);
     return await query.getManyAndCount();

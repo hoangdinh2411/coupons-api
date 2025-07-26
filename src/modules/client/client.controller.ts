@@ -61,6 +61,22 @@ export class ClientController {
   async getBlogsPerTopic() {
     return await this.blogsService.findLatestBlogPerTopic();
   }
+  @Get('/topic/:slug/blogs')
+  async getBlogsByTopic(
+    @Param('slug') slug: string,
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+  ) {
+    const [results, total] = await this.blogsService.findBlogsByTopic(
+      slug,
+      +page,
+      +limit,
+    );
+    return {
+      results,
+      total,
+    };
+  }
 
   @Get('/blogs')
   async getBlogBySlug(@Query('slug') slug: string) {
@@ -68,9 +84,10 @@ export class ClientController {
     let read_more = [];
     if (blog.topic.id) {
       const [result] = await this.blogsService.findBlogsByTopic(
-        blog.topic.id,
+        blog.topic.slug,
         5,
         1,
+        blog.id,
       );
       read_more = result;
     }
@@ -80,6 +97,7 @@ export class ClientController {
       read_more,
     };
   }
+
   @Get('/blogs/:blog_id/comments')
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
