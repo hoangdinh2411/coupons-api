@@ -35,7 +35,8 @@ export class TopicEntity extends BaseEntity {
   };
 
   @OneToMany(() => BlogsEntity, (blog) => blog.topic, {
-    cascade: ['insert', 'update', 'remove'],
+    cascade: true,
+    eager: false,
   })
   blogs: BlogsEntity[];
 }

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsOptional, IsString, IsUrl } from 'class-validator';
+import { IsArray, IsDate, IsOptional, IsString, IsUrl } from 'class-validator';
 
 export class MetaDataDto {
   @IsString()
@@ -72,4 +72,8 @@ export class BaseDto {
     description: 'Uploaded image',
   })
   meta_data: MetaDataDto;
+
+  @IsOptional()
+  @IsDate()
+  updated_at: Date;
 }

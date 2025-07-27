@@ -76,6 +76,15 @@ export class UpdateCouponDto {
   store_id: number;
 
   @IsOptional()
+  @IsNumber()
+  @ApiProperty({
+    type: () => 'number',
+    default: 1,
+    description: 'total interested user',
+  })
+  total_interested_users: number;
+
+  @IsOptional()
   @IsArray()
   @ArrayNotEmpty({ message: 'At least one category ID is required' })
   @IsInt({ each: true, message: 'Each category must be an integer' })

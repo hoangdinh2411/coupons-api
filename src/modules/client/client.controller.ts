@@ -72,6 +72,7 @@ export class ClientController {
       +page,
       +limit,
     );
+
     return {
       results,
       total,
@@ -139,11 +140,32 @@ export class ClientController {
   @Get('/categories/:slug')
   async getCategoryDetail(@Param('slug') slug?: string) {
     const category = await this.categoryService.findOne(slug);
-    const [count_coupons, similar_stores] = await Promise.all([
+    const top_stores = await this.clientService.getTopStoreToday(
+      category.id,
+      1,
+    );
+    const promise_all_values = [
       this.clientService.countCouponsByCategory(category.id),
       this.clientService.getSimilarStoresByCategory(category.id),
-    ]);
-    return { category, count_coupons, similar_stores };
+    ];
+    if (top_stores) {
+      promise_all_values.push(
+        this.couponService.filter({
+          stores: top_stores.map((s) => s.id),
+          limit: 12,
+          page: 1,
+        }),
+      );
+    }
+    const [count_coupons, similar_stores, top_deals] =
+      await Promise.all(promise_all_values);
+
+    return {
+      category,
+      count_coupons,
+      similar_stores,
+      top_deals: top_deals.results,
+    };
   }
   @Get('/categories/:id/coupons')
   async getCouponByCategory(

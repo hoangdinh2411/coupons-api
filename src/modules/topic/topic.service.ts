@@ -4,7 +4,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { TopicDto } from './dto/topic.dto';
+import { TopicDto, UpdateTopicDto } from './dto/topic.dto';
 import { DataSource, ILike, QueryFailedError, Repository } from 'typeorm';
 import { TopicEntity } from './entities/topic.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -86,7 +86,7 @@ export class TopicService {
     return data;
   }
 
-  async update(id: number, updateTopicDto: TopicDto) {
+  async update(id: number, updateTopicDto: UpdateTopicDto) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();

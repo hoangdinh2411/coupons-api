@@ -64,7 +64,7 @@ export class UserController {
     @CurrentUser() user: UserEntity,
     @Body() { coupon_id }: UpdateUserDto,
   ) {
-    return this.userService.saveCouponForUser(+coupon_id, +user.id);
+    return this.userService.saveCouponForUser(+coupon_id, user);
   }
 
   @Get('my-coupons')

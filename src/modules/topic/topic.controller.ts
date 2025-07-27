@@ -9,7 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { TopicService } from './topic.service';
-import { TopicDto } from './dto/topic.dto';
+import { TopicDto, UpdateTopicDto } from './dto/topic.dto';
 import { Roles } from 'common/decorators/roles.decorator';
 import { ROLES } from 'common/constants/enums';
 import { ApiQuery, ApiSecurity } from '@nestjs/swagger';
@@ -40,7 +40,7 @@ export class TopicController {
 
   @Patch(':id')
   @Roles(ROLES.ADMIN)
-  update(@Param('id') id: string, @Body() updateTopicDto: TopicDto) {
+  update(@Param('id') id: string, @Body() updateTopicDto: UpdateTopicDto) {
     return this.topicService.update(+id, updateTopicDto);
   }
 

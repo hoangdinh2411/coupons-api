@@ -15,6 +15,7 @@ import { LIMIT_DEFAULT } from 'common/constants/variables';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
 import { FilterDto } from 'common/constants/filter.dto';
 import { CouponStatus, CouponType, ROLES } from 'common/constants/enums';
+import { StoreDto } from 'modules/stores/dto/store.dto';
 // import { makeMetaDataContent } from 'common/helpers/metadata';
 
 @Injectable()
@@ -50,6 +51,9 @@ export class CouponsService {
       user: added_by,
       is_verified: added_by.role === ROLES.ADMIN,
     });
+    await this.storeService.update(store.id, {
+      updated_at: new Date(),
+    } as StoreDto);
     return await this.couponRep.save({
       ...new_coupon,
       store: {
@@ -117,9 +121,11 @@ export class CouponsService {
       page,
       limit,
       rating,
-      is_verified,
+      is_verified = true,
     } = data;
-    const query = this.couponRep.createQueryBuilder('cp');
+    const query = this.couponRep
+      .createQueryBuilder('cp')
+      .orderBy('cp.updated_at', 'DESC');
 
     if (search_text) {
       query.andWhere(
@@ -137,7 +143,7 @@ export class CouponsService {
         rating: Number(rating),
       });
     }
-    if (status.length) {
+    if (status.length > 0) {
       const now = dayjs().format('YYYY/MM/DD');
       query.andWhere(
         new Brackets((qb1) => {
@@ -179,10 +185,7 @@ export class CouponsService {
       .getManyAndCount();
 
     return {
-      results: results.map((c) => ({
-        ...c,
-        // meta_data: makeMetaDataContent(c),
-      })),
+      results,
       total,
     };
   }
@@ -201,10 +204,7 @@ export class CouponsService {
     if (!data) {
       throw new NotFoundException('Coupon not found');
     }
-    return {
-      ...data,
-      //  meta_data: makeMetaDataContent(data)
-    };
+    return data;
   }
 
   async update(id: number, updateCouponDto: UpdateCouponDto, user: UserEntity) {
@@ -267,7 +267,7 @@ export class CouponsService {
         rating: 'DESC',
         created_at: 'DESC',
       },
-      take: 5,
+      take: LIMIT_DEFAULT,
     });
   }
 }

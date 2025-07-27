@@ -241,7 +241,7 @@ export class StoresService {
           updateStoreDto.categories,
         );
       }
-      if (store.faqs.length) {
+      if (store?.faqs && store?.faqs?.length !== 0) {
         await this.faqService.deleteFaqs(store.id, queryRunner.manager);
       }
       const { faqs: _omitFaqs, ...dtoWithoutFaqs } = updateStoreDto;
@@ -270,7 +270,7 @@ export class StoresService {
           updated_store.description,
         );
       }
-      if (updateStoreDto.faqs.length) {
+      if (updateStoreDto?.faqs?.length > 0) {
         await this.faqService.saveFaqs(
           updateStoreDto.faqs,
           updated_store,

@@ -68,6 +68,12 @@ export class CouponEntity extends BaseEntity {
   saved_by_user: UserEntity[];
 
   @Column({
+    type: 'int',
+    default: 0,
+  })
+  total_interested_users: number;
+
+  @Column({
     type: 'enum',
     enum: CouponType,
     default: CouponType.CODE,

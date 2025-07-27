@@ -16,7 +16,7 @@ export class ClientService {
         order: {
           rating: 'DESC',
         },
-        take: LIMIT_DEFAULT,
+        take: 20,
         relations: ['categories'],
         select: ['name', 'id', 'slug', 'rating'],
       });
@@ -114,5 +114,28 @@ export class ClientService {
       .orderBy('store.rating', 'DESC')
       .take(LIMIT_DEFAULT)
       .getMany();
+  }
+
+  async getTopStoreToday(category_id?: number, limit?: number) {
+    const query = this.dataSource
+      .getRepository(StoreEntity)
+      .createQueryBuilder('store')
+      .select([
+        'store.id',
+        'store.name',
+        'store.slug',
+        'category.id',
+        'store.updated_at',
+      ]);
+    if (category_id) {
+      query
+        .innerJoin('store.categories', 'category')
+        .where('category.id =:category_id', { category_id });
+    }
+    const store = await query
+      .orderBy('store.updated_at', 'DESC')
+      .take(limit)
+      .getMany();
+    return store;
   }
 }

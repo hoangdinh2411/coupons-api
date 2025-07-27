@@ -15,6 +15,7 @@ import { generateCode } from 'common/helpers/code';
 import { VerifyCodeDto } from 'modules/auth/dtos/verify-code.dto';
 import { ROLES, VerifyCodeType } from 'common/constants/enums';
 import { BcryptService } from './bcrypt.service';
+import { UpdateCouponDto } from 'modules/coupons/dto/update-coupon.dto';
 
 @Injectable()
 export class UserService {
@@ -51,13 +52,13 @@ export class UserService {
     return user.saved_coupons;
   }
 
-  async saveCouponForUser(id: number, user_id: number) {
+  async saveCouponForUser(id: number, userData: UserEntity) {
     const couponData = await this.couponService.findOne(id);
     const coupon = Object.assign(new CouponEntity(), couponData);
 
     const user = await this.userRepo.findOne({
       where: {
-        id: user_id,
+        id: userData.id,
       },
       relations: ['saved_coupons'],
     });
@@ -65,13 +66,24 @@ export class UserService {
     const already_saved = user.saved_coupons.some(
       (c: CouponEntity) => c.id === id,
     );
+    let total_interested_users = coupon.total_interested_users;
     if (already_saved) {
       user.saved_coupons = user.saved_coupons.filter((c) => c.id !== id);
+      total_interested_users =
+        total_interested_users > 0 ? total_interested_users - 1 : 0;
     } else {
       user.saved_coupons.push(coupon);
+      total_interested_users += 1;
     }
 
     await this.userRepo.save(user);
+    await this.couponService.update(
+      coupon.id,
+      {
+        total_interested_users: total_interested_users,
+      } as UpdateCouponDto,
+      userData,
+    );
   }
   async hasSuperAdmin(): Promise<void> {
     const user = await this.userRepo.findOne({
