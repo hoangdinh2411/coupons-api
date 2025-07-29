@@ -86,6 +86,7 @@ export class ClientService {
       .getRawOne();
   }
   async getCouponsByCategory(category_id: number, page: number) {
+    const limit = 24;
     if (!page) page = 1;
     return await this.dataSource
       .getRepository(CouponEntity)
@@ -94,8 +95,8 @@ export class ClientService {
       .leftJoinAndSelect('coupon.store', 'store')
       .where('category.id =:category_id', { category_id })
       .orderBy('store.rating', 'DESC')
-      .skip((page - 1) * LIMIT_DEFAULT)
-      .take(LIMIT_DEFAULT)
+      .skip((page - 1) * limit)
+      .take(limit)
       .getMany();
   }
   async getSimilarStoresByCategory(category_id: number) {

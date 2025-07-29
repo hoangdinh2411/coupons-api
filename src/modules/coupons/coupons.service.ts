@@ -182,6 +182,7 @@ export class CouponsService {
     const [results, total] = await query
       .leftJoinAndSelect('cp.store', 'store')
       .leftJoinAndSelect('cp.categories', 'categories')
+      .orderBy('cp.updated_at', 'DESC')
       .getManyAndCount();
 
     return {
