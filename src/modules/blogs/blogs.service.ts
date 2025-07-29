@@ -135,14 +135,25 @@ export class BlogService {
 
   async findBlogsByTopic(
     slug: string,
-    limit?: number,
     page?: number,
+    limit?: number,
     exclude_blog_id?: number,
   ) {
     const query = this.blogRepo
       .createQueryBuilder('blog')
       .orderBy('blog.created_at', 'DESC')
-      .where('topic.slug ILIKE :slug', { slug: `%${slug.trim()}%` });
+      .leftJoin('blog.topic', 'topic')
+      .leftJoin('blog.user', 'user')
+      .addSelect([
+        'user.id',
+        'user.email',
+        'user.first_name',
+        'user.last_name',
+        'user.description',
+      ])
+
+      .addSelect(['topic.id', 'topic.name', 'topic.slug', 'topic.image'])
+      .where('topic.slug = :slug', { slug: slug.trim() });
 
     // .andWhere('blog.is_published = :is_published', {
     //   is_published: true,
@@ -154,17 +165,7 @@ export class BlogService {
     if (limit && page) {
       query.skip((page - 1) * limit).take(limit);
     }
-    query
-      .leftJoin('blog.user', 'user')
-      .addSelect([
-        'user.id',
-        'user.email',
-        'user.first_name',
-        'user.last_name',
-        'user.description',
-      ])
-      .leftJoin('blog.topic', 'topic')
-      .addSelect(['topic.id', 'topic.name', 'topic.slug', 'topic.image']);
+
     return await query.getManyAndCount();
   }
 

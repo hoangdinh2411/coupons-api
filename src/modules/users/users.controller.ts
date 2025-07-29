@@ -17,7 +17,7 @@ import { UserEntity } from './entities/users.entity';
 import { CurrentUser } from 'common/decorators/currentUser.decorator';
 import { UserService } from './services/users.service';
 import { Roles } from 'common/decorators/roles.decorator';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { MyCouponDto, UpdateUserDto } from './dto/update-user.dto';
 import { ROLES } from 'common/constants/enums';
 
 @ApiTags('Users')
@@ -62,7 +62,7 @@ export class UserController {
   @Roles(ROLES.USER)
   saveCoupon(
     @CurrentUser() user: UserEntity,
-    @Body() { coupon_id }: UpdateUserDto,
+    @Body() { coupon_id }: MyCouponDto,
   ) {
     return this.userService.saveCouponForUser(+coupon_id, user);
   }

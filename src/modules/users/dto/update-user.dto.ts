@@ -1,6 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 
+export class MyCouponDto {
+  @IsNumber()
+  @IsOptional()
+  @ApiProperty({
+    type: () => 'number',
+    default: 'Coupon id',
+    description: 'Coupon id that using to find coupon',
+  })
+  coupon_id: number;
+}
 export class UpdateUserDto {
   @IsString()
   @IsOptional()
@@ -28,13 +38,4 @@ export class UpdateUserDto {
     description: 'description',
   })
   description: string = '';
-
-  @IsNumber()
-  @IsOptional()
-  @ApiProperty({
-    type: () => 'number',
-    default: 'Coupon id',
-    description: 'Coupon id that using to find coupon',
-  })
-  coupon_id: number;
 }
