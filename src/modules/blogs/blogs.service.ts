@@ -119,8 +119,8 @@ export class BlogService {
       .leftJoin('blog.user', 'user')
       .addSelect(['user.id', 'user.email', 'user.first_name', 'user.last_name'])
       .addSelect(['topic.id', 'topic.name', 'topic.slug', 'topic.image'])
-      .orderBy('topic.id', 'ASC')
       .addOrderBy('blog.created_at', 'DESC')
+      // .orderBy('topic.id', 'ASC')
       .getMany();
     const grouped_topics = new_blogs_of_each_topic.reduce((acc, blog) => {
       const topic_id = blog.topic.id;

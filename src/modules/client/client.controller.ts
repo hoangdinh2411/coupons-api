@@ -50,7 +50,7 @@ export class ClientController {
 
   @Get('/blogs/latest')
   async getLatestBlogs() {
-    return await this.blogsService.getLatestBlogs(6);
+    return await this.blogsService.getLatestBlogs(7);
   }
   @Get('/blogs/trending')
   async getTrendingBlogs() {

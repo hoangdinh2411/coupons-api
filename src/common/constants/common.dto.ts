@@ -44,6 +44,10 @@ export class ImageDto {
   @IsString()
   @IsOptional()
   file_name: string;
+
+  @IsString()
+  @IsOptional()
+  caption: string;
 }
 
 export class BaseDto {
@@ -55,6 +59,7 @@ export class BaseDto {
       url: 'string',
       public_id: 'string',
       file_name: 'string',
+      caption: 'string',
     },
     description: 'Uploaded image',
   })
