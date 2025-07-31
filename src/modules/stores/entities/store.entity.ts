@@ -1,6 +1,7 @@
 import { BaseEntity } from 'common/constants/base.entity';
 import { CategoryEntity } from 'modules/categories/entities/category.entity';
 import { CouponEntity } from 'modules/coupons/entities/coupon.entity';
+import { FAQEntity } from 'modules/faqs/entities/faq.entity';
 import {
   Column,
   Entity,
@@ -9,7 +10,6 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { FAQEntity } from './faq.entity';
 
 @Entity('store')
 export class StoreEntity extends BaseEntity {

@@ -1,9 +1,9 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { StoreEntity } from '../entities/store.entity';
 import { EntityManager, Repository } from 'typeorm';
 import { FAQEntity } from '../entities/faq.entity';
 import { FAQDto } from '../dto/faq.dto';
+import { StoreEntity } from 'modules/stores/entities/store.entity';
 
 @Injectable()
 export class FAQService {

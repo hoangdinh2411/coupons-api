@@ -5,7 +5,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { StoreEntity } from './store.entity';
+import { PageEntity } from 'modules/pages/entities/page.entity';
+import { StoreEntity } from 'modules/stores/entities/store.entity';
 
 @Entity('faq')
 export class FAQEntity {
@@ -34,4 +35,10 @@ export class FAQEntity {
   })
   @JoinColumn({ name: 'store_id' })
   store: StoreEntity;
+
+  @ManyToOne(() => PageEntity, (store) => store.faqs, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'page_id' })
+  pages: StoreEntity;
 }

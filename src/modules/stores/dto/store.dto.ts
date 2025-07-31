@@ -13,7 +13,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { BaseDto } from 'common/constants/common.dto';
-import { FAQDto } from './faq.dto';
+import { FAQDto } from 'modules/faqs/dto/faq.dto';
 
 export class StoreDto extends BaseDto {
   @IsString()

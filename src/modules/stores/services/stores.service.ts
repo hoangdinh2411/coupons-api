@@ -13,9 +13,9 @@ import { UpdateStoreDto } from '../dto/update-store.dto';
 import { LIMIT_DEFAULT } from 'common/constants/variables';
 import { isNumeric } from 'common/helpers/number';
 import { FilesService } from 'modules/files/files.service';
-import { FAQService } from './faqs.service';
 import { CouponType } from 'common/constants/enums';
 import dayjs from 'dayjs';
+import { FAQService } from 'modules/faqs/services/faqs.service';
 
 @Injectable()
 export class StoresService {

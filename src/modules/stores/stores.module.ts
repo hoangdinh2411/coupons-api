@@ -5,17 +5,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { StoreEntity } from './entities/store.entity';
 import { CategoriesModule } from 'modules/categories/categories.module';
 import { FilesModule } from 'modules/files/files.module';
-import { FAQEntity } from './entities/faq.entity';
-import { FAQService } from './services/faqs.service';
+import { FaqsModule } from 'modules/faqs/faqs.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([StoreEntity, FAQEntity]),
+    TypeOrmModule.forFeature([StoreEntity]),
     forwardRef(() => CategoriesModule),
     FilesModule,
+    FaqsModule,
   ],
   controllers: [StoresController],
-  providers: [StoresService, FAQService],
+  providers: [StoresService],
   exports: [StoresService],
 })
 export class StoresModule {}

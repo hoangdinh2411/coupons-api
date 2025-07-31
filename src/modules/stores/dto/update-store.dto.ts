@@ -12,7 +12,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { BaseDto } from 'common/constants/common.dto';
-import { FAQDto } from './faq.dto';
+import { FAQDto } from 'modules/faqs/dto/faq.dto';
 
 export class UpdateStoreDto extends BaseDto {
   @IsString()
@@ -71,7 +71,7 @@ export class UpdateStoreDto extends BaseDto {
   @Type(() => Number)
   @ApiProperty({
     type: () => 'number',
-    default: 1,
+    default: [1, 2],
     description: 'Category id',
   })
   categories: number[];
@@ -94,8 +94,7 @@ export class UpdateStoreDto extends BaseDto {
   @ValidateNested({ each: true })
   @Type(() => FAQDto)
   @ApiProperty({
-    type: () => FAQDto,
-    default: 1,
+    default: [FAQDto],
     description: 'FAQs ',
   })
   faqs: FAQDto[];
