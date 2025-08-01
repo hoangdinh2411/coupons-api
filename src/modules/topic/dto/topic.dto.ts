@@ -21,8 +21,16 @@ export class UpdateTopicDto extends BaseDto {
   @IsOptional()
   @ApiProperty({
     type: () => 'string',
-    default: 'category_1',
-    description: 'Name of category',
+    default: 'name ',
+    description: 'Name of topic',
   })
   name: string;
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    type: () => 'string',
+    default: 'description',
+    description: 'description of topic',
+  })
+  description: string;
 }

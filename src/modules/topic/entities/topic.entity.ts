@@ -18,6 +18,9 @@ export class TopicEntity extends BaseEntity {
   @Column({ type: 'text', unique: true })
   name: string;
 
+  @Column({ type: 'text', nullable: true })
+  description: string;
+
   @Column({ type: 'text' })
   slug: string;
 
