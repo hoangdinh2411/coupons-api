@@ -25,10 +25,46 @@ export class UpdateUserDto {
   @IsOptional()
   @ApiProperty({
     type: () => 'string',
-    default: 'Last namename',
+    default: 'Last name',
     description: 'Last name of user',
   })
   last_name: string = '';
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    type: () => 'string',
+    default: 'facebook',
+    description: 'facebook',
+  })
+  facebook: string = '';
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    type: () => 'string',
+    default: 'youtube',
+    description: 'youtube',
+  })
+  youtube: string = '';
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    type: () => 'string',
+    default: 'instagram',
+    description: 'instagram',
+  })
+  instagram: string = '';
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    type: () => 'string',
+    default: 'linkedin',
+    description: 'linkedin',
+  })
+  linkedin: string = '';
 
   @IsString()
   @IsOptional()

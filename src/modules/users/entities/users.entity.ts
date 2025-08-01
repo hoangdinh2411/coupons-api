@@ -65,6 +65,38 @@ export class UserEntity extends BaseEntity {
   description: string;
 
   @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  @Exclude()
+  facebook: string;
+
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  @Exclude()
+  youtube: string;
+
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  @Exclude()
+  instagram: string;
+
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  @Exclude()
+  linkedin: string;
+
+  @Column({
     type: 'text',
     nullable: true,
   })

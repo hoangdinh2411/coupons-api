@@ -238,6 +238,10 @@ export class UserService {
         'u.email',
         'u.role',
         'u.description',
+        'u.youtube',
+        'u.facebook',
+        'u.linkedin',
+        'u.instagram',
       ])
       .where('u.id = :user_id AND u.deleted_at IS NULL', {
         user_id,

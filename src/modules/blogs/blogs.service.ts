@@ -150,6 +150,10 @@ export class BlogService {
         'user.first_name',
         'user.last_name',
         'user.description',
+        'user.facebook',
+        'user.youtube',
+        'user.linkedin',
+        'user.instagram',
       ])
 
       .addSelect(['topic.id', 'topic.name', 'topic.slug', 'topic.image'])
@@ -180,7 +184,16 @@ export class BlogService {
     const blog = await query
       .andWhere('blog.deleted_at IS NULL')
       .leftJoin('blog.user', 'user')
-      .addSelect(['user.id', 'user.email', 'user.first_name', 'user.last_name'])
+      .addSelect([
+        'user.id',
+        'user.email',
+        'user.first_name',
+        'user.last_name',
+        'user.facebook',
+        'user.youtube',
+        'user.linkedin',
+        'user.instagram',
+      ])
       .leftJoin('blog.topic', 'topic')
       .addSelect(['topic.id', 'topic.name', 'topic.slug', 'topic.image'])
       .getOne();
