@@ -19,6 +19,13 @@ export class PageEntity extends BaseEntity {
   })
   content: string;
 
+  @Column({ type: 'jsonb', nullable: true })
+  image: {
+    url: string;
+    public_id: string;
+    file_name: string;
+  };
+
   @OneToMany(() => FAQEntity, (faq) => faq.pages, {
     cascade: true, // optional: saves coupons when you save a store
     eager: false,

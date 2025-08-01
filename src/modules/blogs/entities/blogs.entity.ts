@@ -34,7 +34,6 @@ export class BlogsEntity extends BaseEntity {
     url: string;
     public_id: string;
     file_name: string;
-    caption: string;
   };
 
   @Column({

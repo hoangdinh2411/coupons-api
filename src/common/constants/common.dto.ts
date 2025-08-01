@@ -44,10 +44,6 @@ export class ImageDto {
   @IsString()
   @IsOptional()
   file_name: string;
-
-  @IsString()
-  @IsOptional()
-  caption: string;
 }
 
 export class BaseDto {
