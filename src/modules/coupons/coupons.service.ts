@@ -248,6 +248,18 @@ export class CouponsService {
     };
   }
 
+  async updateTotalInterested(id: number, total_interested_users: number) {
+    const coupon = await this.findOne(id);
+    if (!coupon) {
+      throw new NotFoundException('Coupon not found');
+    }
+    const payload = {
+      ...coupon,
+      total_interested_users,
+    };
+    await this.couponRep.save(payload);
+  }
+
   async remove(id: number, user: UserEntity) {
     const coupon = await this.findOne(id);
     if (!coupon) {

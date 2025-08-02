@@ -15,7 +15,6 @@ import { generateCode } from 'common/helpers/code';
 import { VerifyCodeDto } from 'modules/auth/dtos/verify-code.dto';
 import { ROLES, VerifyCodeType } from 'common/constants/enums';
 import { BcryptService } from './bcrypt.service';
-import { UpdateCouponDto } from 'modules/coupons/dto/update-coupon.dto';
 
 @Injectable()
 export class UserService {
@@ -77,12 +76,9 @@ export class UserService {
     }
 
     await this.userRepo.save(user);
-    await this.couponService.update(
+    await this.couponService.updateTotalInterested(
       coupon.id,
-      {
-        total_interested_users: total_interested_users,
-      } as UpdateCouponDto,
-      userData,
+      total_interested_users,
     );
   }
   async hasSuperAdmin(): Promise<void> {
