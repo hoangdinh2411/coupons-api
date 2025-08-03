@@ -1,0 +1,14 @@
+services:
+  app:
+    build:
+      context: .
+    container_name: coupons-api
+    ports:
+      - "5173:5173"
+    env_file:
+      - .env
+    networks:
+      - coupons-api-networks
+networks:
+  coupons-api-networks:
+    driver: bridge
