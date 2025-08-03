@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import * as fs from 'fs';
 
 export function getDbConfig(
   configService: ConfigService,
@@ -12,23 +13,30 @@ export function getDbConfig(
     autoLoadEntities: true,
     entities: [__dirname + '/../**/*.entity.{js,ts}'],
     logging: ['query', 'error', 'warn'],
-    synchronize: !isProduction,
+    synchronize: true,
     name: 'analytics',
+    extra: {
+      connectionTimeoutMillis: 10000,
+      idleTimeoutMillis: 0,
+      keepAlive: true,
+    },
   };
   let environmentOptions: Partial<TypeOrmModuleOptions> = {};
-  const isProd = configService.get('NODE_ENV') === 'production';
-  if (!isProd) {
+  if (!isProduction) {
     environmentOptions = {
       url: configService.get<string>('POSTGRES_URL'),
     };
   } else {
     environmentOptions = {
-      type: 'postgres',
-      host: configService.get('DB_HOST'),
-      port: configService.get('DB_PORT'),
-      username: configService.get('DB_USERNAME'),
-      password: configService.get('DB_PASSWORD'),
-      database: configService.get('DB_NAME'),
+      host: configService.get<string>('DB_HOST'),
+      port: parseInt(configService.get<string>('DB_PORT')),
+      username: configService.get<string>('DB_USERNAME'),
+      password: configService.get<string>('DB_PASSWORD'),
+      database: configService.get<string>('DB_NAME'),
+      ssl: {
+        ca: fs.readFileSync(configService.get<string>('CERT_PATH')).toString(),
+        rejectUnauthorized: true,
+      },
     };
   }
   return {
