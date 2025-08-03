@@ -1,0 +1,52 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
+import { TopicService } from './topic.service';
+import { TopicDto, UpdateTopicDto } from './dto/topic.dto';
+import { Roles } from 'common/decorators/roles.decorator';
+import { ROLES } from 'common/constants/enums';
+import { ApiQuery, ApiSecurity } from '@nestjs/swagger';
+
+@Controller('topic')
+@ApiSecurity('bearer')
+export class TopicController {
+  constructor(private readonly topicService: TopicService) {}
+
+  @Post()
+  @Roles(ROLES.ADMIN)
+  create(@Body() createTopicDto: TopicDto) {
+    return this.topicService.create(createTopicDto);
+  }
+
+  @Get()
+  @Roles(ROLES.ADMIN)
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search_text', required: false, type: String })
+  findAll(
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+    @Query('search_text') search_text: string,
+  ) {
+    return this.topicService.findAll(+page, +limit, search_text);
+  }
+
+  @Patch(':id')
+  @Roles(ROLES.ADMIN)
+  update(@Param('id') id: string, @Body() updateTopicDto: UpdateTopicDto) {
+    return this.topicService.update(+id, updateTopicDto);
+  }
+
+  @Delete(':id')
+  @Roles(ROLES.ADMIN)
+  remove(@Param('id') id: string) {
+    return this.topicService.remove(+id);
+  }
+}

@@ -16,6 +16,7 @@ import { DataSource } from 'typeorm';
 import { DatabaseConfig } from 'config/dto/config.dto';
 import { validateSync } from 'class-validator';
 import { getDbConfig } from 'config/db.config';
+import { ScheduleModule } from '@nestjs/schedule';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -33,6 +34,7 @@ import { getDbConfig } from 'config/db.config';
         return config;
       },
     }),
+    ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => getDbConfig(configService),
       inject: [ConfigService],

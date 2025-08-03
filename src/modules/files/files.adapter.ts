@@ -1,7 +1,10 @@
+import { UploadApiResponse } from 'cloudinary';
+
 export abstract class FileAdapter {
-  public async upload(
+  public abstract upload(
     _file: Express.Multer.File,
-    _userId: number,
-  ): Promise<any> {}
-  public async deleteOne(_file_id: string): Promise<any> {}
+    _folder: string,
+  ): Promise<UploadApiResponse>;
+  public abstract deleteOne(_public_id: string): Promise<string>;
+  public abstract markImageAsUsed(_public_ids: string[]): Promise<boolean>;
 }

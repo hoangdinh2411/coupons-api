@@ -1,8 +1,8 @@
 import {
   Body,
   Controller,
-  Delete,
   HttpCode,
+  Patch,
   Post,
   UploadedFiles,
   UseInterceptors,
@@ -10,10 +10,9 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { FileValidationPipe } from './pipes/fileValidation.pipe';
 import { FilesService } from './files.service';
-import { CurrentUser } from 'common/decorators/currentUser.decorator';
-import { UserEntity } from 'modules/users/entities/users.entity';
-import { FilesDto } from './dto/files.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { Roles } from 'common/decorators/roles.decorator';
+import { ROLES } from 'common/constants/enums';
 
 @Controller('files')
 @ApiTags('Files')
@@ -22,21 +21,29 @@ export class FilesController {
 
   @UseInterceptors(FilesInterceptor('files', 10))
   @Post()
+  @Roles(ROLES.ADMIN)
   @HttpCode(200)
   async upload(
     @UploadedFiles(FileValidationPipe) files: Express.Multer.File[],
-    @CurrentUser() user: UserEntity,
+    @Body('folder') folder: string,
   ) {
     const saved_files = [];
     for (let index = 0; index < files.length; index++) {
-      const result = await this.fileService.upload(files[index], user.user_id);
-      saved_files.push(result);
+      const file = files[index];
+      const result = await this.fileService.upload(file, folder);
+      const data = {
+        public_id: result.public_id,
+        url: result.secure_url,
+        file_name: `${result.original_filename}.${result.original_extension}`,
+      };
+      saved_files.push(data);
     }
-    return await this.fileService.saveFile(saved_files);
+    return saved_files;
   }
-  @Delete()
+  @Patch()
+  @Roles(ROLES.ADMIN)
   @HttpCode(200)
-  async delete(@Body() body: FilesDto) {
-    return await this.fileService.delete(body.public_id);
+  async delete(@Body() data: string[]) {
+    return await this.fileService.deleteImages(data);
   }
 }

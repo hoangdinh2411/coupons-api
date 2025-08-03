@@ -4,19 +4,19 @@ import { FilesController } from './files.controller';
 import { FilesService } from './files.service';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { MulterModule } from '@nestjs/platform-express';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { FilesEntity } from './entities/files.entity';
-import { ScheduleModule } from '@nestjs/schedule';
 
+const MAX_SIZE_MB = 3;
 @Module({
   imports: [
     CloudinaryModule,
-    TypeOrmModule.forFeature([FilesEntity]),
     ConfigModule,
     MulterModule.register({
       dest: './uploads',
+      limits: {
+        fieldSize: 1024 * 1024 * MAX_SIZE_MB,
+        files: 10,
+      },
     }),
-    ScheduleModule.forRoot(),
     CloudinaryModule,
   ],
   providers: [FilesService],

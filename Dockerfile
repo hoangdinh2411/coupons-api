@@ -1,4 +1,5 @@
-FROM node:18-alpine AS builder
+# Stage 1: Build
+FROM node:22-alpine  AS builder
 
 WORKDIR /app
 
@@ -10,16 +11,16 @@ COPY . .
 
 RUN npm run build 
 
-
-FROM node:18-alpine
+# Stage 2: Runtime
+FROM node:22-alpine AS runner
 
 WORKDIR /app
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
-
-EXPOSE 3000
+COPY --from=builder /app/cert/cert.crt ./cert/cert.crt
+EXPOSE 5173
 
 CMD ["node", "dist/main.js"]
 

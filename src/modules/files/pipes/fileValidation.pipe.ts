@@ -19,10 +19,10 @@ export class FileValidationPipe implements PipeTransform {
           'Invalid file type. Only JPEG and PNG files are allowed',
         );
       }
-      // const maximumFileSize = 1024 * 1024 * 2;
-      // if (f.size > maximumFileSize) {
-      //   throw new UnprocessableEntityException('File size is too large');
-      // }
+      const maximumFileSize = 1024 * 1024 * 2;
+      if (f.size > maximumFileSize) {
+        throw new UnprocessableEntityException('File size is too large');
+      }
     });
 
     return files;

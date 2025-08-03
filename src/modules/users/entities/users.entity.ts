@@ -1,24 +1,26 @@
-import { ROLES } from 'common/constants/enum/roles.enum';
+import { Exclude } from 'class-transformer';
+import { BaseEntity } from 'common/constants/base.entity';
+import { ROLES } from 'common/constants/enums';
+import { BlogsEntity } from 'modules/blogs/entities/blogs.entity';
+import { CommentEntity } from 'modules/comments/entities/comment.entity';
+import { CouponEntity } from 'modules/coupons/entities/coupon.entity';
 import {
-  BaseEntity,
-  BeforeInsert,
   Column,
-  CreateDateColumn,
-  DeleteDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('user')
 export class UserEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
-  user_id: number;
+  id: number;
 
   @Column({
     type: 'varchar',
     length: 100,
-    nullable: false,
     unique: true,
   })
   email: string;
@@ -26,19 +28,20 @@ export class UserEntity extends BaseEntity {
   @Column({
     type: 'varchar',
     length: 255,
-    nullable: false,
   })
   password: string;
 
   @Column({
     type: 'varchar',
     length: 100,
+    nullable: true,
   })
   first_name: string;
 
   @Column({
     type: 'varchar',
     length: 100,
+    nullable: true,
   })
   last_name: string;
 
@@ -55,17 +58,71 @@ export class UserEntity extends BaseEntity {
   email_verified: boolean;
 
   @Column({
-    type: 'number',
-    length: 6,
+    type: 'text',
+    nullable: true,
   })
-  verifying_code: number;
+  @Exclude()
+  description: string;
 
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  created_at: Date;
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  @Exclude()
+  facebook: string;
 
-  @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  updated_at: Date;
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  @Exclude()
+  youtube: string;
 
-  @DeleteDateColumn({ type: 'timestamp', nullable: true, name: 'deleted_at' })
-  deleted_at: Date;
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  @Exclude()
+  instagram: string;
+
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  @Exclude()
+  linkedin: string;
+
+  @Column({
+    type: 'text',
+    nullable: true,
+  })
+  @Exclude()
+  verify_code: string;
+
+  @OneToMany(() => CouponEntity, (coupons) => coupons.user)
+  coupons: CouponEntity[];
+
+  @ManyToMany(() => CouponEntity, (coupons) => coupons.saved_by_user)
+  @JoinTable({
+    name: 'users-coupons',
+    joinColumn: {
+      name: 'user_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'coupon_id',
+      referencedColumnName: 'id',
+    },
+  })
+  saved_coupons: CouponEntity[];
+
+  @OneToMany(() => BlogsEntity, (posts) => posts.user)
+  blogs: BlogsEntity[];
+
+  @OneToMany(() => CommentEntity, (comment) => comment.user)
+  comments: CommentEntity[];
 }
