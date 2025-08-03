@@ -13,8 +13,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('/api/v1');
   const logger = new Logger('EnvLogger');
-  const swaggerApiDoc = app.get(SwaggerApiDocService);
-  swaggerApiDoc.setUp(app);
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
@@ -36,7 +34,11 @@ async function bootstrap() {
       limit: '50mb',
     }),
   );
-
+  const isProd = configServer.get<string>('NODE_ENV') === 'production';
+  if (!isProd) {
+    const swaggerApiDoc = app.get(SwaggerApiDocService);
+    swaggerApiDoc.setUp(app);
+  }
   logger.log(configServer.get(<string>'NODE_ENV'));
   app.enableCors(corsConfigService.getOptions(configServer));
   app.use(cookieParser());
