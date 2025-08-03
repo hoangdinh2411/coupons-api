@@ -17,18 +17,18 @@ export function getDbConfig(
   };
   let environmentOptions: Partial<TypeOrmModuleOptions> = {};
   const isProd = configService.get('NODE_ENV') === 'production';
-  if (isProd) {
+  if (!isProd) {
     environmentOptions = {
       url: configService.get<string>('POSTGRES_URL'),
     };
   } else {
     environmentOptions = {
       type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: '123',
-      database: 'coupons',
+      host: configService.get('DB_HOST'),
+      port: configService.get('DB_PORT'),
+      username: configService.get('DB_USERNAME'),
+      password: configService.get('DB_PASSWORD'),
+      database: configService.get('DB_NAME'),
     };
   }
   return {
