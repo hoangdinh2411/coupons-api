@@ -52,6 +52,12 @@ export class ClientController {
   async getLatestBlogs() {
     return await this.blogsService.getLatestBlogs(7);
   }
+
+  @Get('/blogs/all')
+  async getAllBlogs() {
+    return await this.blogsService.filter({});
+  }
+
   @Get('/blogs/trending')
   async getTrendingBlogs() {
     return await this.blogsService.getTrending(6);
