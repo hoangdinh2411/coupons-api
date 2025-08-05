@@ -61,7 +61,7 @@ export class UserController {
   }
 
   @Post('my-coupons')
-  @Roles(ROLES.USER)
+  @Roles(ROLES.USER, ROLES.ADMIN, ROLES.PARTNER)
   saveCoupon(
     @CurrentUser() user: UserEntity,
     @Body() { coupon_id }: MyCouponDto,

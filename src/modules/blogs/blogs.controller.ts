@@ -23,23 +23,23 @@ export class BlogsController {
   constructor(private readonly blogsService: BlogService) {}
 
   @Post()
-  @Roles(ROLES.ADMIN)
+  @Roles(ROLES.ADMIN, ROLES.PARTNER)
   create(@CurrentUser() user: UserEntity, @Body() createPostDto: BlogDto) {
     return this.blogsService.create(user, createPostDto);
   }
 
   @Post('filter')
-  @Roles(ROLES.ADMIN)
+  @Roles(ROLES.ADMIN, ROLES.PARTNER)
   filterStore(@Body() filterData: FilterDto) {
     return this.blogsService.filter(filterData);
   }
   @Get(':id')
-  @Roles(ROLES.ADMIN)
+  @Roles(ROLES.ADMIN, ROLES.PARTNER)
   findOne(@Param('id') id: string) {
     return this.blogsService.findOne(id);
   }
   @Patch(':id')
-  @Roles(ROLES.ADMIN)
+  @Roles(ROLES.ADMIN, ROLES.PARTNER)
   update(
     @CurrentUser() user,
     @Param('id') id: string,
@@ -49,7 +49,7 @@ export class BlogsController {
   }
 
   @Delete(':id')
-  @Roles(ROLES.ADMIN)
+  @Roles(ROLES.ADMIN, ROLES.PARTNER)
   remove(@Param('id') id: string, @CurrentUser() user: UserEntity) {
     return this.blogsService.remove(+id, user);
   }
