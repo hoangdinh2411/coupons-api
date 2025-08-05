@@ -13,7 +13,7 @@ export function getDbConfig(
     autoLoadEntities: true,
     entities: [__dirname + '/../**/*.entity.{js,ts}'],
     logging: ['query', 'error', 'warn'],
-    synchronize: true,
+    synchronize: !isProduction,
     name: 'analytics',
     extra: {
       connectionTimeoutMillis: 10000,
@@ -22,7 +22,7 @@ export function getDbConfig(
     },
   };
   let environmentOptions: Partial<TypeOrmModuleOptions> = {};
-  if (!isProduction) {
+  if (isProduction) {
     environmentOptions = {
       url: configService.get<string>('POSTGRES_URL'),
     };

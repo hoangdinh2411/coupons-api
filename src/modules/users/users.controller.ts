@@ -5,6 +5,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -19,6 +20,7 @@ import { UserService } from './services/users.service';
 import { Roles } from 'common/decorators/roles.decorator';
 import { MyCouponDto, UpdateUserDto } from './dto/update-user.dto';
 import { ROLES } from 'common/constants/enums';
+import { ChangePasswordOnProfile } from './dto/change-password-on-profile.dto';
 
 @ApiTags('Users')
 @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -59,12 +61,26 @@ export class UserController {
   }
 
   @Post('my-coupons')
-  @Roles(ROLES.USER)
+  @Roles(ROLES.USER, ROLES.ADMIN, ROLES.PARTNER)
   saveCoupon(
     @CurrentUser() user: UserEntity,
     @Body() { coupon_id }: MyCouponDto,
   ) {
     return this.userService.saveCouponForUser(+coupon_id, user);
+  }
+  @Post('change-password')
+  @Roles(ROLES.USER)
+  async changePassword(
+    @CurrentUser() user: UserEntity,
+    @Body() body: ChangePasswordOnProfile,
+  ) {
+    if (body.password !== body.confirm_password) {
+      throw new BadRequestException(
+        'Password and confirm password do not match',
+      );
+    }
+    await this.userService.updateNewPassword(user, body.password);
+    return true;
   }
 
   @Get('my-coupons')
