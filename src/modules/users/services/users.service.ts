@@ -31,6 +31,12 @@ export class UserService {
     await this.userRepo.save(user);
     return true;
   }
+  async updatePassword(user: UserEntity) {
+    user.verify_code = null;
+    user.email_verified = true;
+    await this.userRepo.save(user);
+    return true;
+  }
   async getUserByEmail(email: string): Promise<UserEntity> {
     const user = await this.userRepo.findOne({
       where: { email, deleted_at: null },
@@ -280,17 +286,10 @@ export class UserService {
     return user;
   }
 
-  async updateNewPassword(user_id: number, new_pass: string) {
-    const user = await this.getUser(user_id);
-    if (!user.verify_code) {
-      throw new ConflictException(
-        'No verification code found. Please request a new one',
-      );
-    }
+  async updateNewPassword(user: UserEntity, new_pass: string) {
     const hashedPassword = await this.bcryptService.hashData(new_pass);
     user.password = hashedPassword;
     user.verify_code = null;
-
     return await this.userRepo.save(user);
   }
 }
