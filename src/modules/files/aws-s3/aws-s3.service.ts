@@ -99,7 +99,9 @@ export class AwsS3Service implements FileAdapter {
   }
   async markImageAsUsed(keys: string[]): Promise<boolean> {
     try {
-      await Promise.all(keys.map((k) => this.removeUnusedTagging(k)));
+      if (keys) {
+        await Promise.all(keys.map((k) => this.removeUnusedTagging(k)));
+      }
       return true;
     } catch (error) {
       this.logger.error('markImageAsUsed', error);
