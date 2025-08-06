@@ -1,5 +1,6 @@
 import { ConflictException, Inject } from '@nestjs/common';
 import { FileAdapter } from './files.adapter';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { extractPublicIdsFromHtml } from 'common/helpers/image';
 import { AwsS3Service } from './aws-s3/aws-s3.service';
 
@@ -9,11 +10,7 @@ export class FilesService {
     private fileAdapter: FileAdapter,
   ) {}
 
-  async upload(
-    file: Express.Multer.File,
-    folder: string,
-    is_used: boolean = true,
-  ) {
+  async upload(file: Express.Multer.File, folder: string, is_used: boolean) {
     try {
       const result = await this.fileAdapter.upload(file, folder, is_used);
       return result;
@@ -32,6 +29,7 @@ export class FilesService {
     }
   }
 
+  @Cron(CronExpression.EVERY_DAY_AT_6AM)
   async deleteUnusedFilePerDay() {
     const public_ids = await this.fileAdapter.getUnusedImages();
     if (public_ids) {
