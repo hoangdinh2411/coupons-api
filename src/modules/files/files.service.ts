@@ -35,6 +35,7 @@ export class FilesService {
     if (public_ids) {
       await Promise.all(public_ids.map((k) => this.delete(k)));
     }
+    return true;
   }
 
   // make Image Type to be used in other modules
