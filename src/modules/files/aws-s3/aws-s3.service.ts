@@ -12,7 +12,7 @@ export class AwsS3Service implements FileAdapter {
     private readonly configService: ConfigService,
   ) {}
 
-  async upload(file: Express.Multer.File, folder = 'shared', is_used: true) {
+  async upload(file: Express.Multer.File, folder = 'shared', is_used: boolean) {
     try {
       const payload: AWS.S3.PutObjectRequest = {
         Bucket: this.configService.get<string>('AWS_BUCKET_NAME'),

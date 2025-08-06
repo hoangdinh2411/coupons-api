@@ -30,12 +30,16 @@ export class FilesController {
   @HttpCode(200)
   async upload(
     @UploadedFiles(FileValidationPipe) files: Express.Multer.File[],
-    @Body('folder') folder: string,
+    @Body() data: { folder: string; is_used: string },
   ) {
     const saved_files = [];
     for (let index = 0; index < files.length; index++) {
       const file = files[index];
-      const result = await this.fileService.upload(file, folder, false);
+      const result = await this.fileService.upload(
+        file,
+        data.folder,
+        data.is_used === 'false' ? false : true,
+      );
       saved_files.push(result);
     }
     return saved_files;
