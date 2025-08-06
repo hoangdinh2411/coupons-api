@@ -48,7 +48,7 @@ export class FilesController {
   @Roles(ROLES.ADMIN)
   @HttpCode(200)
   async delete(@Body() ids: string[]) {
-    return await this.fileService.markImageAsUsed(ids);
+    return await this.fileService.deleteImages(ids);
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_6AM)
