@@ -1,20 +1,21 @@
 import { ConflictException, Inject } from '@nestjs/common';
 import { FileAdapter } from './files.adapter';
-import { CloudinaryService } from './cloudinary/cloudinary.service';
-import { Cron, CronExpression } from '@nestjs/schedule';
-import { unlinkSync } from 'fs';
 import { extractPublicIdsFromHtml } from 'common/helpers/image';
+import { AwsS3Service } from './aws-s3/aws-s3.service';
 
 export class FilesService {
   constructor(
-    @Inject(CloudinaryService)
+    @Inject(AwsS3Service)
     private fileAdapter: FileAdapter,
   ) {}
 
-  async upload(file: Express.Multer.File, folder: string) {
+  async upload(
+    file: Express.Multer.File,
+    folder: string,
+    is_used: boolean = true,
+  ) {
     try {
-      const result = await this.fileAdapter.upload(file, folder);
-      unlinkSync(file.path);
+      const result = await this.fileAdapter.upload(file, folder, is_used);
       return result;
     } catch (error) {
       throw error; // 👈 propagate lỗi lên để transaction biết
@@ -31,27 +32,17 @@ export class FilesService {
     }
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
-  async deleteUnusedFilePerHour() {
-    // const oneHourAgo = new Date(new Date().getTime() - 60 * 60 * 1000);
-    // if (!files || files.length === 0 || files === undefined) {
-    //   this.logger.log('No unused file to delete');
-    //   return;
-    // }
-    // await this.deleteUploadedFilesOnDb(files);
-    // for (let index = 0; index < files.length; index++) {
-    //   const file = files[index];
-    //   await this.fileAdapter.deleteOne(file.public_id);
-    // }
-    // this.logger.log(files.length + ' unused file has been deleted');
+  async deleteUnusedFilePerDay() {
+    const public_ids = await this.fileAdapter.getUnusedImages();
+    if (public_ids) {
+      await Promise.all(public_ids.map((k) => this.delete(k)));
+    }
   }
 
   // make Image Type to be used in other modules
   async deleteImages(ids: string[]) {
     try {
-      for (const id of ids) {
-        await this.delete(id);
-      }
+      await Promise.all(ids.map((id) => this.delete(id)));
     } catch (error) {
       throw error; // 👈 propagate lỗi lên để transaction biết
     }
