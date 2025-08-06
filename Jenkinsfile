@@ -6,10 +6,9 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'UAT', url: 'https://github.com/hoangdinh2411/coupons-api.git'
+                git branch: 'main', url: 'https://github.com/hoangdinh2411/coupons-api.git'
             }
         }
-
         stage('Copy .env file') {
             steps {
                 configFileProvider([configFile(fileId: 'coupons-api-env', targetLocation: '.env')]) {
