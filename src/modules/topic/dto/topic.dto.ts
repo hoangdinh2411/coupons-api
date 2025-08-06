@@ -11,7 +11,14 @@ export class TopicDto extends BaseDto {
     description: 'Name of category',
   })
   name: string;
-
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    type: () => 'string',
+    default: 'description',
+    description: 'description of topic',
+  })
+  description: string;
   @IsOptional()
   updated_at: Date;
 }
