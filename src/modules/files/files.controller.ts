@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Delete,
   HttpCode,
+  Logger,
   Patch,
   Post,
   UploadedFiles,
@@ -13,10 +15,13 @@ import { FilesService } from './files.service';
 import { ApiTags } from '@nestjs/swagger';
 import { Roles } from 'common/decorators/roles.decorator';
 import { ROLES } from 'common/constants/enums';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Controller('files')
 @ApiTags('Files')
 export class FilesController {
+  private readonly logger = new Logger(FilesController.name);
+
   constructor(private readonly fileService: FilesService) {}
 
   @UseInterceptors(FilesInterceptor('files', 10))
@@ -30,20 +35,23 @@ export class FilesController {
     const saved_files = [];
     for (let index = 0; index < files.length; index++) {
       const file = files[index];
-      const result = await this.fileService.upload(file, folder);
-      const data = {
-        public_id: result.public_id,
-        url: result.secure_url,
-        file_name: `${result.original_filename}.${result.original_extension}`,
-      };
-      saved_files.push(data);
+      const result = await this.fileService.upload(file, folder, false);
+      saved_files.push(result);
     }
     return saved_files;
   }
   @Patch()
   @Roles(ROLES.ADMIN)
   @HttpCode(200)
-  async delete(@Body() data: string[]) {
-    return await this.fileService.deleteImages(data);
+  async delete(@Body() ids: string[]) {
+    return await this.fileService.markImageAsUsed(ids);
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_6AM)
+  @Delete()
+  @HttpCode(200)
+  async removeUnusedImages() {
+    this.logger.log('removeUnusedImages');
+    return await this.fileService.deleteUnusedFilePerDay();
   }
 }
