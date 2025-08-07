@@ -101,8 +101,9 @@ export class AwsS3Service implements FileAdapter {
     try {
       if (keys) {
         await Promise.all(keys.map((k) => this.removeUnusedTagging(k)));
+        return true;
       }
-      return true;
+      return false;
     } catch (error) {
       this.logger.error('markImageAsUsed', error);
       throw new ConflictException('Could not remove tag on images ' + keys);
@@ -110,6 +111,9 @@ export class AwsS3Service implements FileAdapter {
   }
 
   async removeUnusedTagging(key: string): Promise<boolean> {
+    if (!key) {
+      return false;
+    }
     try {
       await this.s3
         .putObjectTagging({
