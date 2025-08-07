@@ -177,7 +177,7 @@ export class CouponsService {
     }
 
     if (limit && page) {
-      query.skip((page - 1) * LIMIT_DEFAULT).take(LIMIT_DEFAULT);
+      query.skip((page - 1) * limit).take(limit);
     }
     const [results, total] = await query
       .leftJoinAndSelect('cp.store', 'store')
