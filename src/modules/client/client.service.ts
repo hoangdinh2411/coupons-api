@@ -48,6 +48,7 @@ export class ClientService {
           id: cat.id,
           name: cat.name,
           slug: cat.slug,
+          image: cat.image,
           stores,
         };
       }),

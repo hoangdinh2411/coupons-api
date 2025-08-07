@@ -185,6 +185,7 @@ export class ClientController {
           id: c.id,
           name: c.name,
           slug: c.slug,
+          image: c.image,
           stores: stores.results,
         };
       }),
