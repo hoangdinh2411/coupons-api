@@ -173,6 +173,27 @@ export class ClientController {
       top_deals: top_deals.results,
     };
   }
+  @Get('/home')
+  async getDataForHomePage() {
+    const top_stores = await this.clientService.getTopStoreToday(null, 6);
+
+    const top_deal_today = await this.couponService.filter({
+      stores: [top_stores[0].id],
+      limit: 12,
+      page: 1,
+    });
+
+    const other_top_stores = top_stores.slice(1, top_stores.length);
+    const top_deals = await this.couponService.filter({
+      stores: other_top_stores.slice(0).map((s) => s.id),
+      limit: 20,
+      page: 1,
+    });
+    return {
+      top_deal_today: top_deal_today.results ?? [],
+      top_deals: top_deals.results ?? [],
+    };
+  }
   @Get('/categories/:id/coupons')
   async getCouponByCategory(
     @Param('id') id: string,

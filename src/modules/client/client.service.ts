@@ -117,19 +117,14 @@ export class ClientService {
       .getMany();
   }
 
-  async getTopStoreToday(category_id?: number, limit?: number) {
+  async getTopStoreToday(category_id?: number | null, limit?: number) {
     const query = this.dataSource
       .getRepository(StoreEntity)
       .createQueryBuilder('store')
-      .select([
-        'store.id',
-        'store.name',
-        'store.slug',
-        'category.id',
-        'store.updated_at',
-      ]);
-    if (category_id) {
+      .select(['store.id', 'store.name', 'store.slug', 'store.updated_at']);
+    if (category_id !== null) {
       query
+        .addSelect(['category.id'])
         .innerJoin('store.categories', 'category')
         .where('category.id =:category_id', { category_id });
     }
