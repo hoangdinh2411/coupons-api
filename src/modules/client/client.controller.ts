@@ -173,6 +173,25 @@ export class ClientController {
       top_deals: top_deals.results,
     };
   }
+  @Get('/categories')
+  async getAllCategoriesWithStores() {
+    const categories = await this.categoryService.findAll();
+    const data = await Promise.all(
+      categories.results.map(async (c) => {
+        const stores = await this.storeService.filter({
+          categories: [c.id],
+        });
+        return {
+          id: c.id,
+          name: c.name,
+          slug: c.slug,
+          stores: stores.results,
+        };
+      }),
+    );
+
+    return data;
+  }
   @Get('/home')
   async getDataForHomePage() {
     const top_stores = await this.clientService.getTopStoreToday(null, 6);
