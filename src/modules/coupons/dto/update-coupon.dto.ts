@@ -13,7 +13,7 @@ import {
   ValidateIf,
   IsNotEmpty,
 } from 'class-validator';
-import { CouponType } from 'common/constants/enums';
+import { CouponType, TypeDiscount } from 'common/constants/enums';
 import { IsAfterStartDate } from './coupon.dt';
 import { Type } from 'class-transformer';
 
@@ -26,6 +26,17 @@ export class UpdateCouponDto {
     description: 'Coupon title',
   })
   title: string;
+
+  @IsEnum(TypeDiscount, {
+    message: 'Not support this type',
+  })
+  @IsOptional()
+  @ApiProperty({
+    type: () => 'string',
+    default: 'Type of discount',
+    description: 'DType of discount',
+  })
+  type_discount: TypeDiscount;
 
   @IsNumber()
   @IsOptional()

@@ -28,7 +28,7 @@ export class CategoriesController {
   }
 
   @Get()
-  @Roles(ROLES.ADMIN)
+  @Roles(ROLES.ADMIN, ROLES.PARTNER)
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'search_text', required: false, type: String })

@@ -1,5 +1,5 @@
 import { BaseEntity } from 'common/constants/base.entity';
-import { CouponType } from 'common/constants/enums';
+import { CouponType, TypeDiscount } from 'common/constants/enums';
 import dayjs from 'dayjs';
 import { CategoryEntity } from 'modules/categories/entities/category.entity';
 import { StoreEntity } from 'modules/stores/entities/store.entity';
@@ -49,6 +49,14 @@ export class CouponEntity extends BaseEntity {
     default: 1,
   })
   rating: number;
+
+  @Column({
+    type: 'enum',
+    enum: TypeDiscount,
+    default: TypeDiscount.PERCENT,
+    nullable: true,
+  })
+  type_discount: TypeDiscount;
 
   @Column({
     type: 'int',
