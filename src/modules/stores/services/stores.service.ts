@@ -240,6 +240,8 @@ export class StoresService {
         categories = await this.categoryService.findAllById(
           updateStoreDto.categories,
         );
+      } else {
+        categories = store.categories;
       }
       if (store?.faqs && store?.faqs?.length !== 0) {
         await this.faqService.deleteFaqs(store.id, queryRunner.manager);
