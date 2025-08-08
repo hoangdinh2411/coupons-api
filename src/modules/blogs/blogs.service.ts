@@ -20,7 +20,7 @@ import { BlogDto } from './dto/blog.dto';
 import { FilterDto } from 'common/constants/filter.dto';
 import { TopicService } from 'modules/topic/topic.service';
 import { FilesService } from 'modules/files/files.service';
-import { UpdateTopicDto } from 'modules/topic/dto/topic.dto';
+import { TopicEntity } from 'modules/topic/entities/topic.entity';
 
 @Injectable()
 export class BlogService {
@@ -50,9 +50,8 @@ export class BlogService {
       if (result.content) {
         await this.fileService.updateTagsFOrUsedImagesFromHtml(result.content);
       }
-      await this.topicService.update(topic.id, {
-        updated_at: new Date(),
-      } as UpdateTopicDto);
+      topic.updated_at = new Date();
+      await this.dataSource.getRepository(TopicEntity).save(topic);
       await queryRunner.commitTransaction();
       return result;
     } catch (error) {
