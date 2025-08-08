@@ -78,6 +78,7 @@ export class ClientService {
           id: topic.id,
           name: topic.name,
           slug: topic.slug,
+          image: topic.image,
           blogs,
         };
       }),

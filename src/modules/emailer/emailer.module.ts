@@ -22,6 +22,7 @@ import { EmailerService } from './emailer.service';
               pass: configService.get<string>('EMAIL_PASS'), // generated ethereal password
             },
             from: configService.get<string>('EMAIL_FROM'),
+            replyTo: configService.get<string>('EMAIL_REPLY_TO'),
           },
           defaults: {
             from: `Trust Coupon ${configService.get<string>('EMAIL_FROM')}`,
