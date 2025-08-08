@@ -194,10 +194,10 @@ export class StoresService {
     }
 
     const expired_coupons = store.coupons.filter(
-      (c) => dayjs(c.expire_date) < dayjs(),
+      (c) => c.expire_date && dayjs().isAfter(c.expire_date),
     );
-    const unexpired_coupons = store.coupons.filter(
-      (c) => dayjs(c.expire_date) >= dayjs(),
+    const unexpired_coupons = store.coupons.filter((c) =>
+      !c.expire_date ? true : dayjs().isBefore(c.expire_date),
     );
     const similar_stores = await this.storeRep
       .createQueryBuilder('s')
