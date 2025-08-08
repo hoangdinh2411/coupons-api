@@ -230,7 +230,7 @@ export class StoresService {
         where: {
           id,
         },
-        relations: ['faqs'],
+        relations: ['faqs', 'categories'],
       });
       if (!store) {
         throw new NotFoundException('Store not found');
@@ -240,6 +240,8 @@ export class StoresService {
         categories = await this.categoryService.findAllById(
           updateStoreDto.categories,
         );
+      } else {
+        categories = store.categories;
       }
       if (store?.faqs && store?.faqs?.length !== 0) {
         await this.faqService.deleteFaqs(store.id, queryRunner.manager);
