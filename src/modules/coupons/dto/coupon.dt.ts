@@ -8,6 +8,7 @@ import {
   IsInt,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   Matches,
   Validate,
@@ -16,7 +17,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import { CouponType } from 'common/constants/enums';
+import { CouponType, TypeDiscount } from 'common/constants/enums';
 import dayjs from 'dayjs';
 
 @ValidatorConstraint({ async: false })
@@ -29,6 +30,18 @@ export class IsAfterStartDate implements ValidatorConstraintInterface {
 
   defaultMessage(): string {
     return 'End date must be after start date';
+  }
+}
+export class IsDateFormatValid implements ValidatorConstraintInterface {
+  validate(_value: any, validationArguments?: ValidationArguments) {
+    const { expire_date, start_date } = validationArguments.object as CouponDto;
+    if (!expire_date || !start_date) return true;
+    const regex = /^\d{4}\/\d{2}\/\d{2}$/;
+    return regex.test(expire_date) || regex.test(start_date);
+  }
+
+  defaultMessage(): string {
+    return 'Date must be in the format YYYY/MM/DD';
   }
 }
 
@@ -81,6 +94,17 @@ export class CouponDto {
   })
   store_id: number;
 
+  @IsEnum(TypeDiscount, {
+    message: 'Not support this type',
+  })
+  @IsNotEmpty()
+  @ApiProperty({
+    type: () => 'string',
+    default: 'Type of discount',
+    description: 'DType of discount',
+  })
+  type_discount: TypeDiscount;
+
   @IsNumber()
   @IsNotEmpty()
   @ApiProperty({
@@ -121,10 +145,11 @@ export class CouponDto {
   start_date: string;
 
   @IsString()
+  @ValidateIf((o) => o.expire_date !== undefined && o.expire_date !== '')
   @Matches(/^\d{4}\/\d{2}\/\d{2}$/, {
     message: 'expired date must be in the format YYYY/MM/DD',
   })
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty({
     default: '2025/12/05',
     description: 'When does coupon end?',

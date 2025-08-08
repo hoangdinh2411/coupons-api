@@ -30,7 +30,7 @@ export class StoresController {
   }
 
   @Get()
-  @Roles(ROLES.ADMIN)
+  @Roles(ROLES.ADMIN, ROLES.PARTNER)
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'search_text', required: false, type: String })
   findAll(
