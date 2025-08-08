@@ -6,7 +6,7 @@ import {
 import { CouponDto } from './dto/coupon.dt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CouponEntity } from './entities/coupon.entity';
-import { Brackets, ILike, Repository } from 'typeorm';
+import { Brackets, DataSource, ILike, Repository } from 'typeorm';
 import { StoresService } from 'modules/stores/services/stores.service';
 import dayjs from 'dayjs';
 import { UserEntity } from 'modules/users/entities/users.entity';
@@ -15,7 +15,7 @@ import { LIMIT_DEFAULT } from 'common/constants/variables';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
 import { FilterDto } from 'common/constants/filter.dto';
 import { CouponStatus, CouponType, ROLES } from 'common/constants/enums';
-import { StoreDto } from 'modules/stores/dto/store.dto';
+import { StoreEntity } from 'modules/stores/entities/store.entity';
 // import { makeMetaDataContent } from 'common/helpers/metadata';
 
 @Injectable()
@@ -25,6 +25,7 @@ export class CouponsService {
     private readonly couponRep: Repository<CouponEntity>,
     private readonly storeService: StoresService,
     private readonly categoryService: CategoriesService,
+    private readonly dataSource: DataSource,
   ) {}
   async create(createCouponDto: CouponDto, added_by: UserEntity) {
     const store = await this.storeService.findOne(
@@ -51,9 +52,8 @@ export class CouponsService {
       user: added_by,
       is_verified: added_by.role === ROLES.ADMIN,
     });
-    await this.storeService.update(store.id, {
-      updated_at: new Date(),
-    } as StoreDto);
+    store.updated_at = new Date();
+    await this.dataSource.getRepository(StoreEntity).save(store);
     return await this.couponRep.save({
       ...new_coupon,
       store: {
