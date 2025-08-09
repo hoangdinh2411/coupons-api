@@ -18,8 +18,8 @@ pipeline {
         }
         stage('Saving certificate database') {
             steps {
-                configFileProvider([configFile(fileId: 'dbtrustcoupon-ca-certificate.crt', targetLocation: 'dbtrustcoupon-ca-certificate.crt')]) {
-                    sh 'ls -la && cat dbtrustcoupon-ca-certificate.crt' 
+                configFileProvider([configFile(fileId: 'cert', targetLocation: 'cert.crt')]) {
+                    sh 'ls -la && cat cert.crt' 
                 }
             }
         }
