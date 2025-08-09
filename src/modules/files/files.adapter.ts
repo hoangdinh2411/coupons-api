@@ -2,7 +2,6 @@ export abstract class FileAdapter {
   public abstract upload(
     _file: Express.Multer.File,
     _folder: string,
-    is_used: boolean,
   ): Promise<{
     public_id: string;
     url: string;

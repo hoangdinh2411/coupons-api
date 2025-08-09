@@ -12,7 +12,7 @@ export class AwsS3Service implements FileAdapter {
     private readonly configService: ConfigService,
   ) {}
 
-  async upload(file: Express.Multer.File, folder = 'shared', is_used: boolean) {
+  async upload(file: Express.Multer.File, folder = 'shared') {
     try {
       const payload: AWS.S3.PutObjectRequest = {
         Bucket: this.configService.get<string>('AWS_BUCKET_NAME'),
@@ -20,10 +20,8 @@ export class AwsS3Service implements FileAdapter {
         Body: file.buffer,
         ContentType: file.mimetype,
         ACL: 'public-read', // hoặc 'private' nếu không muốn public
+        Tagging: 'status=unused',
       };
-      if (!is_used) {
-        payload['Tagging'] = 'status=unused';
-      }
       const uploadResult = await this.s3.upload(payload).promise();
       return {
         public_id: uploadResult.Key,
