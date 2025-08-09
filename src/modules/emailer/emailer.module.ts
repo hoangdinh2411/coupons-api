@@ -4,6 +4,12 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { join } from 'path';
 import { ConfigService } from '@nestjs/config';
 import { EmailerService } from './emailer.service';
+import { existsSync } from 'fs';
+
+const prodDir = join(__dirname, 'templates'); // <project>/dist/templates
+const devDir = join(process.cwd(), 'src', 'templates'); // <project>/src/templates
+const templatesDir = existsSync(prodDir) ? prodDir : devDir;
+
 @Module({
   imports: [
     MailerModule.forRootAsync({
@@ -28,10 +34,7 @@ import { EmailerService } from './emailer.service';
             from: `Trust Coupon ${configService.get<string>('EMAIL_FROM')}`,
           },
           template: {
-            dir:
-              configService.get<string>('NODE_ENV') === 'production'
-                ? join(__dirname, '..', '..', 'templates')
-                : join(process.cwd(), 'src', 'templates'),
+            dir: templatesDir,
             adapter: new HandlebarsAdapter(),
             options: {
               strict: true,
