@@ -9,7 +9,7 @@ export function extractPublicIdsFromHtml(content: string) {
   const urls = extractImageUrlFromHTMLContent(content);
   return urls
     ? urls.map((url) => {
-        const match = url.match(/categories\/[^.]+/);
+        const match = url.match(/uploads\/[^]+/);
         return match ? match[0] : '';
       })
     : [];
