@@ -26,7 +26,7 @@ export class FilesController {
 
   @UseInterceptors(FilesInterceptor('files', 10))
   @Post()
-  @Roles(ROLES.ADMIN)
+  @Roles(ROLES.ADMIN, ROLES.PARTNER)
   @HttpCode(200)
   async upload(
     @UploadedFiles(FileValidationPipe) files: Express.Multer.File[],
@@ -45,7 +45,7 @@ export class FilesController {
     return saved_files;
   }
   @Patch()
-  @Roles(ROLES.ADMIN)
+  @Roles(ROLES.ADMIN, ROLES.PARTNER)
   @HttpCode(200)
   async delete(@Body() ids: string[]) {
     return await this.fileService.deleteImages(ids);
