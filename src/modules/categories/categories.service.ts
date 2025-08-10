@@ -87,7 +87,9 @@ export class CategoriesService {
   }
 
   async findOne(identifier: string) {
-    const query = this.categoryRep.createQueryBuilder('c');
+    const query = this.categoryRep
+      .createQueryBuilder('c')
+      .leftJoinAndSelect('c.faqs', 'faqs');
     if (isNumeric(identifier)) {
       query.where('c.id =:id', { id: +identifier });
     } else {
