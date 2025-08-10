@@ -45,7 +45,7 @@ export class StoresService {
           queryRunner.manager,
         );
       }
-      if (store) {
+      if (store.image.public_id) {
         await this.fileService.markImageAsUsed([store.image.public_id]);
       }
       if (store.description) {

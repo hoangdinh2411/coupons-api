@@ -10,9 +10,9 @@ export class FilesService {
     private fileAdapter: FileAdapter,
   ) {}
 
-  async upload(file: Express.Multer.File, folder: string, is_used: boolean) {
+  async upload(file: Express.Multer.File, folder: string) {
     try {
-      const result = await this.fileAdapter.upload(file, folder, is_used);
+      const result = await this.fileAdapter.upload(file, folder);
       return result;
     } catch (error) {
       throw error; // 👈 propagate lỗi lên để transaction biết

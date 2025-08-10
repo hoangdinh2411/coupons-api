@@ -9,7 +9,6 @@ import {
   InternalServerErrorException,
   Query,
   BadRequestException,
-  ConflictException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { LocalAuthGuard } from 'common/guards/localAuth.guard';
@@ -138,12 +137,10 @@ export class AuthController {
   @Post('verify-code')
   async verifyForgetPasswordCode(@Body() body: VerifyCodeDto) {
     const user = await this.userService.verifyCode(body);
-
     const strategy = this.verifyCodeFactory.getStrategy(
       body.type as VerifyCodeType,
     );
     const token = await strategy.execute(user);
-
     return {
       type: body.type,
       token,
@@ -168,11 +165,6 @@ export class AuthController {
       throw new BadRequestException('Invalid change password token');
     }
     const user = await this.userService.getUser(decoded.id);
-    if (!user.verify_code) {
-      throw new ConflictException(
-        'No verification code found. Please request a new one',
-      );
-    }
     await this.userService.updateNewPassword(user, body.password);
     return true;
   }
