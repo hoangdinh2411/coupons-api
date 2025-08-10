@@ -1,6 +1,7 @@
 import { BaseEntity } from 'common/constants/base.entity';
 import { generateSlug } from 'common/helpers/generateSlug';
 import { CouponEntity } from 'modules/coupons/entities/coupon.entity';
+import { FAQEntity } from 'modules/faqs/entities/faq.entity';
 import { StoreEntity } from 'modules/stores/entities/store.entity';
 import {
   BeforeInsert,
@@ -8,6 +9,7 @@ import {
   Column,
   Entity,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -43,4 +45,10 @@ export class CategoryEntity extends BaseEntity {
 
   @ManyToMany(() => CouponEntity, (coupon) => coupon.categories)
   coupons: CouponEntity[];
+
+  @OneToMany(() => FAQEntity, (faq) => faq.category, {
+    cascade: false,
+    eager: false,
+  })
+  faqs: FAQEntity[];
 }

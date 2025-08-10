@@ -1,7 +1,6 @@
 import {
   ConflictException,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { CategoryDto } from './dto/category.dto';
@@ -10,6 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, ILike, In, QueryFailedError, Repository } from 'typeorm';
 import { FilesService } from 'modules/files/files.service';
 import { isNumeric } from 'common/helpers/number';
+import { FAQService } from 'modules/faqs/services/faqs.service';
 
 @Injectable()
 export class CategoriesService {
@@ -17,20 +17,31 @@ export class CategoriesService {
     @InjectRepository(CategoryEntity)
     private readonly categoryRep: Repository<CategoryEntity>,
     private readonly fileService: FilesService,
+    private readonly faqService: FAQService,
     private readonly dataSource: DataSource,
   ) {}
-  async create(createCategoryDto: CategoryDto) {
+  async create({ faqs, ...createCategoryDto }: CategoryDto) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
       const new_category = this.categoryRep.create(createCategoryDto);
-      const result = await this.categoryRep.save(new_category);
-      if (result.image.public_id) {
-        await this.fileService.markImageAsUsed([result.image.public_id]);
+      await this.categoryRep.save(new_category);
+      if (new_category.image.public_id) {
+        await this.fileService.markImageAsUsed([new_category.image.public_id]);
+      }
+
+      if (faqs) {
+        await this.faqService.saveFaqs(
+          faqs,
+          {
+            category: new_category,
+          },
+          queryRunner.manager,
+        );
       }
       await queryRunner.commitTransaction();
-      return result;
+      return new_category;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       if (error instanceof QueryFailedError) {
@@ -64,8 +75,10 @@ export class CategoriesService {
       .whereInIds(ids)
       .leftJoin('category.stores', 'store')
       .addSelect(['store.id', 'store.name', 'store.slug'])
+      .leftJoinAndSelect('category.faqs', 'faqs')
       .orderBy('category.name', 'ASC')
       .addOrderBy('store.name', 'ASC')
+      .addOrderBy('faqs.order', 'ASC')
       .getMany();
     return {
       total,
@@ -103,16 +116,37 @@ export class CategoriesService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const category = await this.categoryRep.findOneBy({
-        id,
+      const category = await this.categoryRep.findOne({
+        where: {
+          id,
+        },
+        relations: ['faqs'],
       });
       if (!category) {
         throw new NotFoundException('Category not found');
       }
+      const { faqs, ...dtoWithoutFaqs } = updateCategoryDto;
+      const data = {
+        ...category,
+        ...dtoWithoutFaqs,
+      };
+      if (category?.faqs && category?.faqs?.length !== 0) {
+        await this.faqService.deleteFaqs(
+          'category',
+          category.id,
+          queryRunner.manager,
+        );
+      }
+      const new_category = await this.categoryRep.save(data);
 
-      const result = await this.categoryRep.update(id, updateCategoryDto);
-      if (result.affected === 0) {
-        throw new InternalServerErrorException('Cannot update category');
+      if (faqs?.length > 0) {
+        await this.faqService.saveFaqs(
+          faqs,
+          {
+            category: new_category,
+          },
+          queryRunner.manager,
+        );
       }
 
       const has_new_image =
@@ -129,10 +163,7 @@ export class CategoriesService {
       }
 
       await queryRunner.commitTransaction();
-      return {
-        id,
-        ...updateCategoryDto,
-      };
+      return new_category;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       if (error instanceof QueryFailedError) {

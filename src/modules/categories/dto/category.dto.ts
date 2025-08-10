@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 import { BaseDto } from 'common/constants/common.dto';
+import { FAQDto } from 'modules/faqs/dto/faq.dto';
 
 export class CategoryDto extends BaseDto {
   @IsString()
@@ -20,4 +22,23 @@ export class CategoryDto extends BaseDto {
     description: 'description of category',
   })
   description: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => FAQDto)
+  @ApiProperty({
+    type: () => FAQDto,
+    default: [
+      {
+        question: 'question 1?',
+        answer: 'answer 1',
+      },
+      {
+        question: 'question 2?',
+        answer: 'answer 2',
+      },
+    ],
+    description: 'FAQs ',
+  })
+  faqs: FAQDto[];
 }

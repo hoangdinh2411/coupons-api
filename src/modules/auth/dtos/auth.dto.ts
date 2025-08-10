@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsString, Matches } from 'class-validator';
+import { ROLES } from 'common/constants/enums';
 
 export class AuthDto {
   @IsEmail()
@@ -53,4 +54,6 @@ export class SignUpDto extends AuthDto {
     description: 'Last Name',
   })
   last_name: string = '';
+
+  role: ROLES;
 }

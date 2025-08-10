@@ -137,12 +137,13 @@ export class UserService {
     first_name,
     last_name,
     password,
+    role,
   }: SignUpDto): Promise<UserEntity> {
     const hashedPassword = await this.bcryptService.hashData(password);
     const user = this.userRepo.create({
       email,
       password: hashedPassword,
-      role: ROLES.ADMIN,
+      role,
       first_name,
       last_name,
       email_verified: true,
