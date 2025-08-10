@@ -27,7 +27,7 @@ export class StoresService {
     private readonly fileService: FilesService,
     private readonly dataSource: DataSource,
   ) {}
-  async create(createStoreDto: StoreDto) {
+  async create({ faqs, ...createStoreDto }: StoreDto) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -38,10 +38,12 @@ export class StoresService {
 
       const store = this.storeRep.create({ ...createStoreDto, categories });
       await this.storeRep.save(store);
-      if (createStoreDto.faqs) {
+      if (faqs) {
         await this.faqService.saveFaqs(
-          createStoreDto.faqs,
-          store,
+          faqs,
+          {
+            store,
+          },
           queryRunner.manager,
         );
       }
@@ -148,6 +150,7 @@ export class StoresService {
       .leftJoinAndSelect('store.coupons', 'coupons')
       .leftJoinAndSelect('store.categories', 'categories')
       .leftJoinAndSelect('store.faqs', 'faqs')
+      .orderBy('faqs.order', 'ASC')
       .getOne();
     if (!store) {
       throw new NotFoundException('Store not found');
@@ -188,6 +191,7 @@ export class StoresService {
       .leftJoin('store.categories', 'category')
       .addSelect(['category.id', 'category.name', 'category.slug'])
       .leftJoinAndSelect('store.faqs', 'faqs')
+      .orderBy('faqs.order', 'ASC')
       .getOne();
     if (!store) {
       throw new NotFoundException('Store not found');
@@ -244,9 +248,13 @@ export class StoresService {
         categories = store.categories;
       }
       if (store?.faqs && store?.faqs?.length !== 0) {
-        await this.faqService.deleteFaqs(store.id, queryRunner.manager);
+        await this.faqService.deleteFaqs(
+          'store',
+          store.id,
+          queryRunner.manager,
+        );
       }
-      const { faqs: _omitFaqs, ...dtoWithoutFaqs } = updateStoreDto;
+      const { faqs, ...dtoWithoutFaqs } = updateStoreDto;
 
       const data = {
         ...store,
@@ -272,10 +280,12 @@ export class StoresService {
           updated_store.description,
         );
       }
-      if (updateStoreDto?.faqs?.length > 0) {
+      if (faqs?.length > 0) {
         await this.faqService.saveFaqs(
-          updateStoreDto.faqs,
-          updated_store,
+          faqs,
+          {
+            store: updated_store,
+          },
           queryRunner.manager,
         );
       }

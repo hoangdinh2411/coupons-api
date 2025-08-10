@@ -17,6 +17,7 @@ export class SignUpStrategyFactory {
     switch (type.toUpperCase() as ROLES) {
       // case ROLES.PARTNER:
       case ROLES.ADMIN:
+      case ROLES.PARTNER:
         return this.superAdmin;
       case ROLES.USER:
         return this.regular;

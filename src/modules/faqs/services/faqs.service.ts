@@ -4,6 +4,7 @@ import { EntityManager, Repository } from 'typeorm';
 import { FAQEntity } from '../entities/faq.entity';
 import { FAQDto } from '../dto/faq.dto';
 import { StoreEntity } from 'modules/stores/entities/store.entity';
+import { CategoryEntity } from 'modules/categories/entities/category.entity';
 
 @Injectable()
 export class FAQService {
@@ -11,12 +12,19 @@ export class FAQService {
     @InjectRepository(FAQEntity)
     private readonly faqRep: Repository<FAQEntity>,
   ) {}
-  async saveFaqs(data: FAQDto[], store: StoreEntity, manager: EntityManager) {
+  async saveFaqs(
+    data: FAQDto[],
+    payload: {
+      store?: StoreEntity;
+      category?: CategoryEntity;
+    },
+    manager: EntityManager,
+  ) {
     try {
       const faqs = data.map((f, index) => ({
         ...f,
         order: index + 1,
-        store,
+        ...payload,
       }));
       await manager.save(FAQEntity, faqs);
     } catch (error) {
@@ -24,19 +32,25 @@ export class FAQService {
     }
   }
 
-  async deleteFaqs(store_id: number, manager: EntityManager) {
+  async deleteFaqs(
+    key: 'store' | 'category',
+    id: number,
+    manager: EntityManager,
+  ) {
     try {
-      const result = await manager
-        .createQueryBuilder()
-        .delete()
-        .from(FAQEntity)
-        .where('store_id = :storeId', { storeId: store_id })
-        .execute();
+      const query = manager.createQueryBuilder().delete().from(FAQEntity);
 
+      if (key === 'store') {
+        query.where('store_id = :store_id', { store_id: id });
+      }
+
+      if (key === 'category') {
+        query.where('category_id = :category_id', { category_id: id });
+      }
+
+      const result = await query.execute();
       if (result.affected === 0) {
-        throw new ConflictException(
-          'Cannot delete FAQs by store id ' + store_id,
-        );
+        throw new ConflictException(`Cannot delete FAQs by ${key} id ` + id);
       }
       return true;
     } catch (error) {
