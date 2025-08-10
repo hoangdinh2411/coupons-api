@@ -51,6 +51,13 @@ export class UserEntity extends BaseEntity {
   })
   role: ROLES;
 
+  @Column({ type: 'jsonb', nullable: true })
+  avatar: {
+    url: string;
+    public_id: string;
+    file_name: string;
+  };
+
   @Column({
     type: 'boolean',
     default: false,
