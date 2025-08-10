@@ -192,6 +192,7 @@ export class BlogService {
         'user.youtube',
         'user.linkedin',
         'user.instagram',
+        'user.description',
       ])
       .leftJoin('blog.topic', 'topic')
       .addSelect(['topic.id', 'topic.name', 'topic.slug', 'topic.image'])
