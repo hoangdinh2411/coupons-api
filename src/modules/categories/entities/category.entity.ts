@@ -25,6 +25,9 @@ export class CategoryEntity extends BaseEntity {
   slug: string;
 
   @Column({ type: 'text', nullable: true })
+  about: string;
+
+  @Column({ type: 'text', nullable: true })
   description: string;
 
   @BeforeInsert()
