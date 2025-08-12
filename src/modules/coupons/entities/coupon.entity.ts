@@ -65,14 +65,16 @@ export class CouponEntity extends BaseEntity {
   discount: number;
 
   @ManyToOne(() => UserEntity, (user) => user.coupons, {
-    onDelete: 'CASCADE',
+    cascade: true,
   })
   @JoinColumn({
     name: 'added_by',
   })
   user: UserEntity;
 
-  @ManyToMany(() => UserEntity, (user) => user.saved_coupons)
+  @ManyToMany(() => UserEntity, (user) => user.saved_coupons, {
+    onDelete: 'CASCADE',
+  })
   saved_by_user: UserEntity[];
 
   @Column({
@@ -122,11 +124,10 @@ export class CouponEntity extends BaseEntity {
   store: StoreEntity;
 
   @ManyToMany(() => CategoryEntity, (category) => category.coupons, {
-    cascade: true,
     onDelete: 'CASCADE',
   })
   @JoinTable({
-    name: 'coupons-categories',
+    name: 'coupons_categories',
     joinColumn: {
       name: 'coupon_id',
       referencedColumnName: 'id',
