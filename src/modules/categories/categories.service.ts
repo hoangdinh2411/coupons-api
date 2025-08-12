@@ -192,10 +192,11 @@ export class CategoriesService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const category = await this.categoryRep.findOneBy({
-        id,
+      const category = await this.categoryRep.findOne({
+        where: {
+          id,
+        },
       });
-
       if (!category) {
         throw new NotFoundException('Category not found');
       }

@@ -43,15 +43,20 @@ export class CategoryEntity extends BaseEntity {
     file_name: string;
   };
 
-  @ManyToMany(() => StoreEntity, (store) => store.categories)
+  @ManyToMany(() => StoreEntity, (store) => store.categories, {
+    onDelete: 'CASCADE',
+  })
   stores: StoreEntity[];
 
-  @ManyToMany(() => CouponEntity, (coupon) => coupon.categories)
+  @ManyToMany(() => CouponEntity, (coupon) => coupon.categories, {
+    onDelete: 'CASCADE',
+  })
   coupons: CouponEntity[];
 
   @OneToMany(() => FAQEntity, (faq) => faq.category, {
     cascade: false,
     eager: false,
+    onDelete: 'CASCADE',
   })
   faqs: FAQEntity[];
 }

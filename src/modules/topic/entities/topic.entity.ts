@@ -40,6 +40,7 @@ export class TopicEntity extends BaseEntity {
   @OneToMany(() => BlogsEntity, (blog) => blog.topic, {
     cascade: true,
     eager: false,
+    onDelete: 'CASCADE',
   })
   blogs: BlogsEntity[];
 }
