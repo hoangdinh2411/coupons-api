@@ -123,6 +123,7 @@ export class CouponEntity extends BaseEntity {
 
   @ManyToMany(() => CategoryEntity, (category) => category.coupons, {
     cascade: true,
+    onDelete: 'CASCADE',
   })
   @JoinTable({
     name: 'coupons-categories',

@@ -72,7 +72,9 @@ export class BlogsEntity extends BaseEntity {
   })
   is_indexed: boolean;
 
-  @OneToMany(() => CommentEntity, (comment) => comment.blog)
+  @OneToMany(() => CommentEntity, (comment) => comment.blog, {
+    onDelete: 'CASCADE',
+  })
   comments: CommentEntity[];
 
   @Column({
@@ -84,6 +86,7 @@ export class BlogsEntity extends BaseEntity {
   @OneToMany(() => FAQEntity, (faq) => faq.blog, {
     cascade: false,
     eager: false,
+    onDelete: 'CASCADE',
   })
   faqs: FAQEntity[];
 }

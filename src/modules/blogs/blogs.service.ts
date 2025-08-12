@@ -303,6 +303,7 @@ export class BlogService {
           'You are not authorized to delete this blog',
         );
       }
+
       if (blog.image.public_id) {
         await this.fileService.delete(blog.image.public_id);
       }

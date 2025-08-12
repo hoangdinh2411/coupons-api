@@ -310,8 +310,11 @@ export class StoresService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const store = await this.storeRep.findOneBy({
-        id,
+      const store = await this.storeRep.findOne({
+        where: {
+          id,
+        },
+        relations: ['faqs'],
       });
 
       if (!store) {
