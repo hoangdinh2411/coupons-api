@@ -1,12 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsOptional,
   IsNumber,
   IsString,
   IsArray,
   IsBoolean,
+  ValidateNested,
 } from 'class-validator';
 import { BaseDto } from 'common/constants/common.dto';
+import { FAQDto } from 'modules/faqs/dto/faq.dto';
 
 export class UpdateBlogDto extends BaseDto {
   @IsString()
@@ -80,4 +83,14 @@ export class UpdateBlogDto extends BaseDto {
     description: 'slug',
   })
   slug: string;
+
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => FAQDto)
+  @ApiProperty({
+    default: [FAQDto],
+    description: 'FAQs ',
+  })
+  faqs: FAQDto[];
 }

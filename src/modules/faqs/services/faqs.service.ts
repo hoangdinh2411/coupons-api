@@ -5,6 +5,7 @@ import { FAQEntity } from '../entities/faq.entity';
 import { FAQDto } from '../dto/faq.dto';
 import { StoreEntity } from 'modules/stores/entities/store.entity';
 import { CategoryEntity } from 'modules/categories/entities/category.entity';
+import { BlogsEntity } from 'modules/blogs/entities/blogs.entity';
 
 @Injectable()
 export class FAQService {
@@ -17,6 +18,7 @@ export class FAQService {
     payload: {
       store?: StoreEntity;
       category?: CategoryEntity;
+      blog?: BlogsEntity;
     },
     manager: EntityManager,
   ) {
@@ -33,7 +35,7 @@ export class FAQService {
   }
 
   async deleteFaqs(
-    key: 'store' | 'category',
+    key: 'store' | 'category' | 'blog',
     id: number,
     manager: EntityManager,
   ) {
@@ -46,6 +48,9 @@ export class FAQService {
 
       if (key === 'category') {
         query.where('category_id = :category_id', { category_id: id });
+      }
+      if (key === 'blog') {
+        query.where('blog_id = :blog_id', { blog_id: id });
       }
 
       const result = await query.execute();

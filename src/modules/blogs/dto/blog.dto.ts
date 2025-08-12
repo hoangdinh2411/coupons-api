@@ -1,6 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { BaseDto } from 'common/constants/common.dto';
+import { FAQDto } from 'modules/faqs/dto/faq.dto';
 
 export class BlogDto extends BaseDto {
   @IsString()
@@ -47,4 +55,23 @@ export class BlogDto extends BaseDto {
     description: 'Topic id',
   })
   topic_id: number;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => FAQDto)
+  @ApiProperty({
+    type: () => FAQDto,
+    default: [
+      {
+        question: 'question 1?',
+        answer: 'answer 1',
+      },
+      {
+        question: 'question 2?',
+        answer: 'answer 2',
+      },
+    ],
+    description: 'FAQs ',
+  })
+  faqs: FAQDto[];
 }

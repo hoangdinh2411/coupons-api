@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { ImageDto } from 'common/constants/common.dto';
 
 export class MyCouponDto {
   @IsNumber()
@@ -74,4 +76,18 @@ export class UpdateUserDto {
     description: 'description',
   })
   description: string = '';
+
+  @Type(() => ImageDto)
+  @IsOptional()
+  @ApiProperty({
+    type: () => 'object',
+    default: {
+      url: 'string',
+      public_id: 'string',
+      file_name: 'string',
+      caption: 'string',
+    },
+    description: 'Uploaded image',
+  })
+  avatar: ImageDto;
 }
