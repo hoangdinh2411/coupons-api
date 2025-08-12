@@ -113,9 +113,11 @@ export class UserEntity extends BaseEntity {
   @OneToMany(() => CouponEntity, (coupons) => coupons.user)
   coupons: CouponEntity[];
 
-  @ManyToMany(() => CouponEntity, (coupons) => coupons.saved_by_user)
+  @ManyToMany(() => CouponEntity, (coupons) => coupons.saved_by_user, {
+    onDelete: 'CASCADE',
+  })
   @JoinTable({
-    name: 'users-coupons',
+    name: 'users_coupons',
     joinColumn: {
       name: 'user_id',
       referencedColumnName: 'id',

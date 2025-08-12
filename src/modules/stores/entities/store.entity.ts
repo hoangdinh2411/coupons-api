@@ -74,11 +74,10 @@ export class StoreEntity extends BaseEntity {
   slug: string;
 
   @ManyToMany(() => CategoryEntity, (category) => category.stores, {
-    cascade: true,
     onDelete: 'CASCADE',
   })
   @JoinTable({
-    name: 'stores-categories',
+    name: 'stores_categories',
     joinColumn: {
       name: 'store_id',
       referencedColumnName: 'id',
