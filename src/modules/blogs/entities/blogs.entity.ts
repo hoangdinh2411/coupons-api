@@ -1,5 +1,6 @@
 import { BaseEntity } from 'common/constants/base.entity';
 import { CommentEntity } from 'modules/comments/entities/comment.entity';
+import { FAQEntity } from 'modules/faqs/entities/faq.entity';
 import { TopicEntity } from 'modules/topic/entities/topic.entity';
 import { UserEntity } from 'modules/users/entities/users.entity';
 import {
@@ -79,4 +80,10 @@ export class BlogsEntity extends BaseEntity {
     default: 1,
   })
   rating: number;
+
+  @OneToMany(() => FAQEntity, (faq) => faq.blog, {
+    cascade: false,
+    eager: false,
+  })
+  faqs: FAQEntity[];
 }

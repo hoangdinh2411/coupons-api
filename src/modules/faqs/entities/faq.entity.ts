@@ -8,6 +8,7 @@ import {
 import { PageEntity } from 'modules/pages/entities/page.entity';
 import { StoreEntity } from 'modules/stores/entities/store.entity';
 import { CategoryEntity } from 'modules/categories/entities/category.entity';
+import { BlogsEntity } from 'modules/blogs/entities/blogs.entity';
 
 @Entity('faq')
 export class FAQEntity {
@@ -50,5 +51,12 @@ export class FAQEntity {
     nullable: true,
   })
   @JoinColumn({ name: 'page_id' })
-  page: StoreEntity;
+  page: PageEntity;
+
+  @ManyToOne(() => BlogsEntity, (page) => page.faqs, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'blog_id' })
+  blog: BlogsEntity;
 }

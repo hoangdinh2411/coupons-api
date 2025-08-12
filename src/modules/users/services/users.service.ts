@@ -15,6 +15,7 @@ import { generateCode } from 'common/helpers/code';
 import { VerifyCodeDto } from 'modules/auth/dtos/verify-code.dto';
 import { ROLES, VerifyCodeType } from 'common/constants/enums';
 import { BcryptService } from './bcrypt.service';
+import { FilesService } from 'modules/files/files.service';
 
 @Injectable()
 export class UserService {
@@ -23,6 +24,7 @@ export class UserService {
     private readonly userRepo: Repository<UserEntity>,
     readonly couponService: CouponsService,
     readonly bcryptService: BcryptService,
+    private readonly fileService: FilesService,
   ) {}
 
   async setEmailIsVerified(user: UserEntity) {
@@ -187,22 +189,39 @@ export class UserService {
       .getOne();
   }
 
-  async updateAccount(user_id: number, data: UpdateUserDto) {
-    const result = await this.userRepo
-      .createQueryBuilder('user')
-      .update(UserEntity)
-      .set(data)
-      .where('id = :user_id', { user_id })
-      .andWhere('email_verified = :email_verified', {
+  async updateAccount(user: UserEntity, data: UpdateUserDto) {
+    const profile = await this.userRepo.findOne({
+      where: {
+        id: user.id,
         email_verified: true,
-      })
-      .andWhere('deleted_at IS NULL')
-      .execute();
-    if (result.affected === 0) {
+        deleted_at: null,
+      },
+    });
+    if (!profile) {
       throw new NotFoundException('Account not found');
     }
+
+    const updated_user = await this.userRepo.save({
+      ...profile,
+      ...data,
+    });
+
+    if (
+      profile.avatar &&
+      data.avatar &&
+      profile.avatar?.public_id !== data.avatar.public_id
+    ) {
+      await this.fileService.delete(profile.avatar.public_id);
+    }
+    if (data.avatar && data.avatar.public_id) {
+      await this.fileService.markImageAsUsed([data.avatar.public_id]);
+    }
+
     return {
-      id: user_id,
+      id: updated_user.id,
+      role: updated_user.role,
+      email_verified: updated_user.email_verified,
+      email: updated_user.email,
       ...data,
     };
   }
@@ -245,6 +264,7 @@ export class UserService {
         'u.facebook',
         'u.linkedin',
         'u.instagram',
+        'u.avatar',
       ])
       .where('u.id = :user_id AND u.deleted_at IS NULL', {
         user_id,

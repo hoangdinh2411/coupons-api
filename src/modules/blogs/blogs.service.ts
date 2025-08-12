@@ -21,6 +21,7 @@ import { FilterDto } from 'common/constants/filter.dto';
 import { TopicService } from 'modules/topic/topic.service';
 import { FilesService } from 'modules/files/files.service';
 import { TopicEntity } from 'modules/topic/entities/topic.entity';
+import { FAQService } from 'modules/faqs/services/faqs.service';
 
 @Injectable()
 export class BlogService {
@@ -30,8 +31,9 @@ export class BlogService {
     private readonly topicService: TopicService,
     private readonly fileService: FilesService,
     private readonly dataSource: DataSource,
+    private readonly faqService: FAQService,
   ) {}
-  async create(user: UserEntity, createBlogDto: BlogDto) {
+  async create(user: UserEntity, { faqs, ...createBlogDto }: BlogDto) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -43,6 +45,16 @@ export class BlogService {
         topic,
       });
       const result = await this.blogRepo.save(new_blog);
+
+      if (faqs) {
+        await this.faqService.saveFaqs(
+          faqs,
+          {
+            blog: new_blog,
+          },
+          queryRunner.manager,
+        );
+      }
       if (result.image.public_id) {
         await this.fileService.markImageAsUsed([result.image.public_id]);
       }
@@ -196,6 +208,7 @@ export class BlogService {
       ])
       .leftJoin('blog.topic', 'topic')
       .addSelect(['topic.id', 'topic.name', 'topic.slug', 'topic.image'])
+      .leftJoinAndSelect('blog.faqs', 'faqs')
       .getOne();
     if (!blog) {
       throw new NotFoundException('Blog not found');
@@ -203,7 +216,11 @@ export class BlogService {
     return blog;
   }
 
-  async update(user: UserEntity, id: number, updateBlogDto: UpdateBlogDto) {
+  async update(
+    user: UserEntity,
+    id: number,
+    { faqs, ...updateBlogDto }: UpdateBlogDto,
+  ) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -217,7 +234,9 @@ export class BlogService {
       if (!blog) {
         throw new NotFoundException('Blog not found');
       }
-
+      if (blog?.faqs && blog?.faqs?.length !== 0) {
+        await this.faqService.deleteFaqs('blog', blog.id, queryRunner.manager);
+      }
       if (user.role !== ROLES.ADMIN && blog.user.id !== user.id) {
         throw new ForbiddenException(
           'You are not authorized to update this blog',
@@ -228,7 +247,17 @@ export class BlogService {
         ...updateBlogDto,
         ...(topic && { topic }),
       };
-      const result = await this.blogRepo.save(data);
+      const updated_blog = await this.blogRepo.save(data);
+
+      if (faqs?.length > 0) {
+        await this.faqService.saveFaqs(
+          faqs,
+          {
+            blog: updated_blog,
+          },
+          queryRunner.manager,
+        );
+      }
       const has_new_image =
         updateBlogDto.image &&
         updateBlogDto.image.public_id &&
@@ -239,11 +268,13 @@ export class BlogService {
       if (has_new_image && blog.image.public_id !== '') {
         await this.fileService.delete(blog.image.public_id);
       }
-      if (result.content) {
-        await this.fileService.updateTagsFOrUsedImagesFromHtml(result.content);
+      if (updated_blog.content) {
+        await this.fileService.updateTagsFOrUsedImagesFromHtml(
+          updated_blog.content,
+        );
       }
       await queryRunner.commitTransaction();
-      return result;
+      return updated_blog;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       if (error instanceof QueryFailedError) {
