@@ -79,11 +79,20 @@ export class BlogService {
       await queryRunner.release();
     }
   }
-  async filter(filterData: FilterDto) {
+  async filter(filterData: FilterDto, user?: UserEntity) {
     const { topics = [], search_text, page, limit, rating } = filterData;
     const query = this.blogRepo
       .createQueryBuilder('blog')
-      .leftJoinAndSelect('blog.topic', 'topic');
+      .leftJoinAndSelect('blog.topic', 'topic')
+      .leftJoin('blog.user', 'user')
+      .addSelect([
+        'user.id',
+        'user.email',
+        'user.first_name',
+        'user.role',
+        'user.last_name',
+      ]);
+
     if (search_text) {
       query.andWhere(`blog.title ILIKE :search_text`, {
         search_text: `%${search_text}%`,
@@ -99,9 +108,15 @@ export class BlogService {
         topics,
       });
     }
+    if (user.role === ROLES.PARTNER) {
+      query.andWhere('blog.created_by = created_by', {
+        created_by: user.id,
+      });
+    }
     if (page && limit) {
       query.skip((page - 1) * limit).take(limit);
     }
+
     const [results, total] = await query.getManyAndCount();
 
     return {

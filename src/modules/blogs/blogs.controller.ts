@@ -30,8 +30,8 @@ export class BlogsController {
 
   @Post('filter')
   @Roles(ROLES.ADMIN, ROLES.PARTNER)
-  filterStore(@Body() filterData: FilterDto) {
-    return this.blogsService.filter(filterData);
+  filterStore(@CurrentUser() user: UserEntity, @Body() filterData: FilterDto) {
+    return this.blogsService.filter(filterData, user);
   }
   @Get(':id')
   @Roles(ROLES.ADMIN, ROLES.PARTNER)
