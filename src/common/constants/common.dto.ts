@@ -55,7 +55,6 @@ export class BaseDto {
       url: 'string',
       public_id: 'string',
       file_name: 'string',
-      caption: 'string',
     },
     description: 'Uploaded image',
   })
