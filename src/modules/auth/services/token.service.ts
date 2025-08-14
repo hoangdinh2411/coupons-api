@@ -12,7 +12,7 @@ export class TokenService {
         id: user.id,
         type: 'sign-in',
       },
-      { expiresIn: '1h' },
+      { expiresIn: '24h' },
     );
     return token;
   }
