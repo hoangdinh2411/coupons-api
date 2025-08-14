@@ -109,7 +109,7 @@ export class BlogService {
       });
     }
     if (user.role === ROLES.PARTNER) {
-      query.andWhere('blog.created_by = created_by', {
+      query.andWhere('blog.created_by = :created_by', {
         created_by: user.id,
       });
     }
