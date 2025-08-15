@@ -1,10 +1,12 @@
-import { ConflictException, Inject } from '@nestjs/common';
+import { ConflictException, Inject, Logger } from '@nestjs/common';
 import { FileAdapter } from './files.adapter';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { extractPublicIdsFromHtml } from 'common/helpers/image';
 import { AwsS3Service } from './aws-s3/aws-s3.service';
 
 export class FilesService {
+  private readonly logger = new Logger(FilesService.name);
+
   constructor(
     @Inject(AwsS3Service)
     private fileAdapter: FileAdapter,
@@ -32,10 +34,20 @@ export class FilesService {
   @Cron(CronExpression.EVERY_DAY_AT_6AM)
   async deleteUnusedFilePerDay() {
     const public_ids = await this.fileAdapter.getUnusedImages();
-    if (public_ids) {
-      await Promise.all(public_ids.map((k) => this.delete(k)));
+    const results = [];
+    for (const key of public_ids) {
+      try {
+        await this.delete(key); // hàm đã ném lỗi nếu key không hợp lệ
+        results.push({ key, status: 'deleted' });
+      } catch (err) {
+        // log và bỏ qua
+        this.logger.warn(`Cannot delete key: ${key} - ${err.message}`);
+        results.push({ key, status: 'failed', error: err.message });
+        continue; // tiếp tục vòng lặp
+      }
     }
-    return true;
+
+    return results;
   }
 
   // make Image Type to be used in other modules
@@ -43,7 +55,7 @@ export class FilesService {
     try {
       await Promise.all(ids.map((id) => this.delete(id)));
     } catch (error) {
-      throw error; // 👈 propagate lỗi lên để transaction biết
+      throw error;
     }
   }
   async markImageAsUsed(public_ids: string[]) {
@@ -53,7 +65,7 @@ export class FilesService {
       }
       return await this.fileAdapter.markImageAsUsed(public_ids);
     } catch (error) {
-      throw error; // 👈 propagate lỗi lên để transaction biết
+      throw error;
     }
   }
 
@@ -64,7 +76,7 @@ export class FilesService {
         await this.markImageAsUsed(public_ids);
       }
     } catch (error) {
-      throw error; // 👈 propagate lỗi lên để transaction biết
+      throw error;
     }
   }
 }
