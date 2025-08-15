@@ -240,61 +240,64 @@ export class BlogService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
+    const manager = queryRunner.manager;
+
     try {
-      let topic = null;
-      if (updateBlogDto.topic_id) {
-        topic = await this.topicService.findOneById(updateBlogDto.topic_id);
-      }
-      const blog = await this.findOne(id.toString());
-      if (!blog) {
-        throw new NotFoundException('Blog not found');
-      }
-      if (blog?.faqs && blog?.faqs?.length !== 0) {
-        await this.faqService.deleteFaqs('blog', blog.id, queryRunner.manager);
-      }
+      // Lấy blog trong transaction
+      const blog = await manager.findOne(BlogsEntity, {
+        where: { id },
+        relations: ['user', 'faqs', 'topic'], // tùy nhu cầu
+      });
+      if (!blog) throw new NotFoundException('Blog not found');
       if (user.role !== ROLES.ADMIN && blog.user.id !== user.id) {
         throw new ForbiddenException(
           'You are not authorized to update this blog',
         );
       }
-      const data = {
-        ...blog,
-        ...updateBlogDto,
-        ...(topic && { topic }),
-      };
-      const updated_blog = await this.blogRepo.save(data);
 
-      if (faqs?.length > 0) {
-        await this.faqService.saveFaqs(
-          faqs,
-          {
-            blog: updated_blog,
-          },
-          queryRunner.manager,
-        );
+      //  Resolve topic nếu có
+      let topic: TopicEntity | null = null;
+      if (updateBlogDto.topic_id) {
+        topic = await manager.findOne(TopicEntity, {
+          where: { id: updateBlogDto.topic_id },
+        });
+        if (!topic) throw new NotFoundException('Topic not found');
       }
-      const has_new_image =
-        updateBlogDto.image &&
-        updateBlogDto.image.public_id &&
-        updateBlogDto.image.public_id !== blog.image.public_id;
-      if (has_new_image) {
-        await this.fileService.markImageAsUsed([updateBlogDto.image.public_id]);
+
+      //  Tính toán ảnh mới/cũ
+      const oldId = blog.image?.public_id ?? '';
+      const newId = updateBlogDto.image?.public_id ?? '';
+      const hasNew = !!newId && newId !== oldId;
+
+      // Ví dụ các cập nhật DB
+      await manager.update(
+        BlogsEntity,
+        { id },
+        { ...blog, ...updateBlogDto, ...(topic && topic) },
+      );
+
+      if (faqs?.length) {
+        await this.faqService.saveFaqs(faqs, { blog }, manager);
       }
-      if (has_new_image && blog.image.public_id !== '') {
-        await this.fileService.delete(blog.image.public_id);
+
+      //    đặt giữa "DB đã ghi nhưng CHƯA commit" và "commitTransaction"
+      if (hasNew) {
+        await this.fileService.markImageAsUsed([newId]);
       }
-      if (updated_blog.content) {
-        await this.fileService.updateTagsFOrUsedImagesFromHtml(
-          updated_blog.content,
-        );
+      if (hasNew && oldId) {
+        await this.fileService.delete(oldId); // S3 delete, ném lỗi nếu fail
       }
+
+      //  Nếu tới được đây nghĩa là S3 OK → commit TX
       await queryRunner.commitTransaction();
-      return updated_blog;
+
+      //  trả về entity mới
+      return await manager.findOne(BlogsEntity, { where: { id } });
     } catch (error) {
       await queryRunner.rollbackTransaction();
       if (error instanceof QueryFailedError) {
-        const err = error.driverError;
-        if (err.code === '23505') {
+        const err = (error as any).driverError;
+        if (err?.code === '23505') {
           throw new ConflictException('Slug already exists');
         }
       }
@@ -309,7 +312,12 @@ export class BlogService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const blog = await this.findOne(id.toString());
+      const manager = queryRunner.manager;
+      const blog = await manager.findOne(BlogsEntity, {
+        where: {
+          id,
+        },
+      });
       if (!blog) {
         throw new NotFoundException('Blog not found ');
       }
@@ -322,7 +330,7 @@ export class BlogService {
       if (blog.image.public_id) {
         await this.fileService.delete(blog.image.public_id);
       }
-      await this.blogRepo.delete(id);
+      await manager.delete(BlogsEntity, id);
       await queryRunner.commitTransaction();
       return true;
     } catch (error) {
