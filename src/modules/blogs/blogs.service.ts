@@ -116,6 +116,7 @@ export class BlogService {
     if (page && limit) {
       query.skip((page - 1) * limit).take(limit);
     }
+    query.orderBy('blog.updated_at', 'DESC');
 
     const [results, total] = await query.getManyAndCount();
 
@@ -137,7 +138,7 @@ export class BlogService {
           .select('b.id')
           .from(BlogsEntity, 'b')
           .where('b.topic_id = blog.topic_id')
-          .orderBy('b.created_at', 'DESC')
+          .orderBy('b.updated_at', 'DESC')
           .limit(6)
           .getQuery();
         return 'blog.id IN ' + sub_query;
@@ -145,7 +146,7 @@ export class BlogService {
       .leftJoin('blog.user', 'user')
       .addSelect(['user.id', 'user.email', 'user.first_name', 'user.last_name'])
       .addSelect(['topic.id', 'topic.name', 'topic.slug', 'topic.image'])
-      .addOrderBy('blog.created_at', 'DESC')
+      .addOrderBy('blog.updated_at', 'DESC')
       // .orderBy('topic.id', 'ASC')
       .getMany();
     const grouped_topics = new_blogs_of_each_topic.reduce((acc, blog) => {
@@ -167,7 +168,7 @@ export class BlogService {
   ) {
     const query = this.blogRepo
       .createQueryBuilder('blog')
-      .orderBy('blog.created_at', 'DESC')
+      .orderBy('blog.updated_at', 'DESC')
       .leftJoin('blog.topic', 'topic')
       .leftJoin('blog.user', 'user')
       .addSelect([
@@ -343,7 +344,7 @@ export class BlogService {
   async getLatestBlogs(limit: number) {
     return await this.blogRepo
       .createQueryBuilder('blog')
-      .orderBy('blog.created_at', 'DESC')
+      .orderBy('blog.updated_at', 'DESC')
       // .where({
       //   is_published: true,
       // })
@@ -360,7 +361,7 @@ export class BlogService {
       this.blogRepo
         .createQueryBuilder('blog')
         .orderBy('blog.rating', 'DESC')
-        .addOrderBy('blog.created_at', 'DESC')
+        .addOrderBy('blog.updated_at', 'DESC')
         // .where({
         //   is_published: true,
         // })

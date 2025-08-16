@@ -110,6 +110,7 @@ export class StoresService {
 
     const [results, total] = await query
       .leftJoinAndSelect('store.categories', 'categories')
+      .orderBy('store.updated_at', 'DESC')
       .getManyAndCount();
     return {
       total,
@@ -192,6 +193,7 @@ export class StoresService {
       .addSelect(['category.id', 'category.name', 'category.slug'])
       .leftJoinAndSelect('store.faqs', 'faqs')
       .orderBy('faqs.order', 'ASC')
+      .addOrderBy('store.updated_at', 'DESC')
       .getOne();
     if (!store) {
       throw new NotFoundException('Store not found');
@@ -357,6 +359,7 @@ export class StoresService {
 
     return await query
       .orderBy('name', 'ASC')
+
       .select(['store.name', 'store.id', 'store.slug', 'store.url'])
       .getMany();
   }
