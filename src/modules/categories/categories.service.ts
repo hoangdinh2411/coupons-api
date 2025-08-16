@@ -40,6 +40,11 @@ export class CategoriesService {
           queryRunner.manager,
         );
       }
+      if (new_category.description) {
+        await this.fileService.updateTagsFOrUsedImagesFromHtml(
+          new_category.description,
+        );
+      }
       await queryRunner.commitTransaction();
       return new_category;
     } catch (error) {
@@ -163,7 +168,11 @@ export class CategoriesService {
       if (has_new_image && category.image.public_id !== '') {
         await this.fileService.delete(category.image.public_id);
       }
-
+      if (new_category.description) {
+        await this.fileService.updateTagsFOrUsedImagesFromHtml(
+          new_category.description,
+        );
+      }
       await queryRunner.commitTransaction();
       return new_category;
     } catch (error) {
@@ -199,6 +208,9 @@ export class CategoriesService {
       });
       if (!category) {
         throw new NotFoundException('Category not found');
+      }
+      if (category.description) {
+        await this.fileService.deleteImageFromHTML(category.description);
       }
       if (category.image.public_id) {
         await this.fileService.delete(category.image.public_id);

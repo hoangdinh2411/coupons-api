@@ -30,6 +30,16 @@ export class FilesService {
       );
     }
   }
+  async deleteImageFromHTML(html: string) {
+    try {
+      const public_ids = extractPublicIdsFromHtml(html);
+      if (public_ids) {
+        await this.deleteImages(public_ids);
+      }
+    } catch (_error) {
+      throw new ConflictException('cannot delete image for this content');
+    }
+  }
 
   @Cron(CronExpression.EVERY_DAY_AT_6AM)
   async deleteUnusedFilePerDay() {

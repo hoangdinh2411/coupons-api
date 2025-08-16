@@ -244,21 +244,20 @@ export class BlogService {
 
     try {
       // Lấy blog trong transaction
-      const blog = await manager.findOne(BlogsEntity, {
-        where: { id },
-        relations: ['user', 'faqs', 'topic'], // tùy nhu cầu
-      });
+      const blog = await this.findOne(String(id));
       if (!blog) throw new NotFoundException('Blog not found');
       if (user.role !== ROLES.ADMIN && blog.user.id !== user.id) {
         throw new ForbiddenException(
           'You are not authorized to update this blog',
         );
       }
-
+      if (blog?.faqs && blog?.faqs?.length !== 0) {
+        await this.faqService.deleteFaqs('blog', id, queryRunner.manager);
+      }
       //  Resolve topic nếu có
       let topic: TopicEntity | null = null;
       if (updateBlogDto.topic_id) {
-        topic = await manager.findOne(TopicEntity, {
+        topic = await manager.getRepository(TopicEntity).findOne({
           where: { id: updateBlogDto.topic_id },
         });
         if (!topic) throw new NotFoundException('Topic not found');
@@ -270,14 +269,14 @@ export class BlogService {
       const hasNew = !!newId && newId !== oldId;
 
       // Ví dụ các cập nhật DB
-      await manager.update(
-        BlogsEntity,
-        { id },
-        { ...blog, ...updateBlogDto, ...(topic && topic) },
-      );
+      const updated_blog = await this.blogRepo.save({
+        ...blog,
+        ...updateBlogDto,
+        ...(topic && { topic }),
+      });
 
       if (faqs?.length) {
-        await this.faqService.saveFaqs(faqs, { blog }, manager);
+        await this.faqService.saveFaqs(faqs, { blog: updated_blog }, manager);
       }
 
       //    đặt giữa "DB đã ghi nhưng CHƯA commit" và "commitTransaction"
@@ -287,12 +286,15 @@ export class BlogService {
       if (hasNew && oldId) {
         await this.fileService.delete(oldId); // S3 delete, ném lỗi nếu fail
       }
-
+      if (updated_blog.content) {
+        await this.fileService.updateTagsFOrUsedImagesFromHtml(
+          updated_blog.content,
+        );
+      }
       //  Nếu tới được đây nghĩa là S3 OK → commit TX
       await queryRunner.commitTransaction();
-
       //  trả về entity mới
-      return await manager.findOne(BlogsEntity, { where: { id } });
+      return await this.findOne(String(id));
     } catch (error) {
       await queryRunner.rollbackTransaction();
       if (error instanceof QueryFailedError) {
@@ -312,12 +314,7 @@ export class BlogService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const manager = queryRunner.manager;
-      const blog = await manager.findOne(BlogsEntity, {
-        where: {
-          id,
-        },
-      });
+      const blog = await this.findOne(String(id));
       if (!blog) {
         throw new NotFoundException('Blog not found ');
       }
@@ -326,11 +323,13 @@ export class BlogService {
           'You are not authorized to delete this blog',
         );
       }
-
+      if (blog.content) {
+        await this.fileService.deleteImageFromHTML(blog.content);
+      }
       if (blog.image.public_id) {
         await this.fileService.delete(blog.image.public_id);
       }
-      await manager.delete(BlogsEntity, id);
+      await this.blogRepo.delete(id);
       await queryRunner.commitTransaction();
       return true;
     } catch (error) {
