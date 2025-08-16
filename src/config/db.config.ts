@@ -12,7 +12,7 @@ export function getDbConfig(
     retryAttempts: 10,
     autoLoadEntities: true,
     entities: [__dirname + '/../**/*.entity.{js,ts}'],
-    logging: ['error', 'warn'],
+    logging: ['query', 'error', 'warn'],
     synchronize: !isProduction,
     name: 'analytics',
     extra: {

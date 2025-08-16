@@ -320,6 +320,9 @@ export class StoresService {
       if (!store) {
         throw new NotFoundException('Store not found');
       }
+      if (store.description) {
+        await this.fileService.deleteImageFromHTML(store.description);
+      }
       if (store.image.public_id) {
         await this.fileService.delete(store.image.public_id);
       }
