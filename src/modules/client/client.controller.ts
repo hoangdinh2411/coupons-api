@@ -7,6 +7,7 @@ import { StoresService } from 'modules/stores/services/stores.service';
 import { CategoriesService } from 'modules/categories/categories.service';
 import { CommentsService } from 'modules/comments/comments.service';
 import { CouponsService } from 'modules/coupons/coupons.service';
+import { PagesService } from 'modules/pages/pages.service';
 
 @Controller('client')
 export class ClientController {
@@ -17,6 +18,7 @@ export class ClientController {
     private readonly storeService: StoresService,
     private readonly categoryService: CategoriesService,
     private readonly commentService: CommentsService,
+    private readonly pagesService: PagesService,
     private readonly couponService: CouponsService,
   ) {}
 
@@ -220,5 +222,10 @@ export class ClientController {
     @Query('page') page: string,
   ) {
     return this.clientService.getCouponsByCategory(+id, +page);
+  }
+
+  @Get('/pages/:type')
+  async getPage(@Param('type') type: string) {
+    return this.pagesService.findOne(type);
   }
 }
