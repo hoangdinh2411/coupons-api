@@ -13,6 +13,7 @@ import { FilesModule } from './files/files.module';
 import { ClientModule } from './client/client.module';
 import { CommentsModule } from './comments/comments.module';
 import { FaqsModule } from './faqs/faqs.module';
+import { PagesModule } from './pages/pages.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { FaqsModule } from './faqs/faqs.module';
     ClientModule,
     CommentsModule,
     FaqsModule,
+    PagesModule,
   ],
   providers: [JWTAuthStrategy],
 })

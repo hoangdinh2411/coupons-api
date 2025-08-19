@@ -16,11 +16,19 @@ export class PageEntity extends BaseEntity {
 
   @Column({
     type: 'text',
+    nullable: true,
   })
   content: string;
 
   @Column({ type: 'jsonb', nullable: true })
-  image: {
+  images: {
+    url: string;
+    public_id: string;
+    file_name: string;
+  }[];
+
+  @Column({ type: 'jsonb', nullable: true })
+  thumbnail: {
     url: string;
     public_id: string;
     file_name: string;

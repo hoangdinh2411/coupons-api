@@ -7,6 +7,7 @@ import { StoresModule } from 'modules/stores/stores.module';
 import { CategoriesModule } from 'modules/categories/categories.module';
 import { CommentsModule } from 'modules/comments/comments.module';
 import { CouponsModule } from 'modules/coupons/coupons.module';
+import { PagesModule } from 'modules/pages/pages.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { CouponsModule } from 'modules/coupons/coupons.module';
     CategoriesModule,
     CommentsModule,
     CouponsModule,
+    PagesModule,
   ],
   controllers: [ClientController],
   providers: [ClientService],

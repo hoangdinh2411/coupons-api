@@ -6,6 +6,7 @@ import { FAQDto } from '../dto/faq.dto';
 import { StoreEntity } from 'modules/stores/entities/store.entity';
 import { CategoryEntity } from 'modules/categories/entities/category.entity';
 import { BlogsEntity } from 'modules/blogs/entities/blogs.entity';
+import { PageEntity } from 'modules/pages/entities/page.entity';
 
 @Injectable()
 export class FAQService {
@@ -19,6 +20,7 @@ export class FAQService {
       store?: StoreEntity;
       category?: CategoryEntity;
       blog?: BlogsEntity;
+      page?: PageEntity;
     },
     manager: EntityManager,
   ) {
@@ -35,7 +37,7 @@ export class FAQService {
   }
 
   async deleteFaqs(
-    key: 'store' | 'category' | 'blog',
+    key: 'store' | 'category' | 'blog' | 'page',
     id: number,
     manager: EntityManager,
   ) {
