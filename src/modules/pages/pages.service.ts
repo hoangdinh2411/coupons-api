@@ -7,7 +7,7 @@ import { CreatePageDto } from './dto/create-page.dto';
 import { UpdatePageDto } from './dto/update-page.dto';
 import { PageEntity } from './entities/page.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, QueryFailedError, Repository } from 'typeorm';
+import { DataSource, ILike, QueryFailedError, Repository } from 'typeorm';
 import { FilesService } from 'modules/files/files.service';
 import { FAQService } from 'modules/faqs/services/faqs.service';
 import { isNumeric } from 'common/helpers/number';
@@ -69,12 +69,18 @@ export class PagesService {
       await queryRunner.release();
     }
   }
+  async findAll(page?: number, limit?: number, search_text?: string) {
+    const query = this.pageRepo.createQueryBuilder('page');
+    if (page && limit) {
+      query.skip((page - 1) * limit).take(limit);
+    }
 
-  findAll() {
-    return this.pageRepo
-      .createQueryBuilder('pages')
-      .orderBy('pages.updated_at', 'ASC')
-      .getManyAndCount();
+    if (search_text) {
+      query.andWhere({
+        type: ILike(`%${search_text}%`),
+      });
+    }
+    return await query.orderBy('pages.updated_at', 'ASC').getManyAndCount();
   }
 
   async findOne(identifier: string) {
