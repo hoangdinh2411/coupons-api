@@ -22,7 +22,7 @@ export class PagesController {
 
   @Post()
   @HttpCode(201)
-  @Roles(ROLES.ADMIN, ROLES.PARTNER)
+  @Roles(ROLES.ADMIN)
   create(@Body() createPageDto: CreatePageDto) {
     return this.pagesService.create(createPageDto);
   }
@@ -31,7 +31,7 @@ export class PagesController {
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'search_text', required: false, type: String })
-  @Roles(ROLES.ADMIN, ROLES.PARTNER)
+  @Roles(ROLES.ADMIN)
   async findAll(
     @Query('page') page?: number,
     @Query('limit') limit?: number,
@@ -49,19 +49,19 @@ export class PagesController {
   }
 
   @Get(':id')
-  @Roles(ROLES.ADMIN, ROLES.PARTNER)
+  @Roles(ROLES.ADMIN)
   findOne(@Param('id') id: string) {
     return this.pagesService.findOne(id);
   }
 
   @Patch(':id')
-  @Roles(ROLES.ADMIN, ROLES.PARTNER)
+  @Roles(ROLES.ADMIN)
   update(@Param('id') id: string, @Body() updatePageDto: UpdatePageDto) {
     return this.pagesService.update(+id, updatePageDto);
   }
 
   @Delete(':id')
-  @Roles(ROLES.ADMIN, ROLES.PARTNER)
+  @Roles(ROLES.ADMIN)
   remove(@Param('id') id: string) {
     return this.pagesService.remove(+id);
   }
