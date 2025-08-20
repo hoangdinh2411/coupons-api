@@ -70,7 +70,7 @@ export class PagesService {
     }
   }
   async findAll(page?: number, limit?: number, search_text?: string) {
-    const query = this.pageRepo.createQueryBuilder('page');
+    const query = this.pageRepo.createQueryBuilder('pages');
     if (page && limit) {
       query.skip((page - 1) * limit).take(limit);
     }

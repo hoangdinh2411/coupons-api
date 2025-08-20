@@ -21,6 +21,15 @@ export class CreatePageDto {
   type: string;
 
   @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    type: () => 'string',
+    default: 'slug',
+    description: 'slug',
+  })
+  slug: string;
+
+  @IsString()
   @IsOptional()
   @ApiProperty({
     type: () => 'string',

@@ -15,6 +15,14 @@ export class PageEntity extends BaseEntity {
   type: string;
 
   @Column({
+    type: 'varchar',
+    length: 100,
+    unique: true,
+    nullable: true,
+  })
+  slug: string;
+
+  @Column({
     type: 'text',
     nullable: true,
   })
