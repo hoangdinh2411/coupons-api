@@ -7,12 +7,14 @@ import {
   Param,
   Delete,
   HttpCode,
+  Query,
 } from '@nestjs/common';
 import { PagesService } from './pages.service';
 import { CreatePageDto } from './dto/create-page.dto';
 import { UpdatePageDto } from './dto/update-page.dto';
 import { Roles } from 'common/decorators/roles.decorator';
 import { ROLES } from 'common/constants/enums';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('pages')
 export class PagesController {
@@ -26,11 +28,22 @@ export class PagesController {
   }
 
   @Get()
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search_text', required: false, type: String })
   @Roles(ROLES.ADMIN, ROLES.PARTNER)
-  async findAll() {
-    const [result, total] = await this.pagesService.findAll();
+  async findAll(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search_text') search_text?: string,
+  ) {
+    const [results, total] = await this.pagesService.findAll(
+      page,
+      limit,
+      search_text,
+    );
     return {
-      result,
+      results,
       total,
     };
   }
