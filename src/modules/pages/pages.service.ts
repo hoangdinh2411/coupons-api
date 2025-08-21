@@ -90,7 +90,7 @@ export class PagesService {
     if (isNumeric(identifier)) {
       query.where('page.id =:id', { id: +identifier });
     } else {
-      query.where('page.type ILIKE :type', { type: `%${identifier}%` });
+      query.where('page.slug ILIKE :slug', { slug: `%${identifier}%` });
     }
     const page = await query.getOne();
     if (!page) {
