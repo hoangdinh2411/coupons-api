@@ -224,8 +224,8 @@ export class ClientController {
     return this.clientService.getCouponsByCategory(+id, +page);
   }
 
-  @Get('/pages/:type')
-  async getPage(@Param('type') type: string) {
-    return this.pagesService.findOne(type);
+  @Get('/pages/:slug')
+  async getPage(@Param('slug') slug: string) {
+    return this.pagesService.findOne(slug);
   }
 }
