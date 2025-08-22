@@ -8,6 +8,8 @@ import { CategoriesService } from 'modules/categories/categories.service';
 import { CommentsService } from 'modules/comments/comments.service';
 import { CouponsService } from 'modules/coupons/coupons.service';
 import { PagesService } from 'modules/pages/pages.service';
+import { FilterDto } from 'common/constants/filter.dto';
+import { isNumeric } from 'common/helpers/number';
 
 @Controller('client')
 export class ClientController {
@@ -56,8 +58,16 @@ export class ClientController {
   }
 
   @Get('/blogs/all')
-  async getAllBlogs() {
-    return await this.blogsService.filter({});
+  async getAllBlogs(
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+  ) {
+    const params: FilterDto = {};
+    if (isNumeric(page) && isNumeric(limit)) {
+      params.page = +page;
+      params.limit = +limit;
+    }
+    return await this.blogsService.filter(params);
   }
 
   @Get('/blogs/trending')
