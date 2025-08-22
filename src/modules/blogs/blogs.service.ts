@@ -108,7 +108,7 @@ export class BlogService {
         topics,
       });
     }
-    if (user.role === ROLES.PARTNER) {
+    if (user && user?.role === ROLES.PARTNER) {
       query.andWhere('blog.created_by = :created_by', {
         created_by: user.id,
       });
