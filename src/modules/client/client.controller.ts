@@ -94,8 +94,8 @@ export class ClientController {
     if (blog.topic.id) {
       const [result] = await this.blogsService.findBlogsByTopic(
         blog.topic.slug,
-        5,
         1,
+        6,
         blog.id,
       );
       read_more = result;

@@ -22,7 +22,7 @@ export function getDbConfig(
     },
   };
   let environmentOptions: Partial<TypeOrmModuleOptions> = {};
-  if (!isProduction) {
+  if (isProduction) {
     environmentOptions = {
       url: configService.get<string>('POSTGRES_URL'),
     };
