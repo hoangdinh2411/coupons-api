@@ -43,7 +43,7 @@ export class PageEntity extends BaseEntity {
   };
 
   @OneToMany(() => FAQEntity, (faq) => faq.page, {
-    eager: false,
+    eager: true,
   })
   faqs: FAQEntity[];
 }
