@@ -43,7 +43,6 @@ export class PageEntity extends BaseEntity {
   };
 
   @OneToMany(() => FAQEntity, (faq) => faq.page, {
-    cascade: true, // optional: saves coupons when you save a store
     eager: false,
   })
   faqs: FAQEntity[];

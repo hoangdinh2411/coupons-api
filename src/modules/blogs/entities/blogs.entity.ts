@@ -84,7 +84,6 @@ export class BlogsEntity extends BaseEntity {
   rating: number;
 
   @OneToMany(() => FAQEntity, (faq) => faq.blog, {
-    cascade: false,
     eager: false,
     onDelete: 'CASCADE',
   })
