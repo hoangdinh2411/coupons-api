@@ -64,9 +64,7 @@ export class CouponEntity extends BaseEntity {
   })
   discount: number;
 
-  @ManyToOne(() => UserEntity, (user) => user.coupons, {
-    cascade: true,
-  })
+  @ManyToOne(() => UserEntity, (user) => user.coupons)
   @JoinColumn({
     name: 'added_by',
   })
