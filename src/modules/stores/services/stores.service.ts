@@ -249,15 +249,15 @@ export class StoresService {
       } else {
         categories = store.categories;
       }
-      if (store?.faqs && store?.faqs?.length !== 0) {
+
+      const { faqs, ...dtoWithoutFaqs } = updateStoreDto;
+      if (store?.faqs && store?.faqs?.length !== 0 && faqs.length > 0) {
         await this.faqService.deleteFaqs(
           'store',
           store.id,
           queryRunner.manager,
         );
       }
-      const { faqs, ...dtoWithoutFaqs } = updateStoreDto;
-
       const data = {
         ...store,
         ...dtoWithoutFaqs,

@@ -44,6 +44,7 @@ export class PageEntity extends BaseEntity {
 
   @OneToMany(() => FAQEntity, (faq) => faq.page, {
     eager: true,
+    cascade: false,
   })
   faqs: FAQEntity[];
 }

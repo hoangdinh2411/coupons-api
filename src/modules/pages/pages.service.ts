@@ -40,7 +40,7 @@ export class PagesService {
         await this.fileService.markImageAsUsed(public_ids);
       }
 
-      if (faqs.length) {
+      if (faqs.length > 0) {
         await this.faqService.saveFaqs(
           faqs,
           {
@@ -113,7 +113,7 @@ export class PagesService {
         ...page,
         ...dtoWithoutFaqs,
       };
-      if (page?.faqs && page?.faqs?.length !== 0) {
+      if (page?.faqs && page?.faqs?.length !== 0 && faqs.length > 0) {
         await this.faqService.deleteFaqs('page', page.id, queryRunner.manager);
       }
       const new_page = await this.pageRepo.save(data);

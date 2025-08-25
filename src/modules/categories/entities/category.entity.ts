@@ -54,6 +54,7 @@ export class CategoryEntity extends BaseEntity {
   coupons: CouponEntity[];
 
   @OneToMany(() => FAQEntity, (faq) => faq.category, {
+    cascade: false,
     eager: true,
   })
   faqs: FAQEntity[];
