@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   DataSource,
+  ILike,
   QueryFailedError,
   Repository,
   SelectQueryBuilder,
@@ -97,10 +98,9 @@ export class BlogService {
         is_published: true,
       });
     }
-
     if (search_text) {
-      query.andWhere(`blog.title ILIKE :search_text`, {
-        search_text: `%${search_text}%`,
+      query.andWhere({
+        name: ILike(`%${search_text}%`),
       });
     }
     if (rating !== undefined) {
