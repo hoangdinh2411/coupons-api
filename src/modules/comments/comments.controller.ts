@@ -22,7 +22,7 @@ export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
   @Post()
-  @Roles(ROLES.USER, ROLES.PARTNER)
+  @Roles(ROLES.USER, ROLES.PARTNER, ROLES.ADMIN)
   create(
     @Body() createCommentDto: CreateCommentDto,
     @CurrentUser() user: UserEntity,
@@ -31,13 +31,13 @@ export class CommentsController {
   }
 
   @Get(':id')
-  @Roles(ROLES.USER, ROLES.PARTNER)
+  @Roles(ROLES.USER, ROLES.PARTNER, ROLES.ADMIN)
   findOne(@Param('id') id: string) {
     return this.commentsService.findOne(+id);
   }
 
   @Patch(':id')
-  @Roles(ROLES.USER, ROLES.PARTNER)
+  @Roles(ROLES.USER, ROLES.PARTNER, ROLES.ADMIN)
   update(
     @Param('id') id: string,
     @Body() updateCommentDto: UpdateCommentDto,

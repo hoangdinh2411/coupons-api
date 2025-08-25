@@ -97,6 +97,7 @@ export class StoreEntity extends BaseEntity {
 
   @OneToMany(() => FAQEntity, (faq) => faq.store, {
     eager: true,
+    cascade: false,
     onDelete: 'CASCADE',
   })
   faqs: FAQEntity[];

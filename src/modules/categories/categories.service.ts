@@ -137,7 +137,7 @@ export class CategoriesService {
         ...category,
         ...dtoWithoutFaqs,
       };
-      if (category?.faqs && category?.faqs?.length !== 0) {
+      if (category?.faqs && category?.faqs?.length !== 0 && faqs?.length > 0) {
         await this.faqService.deleteFaqs(
           'category',
           category.id,

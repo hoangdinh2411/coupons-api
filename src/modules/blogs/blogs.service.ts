@@ -258,7 +258,7 @@ export class BlogService {
           'You are not authorized to update this blog',
         );
       }
-      if (blog?.faqs && blog?.faqs?.length !== 0) {
+      if (blog?.faqs && blog?.faqs?.length !== 0 && faqs?.length > 0) {
         await this.faqService.deleteFaqs('blog', id, queryRunner.manager);
       }
       //  Resolve topic nếu có
