@@ -100,7 +100,7 @@ export class BlogService {
     }
     if (search_text) {
       query.andWhere({
-        name: ILike(`%${search_text}%`),
+        title: ILike(`%${search_text}%`),
       });
     }
     if (rating !== undefined) {
