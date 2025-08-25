@@ -79,7 +79,7 @@ export class BlogService {
       await queryRunner.release();
     }
   }
-  async filter(filterData: FilterDto, user?: UserEntity) {
+  async filter(filterData: FilterDto, user?: UserEntity, is_published = false) {
     const { topics = [], search_text, page, limit, rating } = filterData;
     const query = this.blogRepo
       .createQueryBuilder('blog')
@@ -92,6 +92,11 @@ export class BlogService {
         'user.role',
         'user.last_name',
       ]);
+    if (is_published === true) {
+      query.andWhere('blog.is_published = :is_published', {
+        is_published: true,
+      });
+    }
 
     if (search_text) {
       query.andWhere(`blog.title ILIKE :search_text`, {
@@ -128,9 +133,9 @@ export class BlogService {
   async findLatestBlogPerTopic() {
     const new_blogs_of_each_topic = await this.blogRepo
       .createQueryBuilder('blog')
-      // .where({
-      //   is_published: true,
-      // })
+      .where({
+        is_published: true,
+      })
       .innerJoin('blog.topic', 'topic')
       .where((qb: SelectQueryBuilder<BlogsEntity>) => {
         const sub_query = qb
@@ -184,11 +189,10 @@ export class BlogService {
       ])
 
       .addSelect(['topic.id', 'topic.name', 'topic.slug', 'topic.image'])
-      .where('topic.slug = :slug', { slug: slug.trim() });
-
-    // .andWhere('blog.is_published = :is_published', {
-    //   is_published: true,
-    // });
+      .where('topic.slug = :slug', { slug: slug.trim() })
+      .andWhere('blog.is_published = :is_published', {
+        is_published: true,
+      });
 
     if (exclude_blog_id) {
       query.andWhere('blog.id != :exclude_blog_id', { exclude_blog_id });
@@ -205,7 +209,9 @@ export class BlogService {
     if (isNumeric(identifier)) {
       query.where('blog.id =:id', { id: +identifier });
     } else {
-      query.where('blog.slug ILIKE :slug', { slug: `%${identifier.trim()}%` });
+      query
+        .where('blog.slug ILIKE :slug', { slug: `%${identifier.trim()}%` })
+        .andWhere({ is_published: true });
     }
 
     const blog = await query
@@ -345,9 +351,9 @@ export class BlogService {
     return await this.blogRepo
       .createQueryBuilder('blog')
       .orderBy('blog.updated_at', 'DESC')
-      // .where({
-      //   is_published: true,
-      // })
+      .where({
+        is_published: true,
+      })
       .leftJoin('blog.user', 'user')
       .addSelect(['user.id', 'user.email', 'user.first_name', 'user.last_name'])
       .leftJoin('blog.topic', 'topic')
@@ -357,25 +363,18 @@ export class BlogService {
   }
 
   getTrending(limit: number) {
-    return (
-      this.blogRepo
-        .createQueryBuilder('blog')
-        .orderBy('blog.rating', 'DESC')
-        .addOrderBy('blog.updated_at', 'DESC')
-        // .where({
-        //   is_published: true,
-        // })
-        .leftJoin('blog.user', 'user')
-        .addSelect([
-          'user.id',
-          'user.email',
-          'user.first_name',
-          'user.last_name',
-        ])
-        .leftJoin('blog.topic', 'topic')
-        .addSelect(['topic.id', 'topic.name', 'topic.slug', 'topic.image'])
-        .take(limit)
-        .getMany()
-    );
+    return this.blogRepo
+      .createQueryBuilder('blog')
+      .orderBy('blog.rating', 'DESC')
+      .addOrderBy('blog.updated_at', 'DESC')
+      .where({
+        is_published: true,
+      })
+      .leftJoin('blog.user', 'user')
+      .addSelect(['user.id', 'user.email', 'user.first_name', 'user.last_name'])
+      .leftJoin('blog.topic', 'topic')
+      .addSelect(['topic.id', 'topic.name', 'topic.slug', 'topic.image'])
+      .take(limit)
+      .getMany();
   }
 }
