@@ -144,6 +144,7 @@ export class ClientController {
       this.categoryService.findAll(null, null, search_text),
       this.storeService.findStoreForClient(null, search_text),
     ]);
+
     return {
       blogs: blogs.results ?? [],
       categories: categories.results ?? [],
