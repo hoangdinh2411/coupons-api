@@ -67,7 +67,7 @@ export class ClientController {
       params.page = +page;
       params.limit = +limit;
     }
-    return await this.blogsService.filter(params);
+    return await this.blogsService.filter(params, null, true);
   }
 
   @Get('/blogs/trending')
@@ -140,7 +140,7 @@ export class ClientController {
   @ApiQuery({ name: 'search_text', required: true, type: String })
   async search(@Query('search_text') search_text?: string) {
     const [blogs, categories, stores] = await Promise.all([
-      this.blogsService.filter({ search_text }),
+      this.blogsService.filter({ search_text }, null, true),
       this.categoryService.findAll(null, null, search_text),
       this.storeService.findStoreForClient(null, search_text),
     ]);
