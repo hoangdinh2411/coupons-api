@@ -51,13 +51,12 @@ export class AuthController {
   @Post('sign-up')
   @Public()
   async signUp(@Query('type') type: ROLES, @Body() body: SignUpDto) {
-    // this.authService.comparePassword(body.password, body.confirm_password);
-    // const strategy = this.signUpStrategyFactory.getStrategy(type);
-    // return await strategy.execute({
-    //   ...body,
-    //   role: type.toUpperCase() as ROLES,
-    // });
-    return { type, body };
+    this.authService.comparePassword(body.password, body.confirm_password);
+    const strategy = this.signUpStrategyFactory.getStrategy(type);
+    return await strategy.execute({
+      ...body,
+      role: type.toUpperCase() as ROLES,
+    });
   }
 
   @ApiOperation({
