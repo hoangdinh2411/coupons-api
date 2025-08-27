@@ -212,7 +212,7 @@ export class ClientController {
 
     const top_deal_today = await this.couponService.filter({
       stores: [top_stores[0].id],
-      limit: 12,
+      limit: 10,
       page: 1,
     });
 
