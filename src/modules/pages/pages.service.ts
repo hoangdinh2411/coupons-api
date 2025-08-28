@@ -82,6 +82,12 @@ export class PagesService {
     }
     return await query.orderBy('pages.updated_at', 'ASC').getManyAndCount();
   }
+  async findAllPagesHaveContent() {
+    return await this.pageRepo
+      .createQueryBuilder('pages')
+      .where('pages.content IS NOT NULL')
+      .getMany();
+  }
 
   async findOne(identifier: string) {
     const query = this.pageRepo
