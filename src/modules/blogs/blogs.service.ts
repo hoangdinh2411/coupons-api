@@ -121,7 +121,7 @@ export class BlogService {
     if (page && limit) {
       query.skip((page - 1) * limit).take(limit);
     }
-    query.orderBy('blog.updated_at', 'DESC');
+    query.orderBy('blog.created_at', 'DESC');
 
     const [results, total] = await query.getManyAndCount();
 
